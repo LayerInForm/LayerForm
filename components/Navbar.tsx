@@ -4,10 +4,9 @@ import React from 'react';
 interface NavbarProps {
   currentView: string;
   setView: (view: any) => void;
-  cartCount: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, cartCount }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   const navItems = [
     { id: 'home', label: 'Start' },
     { id: 'shop', label: 'Shop' },
@@ -49,34 +48,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, cartCount 
               {item.label}
             </button>
           ))}
-          
-          <button 
-            onClick={() => setView('cart')}
-            className={`relative p-2 transition-soft hover:scale-110 ${currentView === 'cart' ? 'text-black' : 'text-gray-500'}`}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            {cartCount > 0 && (
-              <span className="absolute top-0 right-0 bg-[#00E5FF] text-[#001C3D] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
-                {cartCount}
-              </span>
-            )}
-          </button>
         </div>
 
-        <div className="md:hidden flex items-center space-x-4">
-             <button onClick={() => setView('cart')} className="relative p-2 text-gray-500">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                {cartCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-[#00E5FF] text-[#001C3D] text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-             </button>
-             <button onClick={() => setView('shop')} className="text-gray-500 text-xs font-bold uppercase tracking-widest">Shop</button>
+        <div className="md:hidden">
+             <button onClick={() => setView('shop')} className="bg-black text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full">Shop</button>
         </div>
       </div>
     </nav>
