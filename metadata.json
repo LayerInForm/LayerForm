@@ -1,6 +1,7 @@
+
 {
-  "name": "LayerForm - Präzisions 3D-Druck",
-  "description": "Premium 3D-Druck Manufaktur aus Bargteheide. Hochwertige Designobjekte und industrielle Prototypen.",
+  "name": "LayerForm",
+  "description": "Premium 3D-Druck Manufaktur. Hochwertige Designobjekte und industrielle Prototypen.",
   "requestFramePermissions": [
     "geolocation"
   ]

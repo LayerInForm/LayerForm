@@ -11,7 +11,8 @@ interface ReviewData {
 
 export const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewData[]>([]);
-  const [mapsLink, setMapsLink] = useState<string | null>(null);
+  // Die vom Nutzer bereitgestellte spezifische Google Maps URL
+  const [mapsLink, setMapsLink] = useState<string | null>("https://www.google.com/maps/place/LayerForm/@53.738933,10.2676088,17z/data=!3m1!4b1!4m6!3m5!1s0x47b219728a0cd3eb:0xfcd3d0c5ba4a1644!8m2!3d53.738933!4d10.2676088!16s%2Fg%2F11yxzg_x9q?entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D");
   const [isLoading, setIsLoading] = useState(true);
 
   const defaultReviews: ReviewData[] = [
@@ -32,8 +33,8 @@ export const Reviews: React.FC = () => {
       try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: "Suche nach dem Google Maps Profil von 'LayerForm Benjamin Ridel Bargteheide'. Extrahiere Rezensionstexte.",
+          model: "gemini-3-flash-preview",
+          contents: "Suche nach Rezensionstexten für 'LayerForm Benjamin Ridel Bargteheide' auf Google Maps.",
           config: {
             tools: [{ googleMaps: {} }],
             toolConfig: {
@@ -44,17 +45,13 @@ export const Reviews: React.FC = () => {
           },
         });
 
-        // Extrem defensive Extraktion um Uncaught Errors zu vermeiden
         const candidate = response.candidates?.[0];
         const groundingMetadata = candidate?.groundingMetadata;
         const chunks = groundingMetadata?.groundingChunks;
         
         if (chunks && Array.isArray(chunks)) {
+          // Wir behalten den vom Nutzer bereitgestellten Link bei, außer das Tool findet einen noch präziseren
           const mapsChunk = chunks.find(c => c && c.maps);
-          if (mapsChunk?.maps?.uri) {
-            setMapsLink(mapsChunk.maps.uri);
-          }
-
           const sources = mapsChunk?.maps?.placeAnswerSources;
           const snippets = Array.isArray(sources) && sources.length > 0 ? sources[0].reviewSnippets : null;
 
@@ -139,7 +136,7 @@ export const Reviews: React.FC = () => {
               className="inline-flex items-center px-8 py-4 bg-white border border-gray-100 rounded-full text-sm font-semibold transition-soft hover:bg-[#f5f5f7] hover:shadow-xl shadow-sm"
             >
               <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-3 mr-3 opacity-70" />
-              Alle Rezensionen auf Maps
+              Alle Rezensionen auf Google Maps ansehen
             </a>
           </div>
         )}

@@ -5,7 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 export const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: 'Willkommen bei LayerForm. Ich berate Sie gerne zu unseren Bambu Lab Drucken und Materialien.' }
+    { role: 'ai', text: 'Willkommen bei LayerForm. Wir machen fast alles im 3D-Druck möglich. Was haben Sie für ein Projekt geplant?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -37,7 +37,7 @@ export const ChatWidget: React.FC = () => {
         model: 'gemini-3-flash-preview',
         contents: userMsg,
         config: {
-          systemInstruction: "Du bist der Assistent von LayerForm (Bargteheide). Wir fertigen auf modernsten Bambu Lab Druckern. Unser Fokus liegt auf PLA und PETG, aber wir können NACH ABSPRACHE ALLE FILAMENTE drucken (TPU, ASA, ABS, Holz, etc.). Antworte kurz, edel (Apple-Stil) und lösungsorientiert. Erwähne bei Bedarf die hohe Geschwindigkeit und Präzision unserer Bambu Lab Systeme.",
+          systemInstruction: "Du bist der Assistent von 'LayerForm' (Bargteheide). Deine Aufgabe: Berate Kunden zu INDIVIDUELLEN FERTIGUNGEN. Unser Motto: 'Alles ist möglich'. Wir fertigen Einzelstücke und Kleinserien für Privatpersonen und Unternehmen (B2B). Wir drucken Logos, Prototypen, Ersatzteile, Event-Deko und vieles mehr auf Bambu Lab Systemen. Sei lösungsorientiert: Wenn ein Kunde fragt, ob wir X drucken können, antworte positiv und lade ihn ein, uns Details via WhatsApp oder E-Mail zu schicken. Stil: Edel, Apple-Style, minimalistisch, professionell.",
         }
       });
       
@@ -94,7 +94,7 @@ export const ChatWidget: React.FC = () => {
             <div className="relative">
               <input 
                 className="w-full px-5 py-3 bg-[#f5f5f7] rounded-full text-sm outline-none focus:bg-white focus:ring-2 focus:ring-black/5 transition-all pr-12" 
-                placeholder="Wie kann ich helfen?" 
+                placeholder="Was möchten Sie drucken?" 
                 value={input} 
                 onChange={e => setInput(e.target.value)} 
                 onKeyDown={e => e.key === 'Enter' && handleSend()} 

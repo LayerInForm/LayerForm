@@ -21,13 +21,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
           className="flex items-center cursor-pointer group space-x-2"
           onClick={() => setView('home')}
         >
+          {/* Layered Cube Logo SVG inspired by the screenshot */}
           <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-soft group-hover:scale-110">
-            <path d="M50 12L85 30L50 48L15 30L50 12Z" fill="#00E5FF" />
-            <path d="M15 35L50 53L85 35V42L50 60L15 42V35Z" fill="#00B8D4" />
-            <path d="M15 47L50 65L85 47V54L50 72L15 54V47Z" fill="#0097A7" />
-            <path d="M15 59L50 77L85 59V66L50 84L15 66V59Z" fill="#006064" />
-            <path d="M15 71L50 89L85 71V78L50 96L15 78V71Z" fill="#001C3D" />
-            <path d="M50 48V96L85 78V30L50 48Z" fill="black" fillOpacity="0.1" />
+            {/* Top Layer */}
+            <path d="M50 15L80 30L50 45L20 30L50 15Z" fill="#00E5FF" />
+            {/* Middle Layers */}
+            <path d="M20 35L50 50L80 35V42L50 57L20 42V35Z" fill="#00B8D4" />
+            <path d="M20 48L50 63L80 48V55L50 70L20 55V48Z" fill="#0097A7" />
+            <path d="M20 61L50 76L80 61V68L50 83L20 68V61Z" fill="#006064" />
+            {/* Bottom Layer / Foundation */}
+            <path d="M20 74L50 89L80 74V81L50 96L20 81V74Z" fill="#001C3D" />
+            {/* Depth shading */}
+            <path d="M50 45V96L80 81V30L50 45Z" fill="black" fillOpacity="0.08" />
           </svg>
           
           <div className="flex text-xl font-bold tracking-tight">

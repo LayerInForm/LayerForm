@@ -10,6 +10,7 @@ import { Reviews } from './components/Reviews';
 import { Footer } from './components/Footer';
 import { Process } from './components/Process';
 import { FAQ } from './components/FAQ';
+import { CorporateServices } from './components/CorporateServices';
 import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 import { ChatWidget } from './components/ChatWidget';
 import { Product, ProductVariant } from './data/products';
@@ -61,6 +62,7 @@ const App: React.FC = () => {
         {currentView === 'home' && (
           <>
             <Hero onShopClick={() => setCurrentView('shop')} onInquiryClick={() => setCurrentView('inquiry')} />
+            <CorporateServices />
             <Process />
             <Reviews />
             <FAQ />
@@ -106,7 +108,6 @@ const App: React.FC = () => {
       <Footer setView={setCurrentView} />
       <ChatWidget />
 
-      {/* Modern Checkout Handover Modal */}
       {showCheckoutModal && lastOrder && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 sm:p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-xl animate-fade-in" onClick={() => setShowCheckoutModal(false)}></div>
