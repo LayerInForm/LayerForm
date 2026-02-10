@@ -21,8 +21,27 @@ export interface Product {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'custom-manufacturing-service',
+    name: 'Individuelle Fertigung',
+    shortDescription: 'Einzelstücke (1-5) oder Kleinserien (6-50+). Ihr Projekt, unser Know-how.',
+    fullDescription: 'Sie haben eine Skizze, eine CAD-Datei oder einfach nur eine Vision? Wir fertigen für Sie alles an – von personalisierten Firmenlogos über technische Prototypen bis hin zu Event-Gadgets. Wir sind spezialisiert auf die Umsetzung von Einzelstücken bis 5 Einheiten sowie effiziente Kleinserien. Nehmen Sie Kontakt auf für ein unverbindliches Angebot.',
+    basePrice: 0,
+    isCustomizable: true,
+    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800', 
+    variants: [
+      { 
+        id: 'v_custom', 
+        name: 'Unverbindliche Anfrage', 
+        colorCode: '#00E5FF', 
+        priceOffset: 0, 
+        stripeLink: '', 
+        variantImageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800' 
+      }
+    ]
+  },
+  {
     id: 'puzzle-heart-keychain',
-    name: 'Puzzle-Herz Anhänger',
+    name: 'Puzzle-Herz',
     shortDescription: 'Zweiteiliges Symbol der Verbundenheit. Inklusive kostenlosem Versand.',
     fullDescription: 'Ein haptisches Versprechen für Ihre Liebsten. Unser Puzzle-Herz wird auf modernsten Bambu Lab Systemen gefertigt, was eine unvergleichliche Oberflächengüte garantiert. Der Preis von 8,50 € versteht sich bereits inklusive sicherem Versand direkt zu Ihnen nach Hause.',
     basePrice: 8.50,
@@ -65,8 +84,8 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'magsafe-desk-stand',
-    name: 'MagSafe Desktop Stand',
-    shortDescription: 'Minimalistischer Stand. Inklusive kostenlosem Versand.',
+    name: 'MagSafe Stand',
+    shortDescription: 'Minimalistischer Desktop-Ständer. Inklusive kostenlosem Versand.',
     fullDescription: 'Ein skulpturaler Ständer, der Präzision und Ästhetik vereint. Durch den Einsatz von Bambu Lab Technologie erreichen wir Toleranzen im Mikrometerbereich. Gefertigt aus robustem Premium-Filament für maximale Langlebigkeit. Versandkostenfrei innerhalb Deutschlands.',
     basePrice: 34.90,
     imageUrl: '/assets/images/products/magsafe-main.jpg',

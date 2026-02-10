@@ -6,6 +6,7 @@ import { Shop } from './components/Shop';
 import { ProductDetail } from './components/ProductDetail';
 import { InquiryForm } from './components/InquiryForm';
 import { Contact } from './components/Contact';
+import { Booking } from './components/Booking';
 import { Reviews } from './components/Reviews';
 import { Footer } from './components/Footer';
 import { Process } from './components/Process';
@@ -15,7 +16,7 @@ import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 import { ChatWidget } from './components/ChatWidget';
 import { Product, ProductVariant } from './data/products';
 
-export type View = 'home' | 'shop' | 'product-detail' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'order-success';
+export type View = 'home' | 'shop' | 'product-detail' | 'inquiry' | 'booking' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'order-success';
 
 interface OrderSummary {
   product: Product;
@@ -61,7 +62,7 @@ const App: React.FC = () => {
       <main className="flex-grow pt-16">
         {currentView === 'home' && (
           <>
-            <Hero onShopClick={() => setCurrentView('shop')} onInquiryClick={() => setCurrentView('inquiry')} />
+            <Hero onShopClick={() => setCurrentView('shop')} onInquiryClick={() => setCurrentView('inquiry')} onBookingClick={() => setCurrentView('booking')} />
             <CorporateServices />
             <Process />
             <Reviews />
@@ -83,9 +84,14 @@ const App: React.FC = () => {
         )}
         
         {currentView === 'inquiry' && (
-          <InquiryForm initialProduct={lastOrder?.product.name} initialPersonalization={lastOrder?.personalization} />
+          <InquiryForm 
+            initialProduct={lastOrder?.product.name} 
+            initialPersonalization={lastOrder?.personalization} 
+            onBookingClick={() => setCurrentView('booking')}
+          />
         )}
         
+        {currentView === 'booking' && <Booking />}
         {currentView === 'contact' && <Contact />}
         {currentView === 'impressum' && <Impressum />}
         {currentView === 'agb' && <AGB />}

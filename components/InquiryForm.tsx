@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 interface InquiryFormProps {
   initialProduct?: string;
   initialPersonalization?: string;
+  onBookingClick?: () => void;
 }
 
-export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization }) => {
+export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization, onBookingClick }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -82,12 +83,23 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
   return (
     <section className="max-w-5xl mx-auto px-6 py-12 md:py-24 animate-fade-in">
-      <div className="text-center mb-20">
+      <div className="text-center mb-16">
         <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#00E5FF] mb-4 block">Projekt-Konfigurator</span>
         <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[#1d1d1f]">Ihre Vision realisieren.</h2>
         <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
           Präzise Abfrage für exzellente Ergebnisse. Beschreiben Sie Ihr Vorhaben – wir finden die fertigungstechnische Lösung.
         </p>
+        
+        <div className="mt-10 flex flex-col items-center">
+            <p className="text-sm text-gray-400 mb-4 font-medium italic">Größeres Projekt geplant? Besprechen wir es direkt.</p>
+            <button 
+              onClick={onBookingClick}
+              className="flex items-center text-sm font-bold text-[#00E5FF] hover:underline"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Jetzt kostenlosen Termin buchen
+            </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-[48px] shadow-sm border border-gray-100 overflow-hidden">

@@ -4,9 +4,10 @@ import React from 'react';
 interface HeroProps {
   onShopClick: () => void;
   onInquiryClick: () => void;
+  onBookingClick: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick }) => {
+export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick, onBookingClick }) => {
   return (
     <section className="relative overflow-hidden bg-white">
       <div className="max-w-6xl mx-auto px-6 pt-32 pb-32 md:pt-48 md:pb-56 flex flex-col items-center text-center">
@@ -26,21 +27,27 @@ export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick }) => {
         </h1>
         
         <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mb-16 leading-relaxed font-light animate-fade-in opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-          Von der Einzelanfertigung bis zur exklusiven Kleinserie – wir machen möglich, was Sie sich vorstellen. Ob komplexe Bauteile, individualisierte Firmenpräsente oder Event-Ausstattung: Wir drucken Ihre Vision in höchster Präzision.
+          Vom exklusiven Einzelstück bis zur durchdachten Kleinserie. Wir machen Ihre Vision anfassbar – mit industrieller Präzision und handwerklichem Auge für Details.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center gap-8 animate-fade-in opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+        <div className="flex flex-col sm:flex-row items-center gap-6 animate-fade-in opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
           <button 
             onClick={onInquiryClick}
-            className="w-full sm:w-auto bg-[#1d1d1f] text-white px-12 py-5 rounded-full font-bold text-lg hover:scale-[1.03] transition-soft active:scale-95 shadow-2xl shadow-black/10"
+            className="w-full sm:w-auto bg-[#1d1d1f] text-white px-10 py-5 rounded-full font-bold text-lg hover:scale-[1.03] transition-soft active:scale-95 shadow-2xl shadow-black/10"
           >
             Projekt anfragen
           </button>
           <button 
-            onClick={onShopClick}
-            className="group flex items-center text-lg font-bold text-[#1d1d1f] hover:text-[#00E5FF] transition-soft"
+            onClick={onBookingClick}
+            className="w-full sm:w-auto bg-[#00E5FF] text-white px-10 py-5 rounded-full font-bold text-lg hover:scale-[1.03] transition-soft active:scale-95 shadow-2xl shadow-cyan-500/20"
           >
-            Eigene Kreationen entdecken
+            Termin buchen
+          </button>
+          <button 
+            onClick={onShopClick}
+            className="group flex items-center text-lg font-bold text-[#1d1d1f] hover:text-[#00B8D4] transition-soft sm:ml-4"
+          >
+            Zum Shop
             <svg className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
