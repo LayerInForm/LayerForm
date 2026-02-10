@@ -21,7 +21,8 @@ interface CartProps {
 
 export const Cart: React.FC<CartProps> = ({ items, isProcessing, onRemove, onUpdateQuantity, onCheckout, onBackToShop }) => {
   const subtotal = items.reduce((acc, item) => acc + (item.product.basePrice + item.variant.priceOffset) * item.quantity, 0);
-  const shipping = subtotal > 0 ? 4.90 : 0;
+  // Versand ist nun in den Produktpreisen inkludiert
+  const shipping = 0;
   const total = subtotal + shipping;
 
   if (items.length === 0) {
@@ -99,7 +100,7 @@ export const Cart: React.FC<CartProps> = ({ items, isProcessing, onRemove, onUpd
             </div>
           ))}
           <p className="text-xs text-gray-400 italic mt-4">
-            Maximale Bestellmenge: 10 Artikel pro Bestellung für optimale Fertigungsqualität.
+            Hinweis: Alle Preise verstehen sich inklusive sicherem Versand innerhalb Deutschlands.
           </p>
         </div>
 
@@ -111,9 +112,9 @@ export const Cart: React.FC<CartProps> = ({ items, isProcessing, onRemove, onUpd
                 <span>Zwischensumme</span>
                 <span>{subtotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
               </div>
-              <div className="flex justify-between text-gray-500">
+              <div className="flex justify-between text-green-600 font-medium">
                 <span>Versand</span>
-                <span>{shipping.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                <span>Kostenlos</span>
               </div>
             </div>
             <div className="flex justify-between text-xl font-bold mb-10">
@@ -137,10 +138,6 @@ export const Cart: React.FC<CartProps> = ({ items, isProcessing, onRemove, onUpd
                 </>
               )}
             </button>
-            <div className="mt-6 flex justify-center items-center space-x-4 opacity-40 grayscale">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-4" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4" />
-            </div>
           </div>
         </div>
       </div>
