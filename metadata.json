@@ -1,6 +1,6 @@
 {
   "name": "LayerForm",
-  "description": "Premium 3D-Druck Manufaktur für individuelle Lösungen. Spezialisiert auf Firmenlogos, Schriftzüge und modulares Design.",
+  "description": "Premium 3D-Druck Manufaktur für individuelle Leistungen. Spezialisiert auf Firmenlogos, Schriftzüge und modulares Design.",
   "requestFramePermissions": [
     "geolocation"
   ]

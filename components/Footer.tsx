@@ -22,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => {
               <span className="text-[#001C3D]">Form</span>
             </div>
             <p className="text-gray-400 max-w-xs text-sm leading-relaxed">
-              Präzisionsgefertigte 3D-Lösungen für anspruchsvolle Projekte. Wir vereinen technisches Know-how mit minimalistischem Design.
+              Präzisionsgefertigte 3D-Leistungen für anspruchsvolle Projekte. Wir vereinen technisches Know-how mit minimalistischem Design.
             </p>
             <div className="flex items-center space-x-6">
               <a href={whatsAppLink} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#25D366] transition-soft" title="WhatsApp">
@@ -51,9 +51,9 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => {
               </nav>
             </div>
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-black">Shop</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-black">Leistungen</h4>
               <nav className="flex flex-col space-y-2">
-                <button onClick={() => setView('shop')} className="text-gray-400 hover:text-black transition-soft text-left text-sm">Produkte</button>
+                <button onClick={() => setView('shop')} className="text-gray-400 hover:text-black transition-soft text-left text-sm">Unsere Leistungen</button>
                 <button onClick={() => setView('inquiry')} className="text-gray-400 hover:text-black transition-soft text-left text-sm">Sonderanfertigung</button>
               </nav>
             </div>

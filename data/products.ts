@@ -40,72 +40,31 @@ export const PRODUCTS: Product[] = [
     ]
   },
   {
-    id: 'puzzle-heart-keychain',
-    name: 'Puzzle-Herz',
-    shortDescription: 'Zweiteiliges Symbol der Verbundenheit. Inklusive kostenlosem Versand.',
-    fullDescription: 'Ein haptisches Versprechen für Ihre Liebsten. Unser Puzzle-Herz wird auf modernsten Bambu Lab Systemen gefertigt, was eine unvergleichliche Oberflächengüte garantiert. Der Preis von 8,50 € versteht sich bereits inklusive sicherem Versand direkt zu Ihnen nach Hause.',
-    basePrice: 8.50,
+    id: 'modular-organizer',
+    name: 'Modularer Organizer',
+    shortDescription: 'Individuelles Ordnungssystem für Schubladen und Schränke. Beliebig erweiterbar.',
+    fullDescription: 'Schluss mit Chaos. Unser modulares System passt sich Ihren Bedürfnissen an. Wählen Sie aus verschiedenen Modulgrößen und stellen Sie sich Ihren perfekten Organizer zusammen. Jedes Modul wird mit höchster Präzision gefertigt und lässt sich nahtlos mit anderen verbinden.',
+    basePrice: 0,
     isCustomizable: true,
-    imageUrl: '/assets/images/products/heart-main.jpg', 
+    imageUrl: 'https://images.unsplash.com/photo-1591123120675-6f7f1aae0e5b?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { 
-        id: 'v_red', 
-        name: 'Rot', 
-        colorCode: '#FF3B30', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/00waEZ4Ud5M09TQcLZ9MY01', 
-        variantImageUrl: '/assets/images/products/heart-red.jpg' 
-      },
-      { 
-        id: 'v_blue', 
-        name: 'Blau', 
-        colorCode: '#007AFF', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/beispiel_blau',
-        variantImageUrl: '/assets/images/products/heart-blue.jpg'
-      },
-      { 
-        id: 'v_black', 
-        name: 'Schwarz', 
-        colorCode: '#000000', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/beispiel_schwarz',
-        variantImageUrl: '/assets/images/products/heart-black.jpg'
-      },
-      { 
-        id: 'v_white', 
-        name: 'Weiß', 
-        colorCode: '#FFFFFF', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/beispiel_weiss',
-        variantImageUrl: '/assets/images/products/heart-white.jpg'
-      }
+      { id: 'mod_small', name: 'Standard Modul (1x1)', priceOffset: 0, colorCode: '#4a4a4a' },
+      { id: 'mod_medium', name: 'Medium Modul (1x2)', priceOffset: 0, colorCode: '#4a4a4a' },
+      { id: 'mod_large', name: 'Large Modul (2x2)', priceOffset: 0, colorCode: '#4a4a4a' }
     ]
   },
   {
-    id: 'magsafe-desk-stand',
-    name: 'MagSafe Stand',
-    shortDescription: 'Minimalistischer Desktop-Ständer. Inklusive kostenlosem Versand.',
-    fullDescription: 'Ein skulpturaler Ständer, der Präzision und Ästhetik vereint. Durch den Einsatz von Bambu Lab Technologie erreichen wir Toleranzen im Mikrometerbereich. Gefertigt aus robustem Premium-Filament für maximale Langlebigkeit. Versandkostenfrei innerhalb Deutschlands.',
-    basePrice: 34.90,
-    imageUrl: '/assets/images/products/magsafe-main.jpg',
+    id: 'custom-logo-sign',
+    name: 'Firmenlogo & Schriftzüge',
+    shortDescription: 'Ihr Name oder Logo als hochwertiges 3D-Objekt für Wände oder Türen.',
+    fullDescription: 'Bringen Sie Ihre Marke an die Wand. Wir fertigen Ihren Firmennamen oder Ihr Logo als plastisches 3D-Objekt. Wählen Sie zwischen verschiedenen Schriftarten, Größen und Montagemöglichkeiten (selbstklebend oder zum Schrauben). Perfekt für Büros, Empfangsbereiche oder Messestände.',
+    basePrice: 0,
+    isCustomizable: true,
+    imageUrl: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { 
-        id: 'v1', 
-        name: 'Space Gray', 
-        colorCode: '#4a4a4a', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/beispiel_spacegray',
-        variantImageUrl: '/assets/images/products/magsafe-gray.jpg'
-      },
-      { 
-        id: 'v2', 
-        name: 'Arctic White', 
-        colorCode: '#f5f5f7', 
-        priceOffset: 0, 
-        stripeLink: 'https://buy.stripe.com/beispiel_white',
-        variantImageUrl: '/assets/images/products/magsafe-white.jpg'
-      }
+      { id: 'sign_small', name: 'Small (bis 20cm)', priceOffset: 0, colorCode: '#000000' },
+      { id: 'sign_medium', name: 'Medium (bis 50cm)', priceOffset: 0, colorCode: '#000000' },
+      { id: 'sign_large', name: 'Large (bis 100cm)', priceOffset: 0, colorCode: '#000000' }
     ]
   }
 ];

@@ -5,11 +5,10 @@ import { PRODUCTS, Product, ProductVariant } from '../data/products';
 interface ProductDetailProps {
   productId: string | null;
   onBack: () => void;
-  onDirectPurchase: (product: Product, variant: ProductVariant, personalization?: string) => void;
   onInquiry: (productName: string, personalization?: string) => void;
 }
 
-export const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onDirectPurchase, onInquiry }) => {
+export const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack, onInquiry }) => {
   const product = PRODUCTS.find(p => p.id === productId);
   const [personalization, setPersonalization] = useState('');
   const [isImageLoading, setIsImageLoading] = useState(false);
@@ -21,8 +20,6 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack,
 
   if (!product || !selectedVariant) return null;
 
-  const isCustomService = product.basePrice === 0;
-  const currentPrice = product.basePrice + selectedVariant.priceOffset;
   const displayImage = selectedVariant.variantImageUrl || product.imageUrl;
 
   return (
@@ -50,21 +47,20 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack,
         <div className="w-full lg:w-[45%]">
           <header className="mb-10">
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00E5FF] mb-4 block">
-              {isCustomService ? 'Full-Service Manufaktur' : 'Präzisions-Handwerk'}
+              Full-Service Manufaktur
             </span>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-4">{product.name}</h1>
             <p className="text-2xl font-normal text-[#1d1d1f]">
-              {isCustomService ? 'Preis nach Aufwand' : currentPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+              Preis nach Aufwand
             </p>
           </header>
 
           <div className="space-y-12">
             <p className="text-gray-500 leading-relaxed text-lg font-light">{product.fullDescription}</p>
 
-            {/* Finish Selection - Only show if more than one variant or not a placeholder */}
-            {!isCustomService && (
-              <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Ausführung wählen</h3>
+            {/* Finish Selection */}
+            <div>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Ausführung wählen</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {product.variants.map((v) => (
                     <button
@@ -80,46 +76,34 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onBack,
                   ))}
                 </div>
               </div>
-            )}
 
             {/* Personalization Section */}
             {product.isCustomizable && (
               <div className="bg-gray-50 rounded-[32px] p-8 border border-gray-100">
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-4">
-                  {isCustomService ? 'Was haben Sie vor?' : 'Gravur & Personalisierung'}
+                  Was haben Sie vor?
                 </h3>
                 <textarea 
-                  placeholder={isCustomService ? "Beschreiben Sie kurz Ihr Projekt oder laden Sie uns ein Logo hoch..." : "Dein Wunschtext (z.B. Namen, Daten)"}
+                  placeholder="Beschreiben Sie kurz Ihr Projekt oder laden Sie uns ein Logo hoch..."
                   value={personalization}
                   onChange={(e) => setPersonalization(e.target.value)}
                   className="w-full px-6 py-4 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner text-base bg-white resize-none"
-                  rows={isCustomService ? 4 : 1}
+                  rows={4}
                 />
-                {isCustomService && (
-                   <p className="text-[11px] text-gray-400 mt-4 leading-relaxed italic">
-                    Wir prüfen die Machbarkeit und melden uns mit einer Einschätzung bei Ihnen. Alles ist möglich!
-                  </p>
-                )}
+                <p className="text-[11px] text-gray-400 mt-4 leading-relaxed italic">
+                  Wir prüfen die Machbarkeit und melden uns mit einer Einschätzung bei Ihnen. Alles ist möglich!
+                </p>
               </div>
             )}
 
             {/* Purchase / Inquiry CTA */}
             <div className="pt-6 space-y-4">
-              {isCustomService ? (
-                <button 
-                  onClick={() => onInquiry(product.name, personalization)}
-                  className="w-full bg-[#1d1d1f] text-white py-6 rounded-full font-bold text-lg shadow-2xl shadow-black/10 hover:bg-[#00E5FF] transition-soft active:scale-[0.98]"
-                >
-                  Kostenlose Projektanfrage starten
-                </button>
-              ) : (
-                <button 
-                  onClick={() => onDirectPurchase(product, selectedVariant, personalization)}
-                  className="w-full bg-[#0071e3] text-white py-6 rounded-full font-bold text-lg shadow-2xl shadow-blue-500/10 hover:bg-[#0077ed] transition-soft active:scale-[0.98]"
-                >
-                  Direkt kaufen
-                </button>
-              )}
+              <button 
+                onClick={() => onInquiry(product.name, personalization)}
+                className="w-full bg-[#1d1d1f] text-white py-6 rounded-full font-bold text-lg shadow-2xl shadow-black/10 hover:bg-[#00E5FF] transition-soft active:scale-[0.98]"
+              >
+                Kostenlose Projektanfrage starten
+              </button>
               
               <div className="flex flex-col items-center gap-4 pt-4">
                 <a href="https://wa.me/4915565994781" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-[#25D366] flex items-center hover:underline">

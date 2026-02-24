@@ -9,7 +9,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   const navItems = [
     { id: 'home', label: 'Start' },
-    { id: 'shop', label: 'Shop' },
+    { id: 'shop', label: 'Leistungen' },
     { id: 'inquiry', label: 'Anfrage' },
     { id: 'booking', label: 'Termin' },
     { id: 'contact', label: 'Kontakt' },

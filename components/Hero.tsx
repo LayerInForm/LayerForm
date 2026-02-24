@@ -47,7 +47,7 @@ export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick, onBooki
             onClick={onShopClick}
             className="group flex items-center text-lg font-bold text-[#1d1d1f] hover:text-[#00B8D4] transition-soft sm:ml-4"
           >
-            Zum Shop
+            Zu den Leistungen
             <svg className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>

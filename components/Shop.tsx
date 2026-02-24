@@ -11,7 +11,7 @@ export const Shop: React.FC<ShopProps> = ({ onProductClick }) => {
     <section className="max-w-5xl mx-auto px-6 py-12 animate-fade-in">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-[#1d1d1f]">Leistungen & Kollektion</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-[#1d1d1f]">Unsere Leistungen</h2>
           <p className="text-gray-500 mt-2 font-light">Maßgeschneiderte Fertigung für Business, Events und Individualisten.</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -47,13 +47,8 @@ export const Shop: React.FC<ShopProps> = ({ onProductClick }) => {
                 <p className="text-gray-500 text-sm mt-2 leading-relaxed font-light line-clamp-2">{product.shortDescription}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-xl text-[#1d1d1f]">
-                  {product.basePrice > 0 
-                    ? `${product.basePrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}` 
-                    : 'Anfrage'}
-                </p>
                 <div className="mt-4 inline-flex items-center text-[11px] font-bold text-[#00E5FF] uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                  {product.basePrice === 0 ? 'Jetzt anfragen' : 'Details'}
+                  Jetzt anfragen
                   <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                 </div>
               </div>
