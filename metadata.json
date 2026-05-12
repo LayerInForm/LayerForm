@@ -1,6 +1,6 @@
 {
   "name": "LayerForm",
-  "description": "Premium 3D-Druck Manufaktur für individuelle Leistungen. Spezialisiert auf Firmenlogos, Schriftzüge und modulares Design.",
+  "description": "Premium 3D-Druck & Design Manufaktur. Spezialisiert auf additive Fertigung, Prototyping und Kleinserien für B2B & B2C. Modernster 3D-Druck mit Bambu Lab Systemen.",
   "requestFramePermissions": [
     "geolocation"
   ]

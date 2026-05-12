@@ -46,98 +46,108 @@ export const Cart: React.FC<CartProps> = ({ items, isProcessing, onRemove, onUpd
   }
 
   return (
-    <section className="max-w-5xl mx-auto px-6 py-12 md:py-20 animate-fade-in">
-      <h1 className="text-4xl font-bold tracking-tight mb-12">Warenkorb.</h1>
+    <section className="max-w-7xl mx-auto px-6 py-40 animate-fade-in">
+      <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-20 leading-[0.9]">Warenkorb.</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
+        <div className="lg:col-span-2 space-y-12">
           {items.map((item) => (
-            <div key={item.cartId} className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 pb-8 border-b border-gray-100 group">
-              <div className="w-24 h-24 bg-white rounded-2xl overflow-hidden border border-gray-50 flex-shrink-0">
-                <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+            <div key={item.cartId} className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-10 pb-12 border-b border-white/5 group">
+              <div className="w-40 h-40 glass rounded-[32px] overflow-hidden border border-white/10 flex-shrink-0 shadow-2xl">
+                <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
               </div>
-              <div className="flex-grow">
+              <div className="flex-grow flex flex-col justify-between py-2">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-lg">{item.product.name}</h3>
-                    <p className="text-sm text-gray-400 font-light">{item.variant.name}</p>
+                    <h3 className="font-bold text-2xl tracking-tight mb-2">{item.product.name}</h3>
+                    <p className="text-sm text-[#00E5FF] font-black uppercase tracking-widest">{item.variant.name}</p>
                     {item.personalization && (
-                      <p className="text-xs text-cyan-600 mt-1 font-medium italic">„{item.personalization}“</p>
+                      <div className="mt-4 p-4 glass rounded-2xl border-white/5 inline-block">
+                        <p className="text-xs text-gray-400 font-light italic">„{item.personalization}“</p>
+                      </div>
                     )}
                   </div>
-                  <p className="font-semibold text-lg">
+                  <p className="font-black text-2xl tracking-tighter">
                     {((item.product.basePrice + item.variant.priceOffset) * item.quantity).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
                   </p>
                 </div>
                 
-                <div className="flex justify-between items-center mt-6">
-                  <div className="flex items-center space-x-4 bg-gray-50 px-3 py-1 rounded-full">
+                <div className="flex justify-between items-center mt-10">
+                  <div className="flex items-center space-x-6 bg-white/5 px-6 py-3 rounded-full border border-white/10">
                     <button 
                       onClick={() => onUpdateQuantity(item.cartId, -1)}
                       disabled={isProcessing}
-                      className="text-gray-400 hover:text-black transition-colors w-6 h-6 flex items-center justify-center disabled:opacity-30"
+                      className="text-gray-500 hover:text-[#00E5FF] transition-all w-8 h-8 flex items-center justify-center disabled:opacity-30 hover:scale-125"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" /></svg>
                     </button>
-                    <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                    <span className="text-lg font-black w-6 text-center">{item.quantity}</span>
                     <button 
                       onClick={() => onUpdateQuantity(item.cartId, 1)}
                       disabled={isProcessing}
-                      className="text-gray-400 hover:text-black transition-colors w-6 h-6 flex items-center justify-center disabled:opacity-30"
+                      className="text-gray-500 hover:text-[#00E5FF] transition-all w-8 h-8 flex items-center justify-center disabled:opacity-30 hover:scale-125"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                     </button>
                   </div>
                   <button 
                     onClick={() => onRemove(item.cartId)}
                     disabled={isProcessing}
-                    className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors disabled:opacity-30"
+                    className="text-sm text-red-500/50 hover:text-red-500 font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-2 group"
                   >
+                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                     Entfernen
                   </button>
                 </div>
               </div>
             </div>
           ))}
-          <p className="text-xs text-gray-400 italic mt-4">
-            Hinweis: Alle Preise verstehen sich inklusive sicherem Versand innerhalb Deutschlands.
-          </p>
+          <div className="p-8 glass rounded-[32px] border-[#00E5FF]/10">
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
+              Hinweis: Alle Preise verstehen sich inklusive sicherem Versand innerhalb Deutschlands. Ihre Daten werden verschlüsselt übertragen.
+            </p>
+          </div>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-[#f5f5f7] p-8 rounded-[32px] sticky top-32">
-            <h2 className="text-xl font-bold mb-6">Zusammenfassung</h2>
-            <div className="space-y-4 text-sm mb-8 border-b border-gray-200 pb-8">
-              <div className="flex justify-between text-gray-500">
+          <div className="glass p-12 rounded-[56px] border-white/5 sticky top-40 shadow-2xl">
+            <h2 className="text-2xl font-black mb-8 uppercase tracking-tighter">Zusammenfassung</h2>
+            <div className="space-y-6 text-base mb-10 border-b border-white/5 pb-10">
+              <div className="flex justify-between text-gray-400 font-light">
                 <span>Zwischensumme</span>
-                <span>{subtotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                <span className="text-white font-bold">{subtotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
               </div>
-              <div className="flex justify-between text-green-600 font-medium">
+              <div className="flex justify-between text-[#25D366] font-bold">
                 <span>Versand</span>
-                <span>Kostenlos</span>
+                <span className="uppercase tracking-widest text-sm">Kostenlos</span>
               </div>
             </div>
-            <div className="flex justify-between text-xl font-bold mb-10">
-              <span>Gesamtsumme</span>
-              <span>{total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+            <div className="flex justify-between text-3xl font-black mb-12 tracking-tighter">
+              <span>Gesamt</span>
+              <span className="text-[#00E5FF] drop-shadow-[0_0_20px_rgba(0,229,255,0.3)]">{total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
             </div>
             
             <button 
               onClick={onCheckout}
               disabled={isProcessing}
-              className={`w-full bg-[#635BFF] text-white py-5 rounded-full font-bold flex items-center justify-center space-x-3 transition-soft active:scale-95 shadow-xl shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full bg-[#635BFF] text-white py-8 rounded-full font-black text-lg uppercase tracking-widest flex items-center justify-center space-x-4 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_20px_50px_rgba(99,91,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isProcessing ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spinner"></div>
+                <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spinner"></div>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Sicher mit Stripe bezahlen</span>
+                  <span>Sicher bezahlen</span>
                 </>
               )}
             </button>
+            <div className="mt-8 flex justify-center gap-6 opacity-30 invert pointer-events-none">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" className="h-6" alt="PayPal" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-6" alt="Visa" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-6" alt="Mastercard" />
+            </div>
           </div>
         </div>
       </div>

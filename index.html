@@ -7,57 +7,101 @@
     <meta name="description" content="Premium 3D-Druck aus unserer Manufaktur. Hochwertige Designobjekte und präzise Fertigung.">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 15L80 30L50 45L20 30L50 15Z' fill='%2300E5FF' /%3E%3Cpath d='M20 35L50 50L80 35V42L50 57L20 42V35Z' fill='%2300B8D4' /%3E%3Cpath d='M20 48L50 63L80 48V55L50 70L20 55V48Z' fill='%230097A7' /%3E%3Cpath d='M20 61L50 76L80 61V68L50 83L20 68V61Z' fill='%23006064' /%3E%3Cpath d='M20 74L50 89L80 74V81L50 96L20 81V74Z' fill='%23001C3D' /%3E%3Cpath d='M50 45V96L80 81V30L50 45Z' fill='black' fill-opacity='0.08' /%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10L90 30L50 50L10 30L50 10Z' fill='%23001C3D' transform='translate(0 35)' /%3E%3Cpath d='M50 10L90 30L50 50L10 30L50 10Z' fill='%23006064' transform='translate(0 28)' /%3E%3Cpath d='M50 10L90 30L50 50L10 30L50 10Z' fill='%230097A7' transform='translate(0 21)' /%3E%3Cpath d='M50 10L90 30L50 50L10 30L50 10Z' fill='%2300B8D4' transform='translate(0 14)' /%3E%3Cpath d='M50 10L90 30L50 50L10 30L50 10Z' fill='%2300E5FF' transform='translate(0 7)' /%3E%3Cpath d='M50 7L90 27L50 47L10 27L50 7Z' fill='%2300E5FF' /%3E%3C/svg%3E">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --apple-bg: #fbfbfd;
-            --apple-text: #1d1d1f;
-            --apple-blue: #0071e3;
+            --bg-body: #050505;
+            --bg-glass: rgba(20, 20, 25, 0.4);
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-cyan: #00E5FF;
         }
+
+        body.light-mode {
+            --bg-body: #f8f9fa;
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --border-glass: rgba(0, 0, 0, 0.05);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             scroll-behavior: smooth;
-            background-color: var(--apple-bg);
-            color: var(--apple-text);
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
-        .apple-blur {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background-color: rgba(255, 255, 255, 0.72);
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .glass {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .glass-cyan {
+            background: rgba(0, 229, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 229, 255, 0.1);
+        }
+        .writing-mode-v-rl {
+            writing-mode: vertical-rl;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .max-w-5_5xl {
+            max-w-[100rem];
         }
         .transition-soft {
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-            animation: fadeIn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .image-crossfade {
-            transition: opacity 0.4s ease-in-out;
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
         }
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #050505;
         }
         ::-webkit-scrollbar-thumb {
-            background: #d1d1d6;
+            background: #222;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #8e8e93;
+            background: var(--accent-cyan);
+        }
+        .text-glow {
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+        }
+        .bg-glow-cyan {
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
         }
     </style>
 <script type="importmap">
@@ -73,7 +117,7 @@
 }
 </script>
 </head>
-<body class="bg-[#fbfbfd] text-[#1d1d1f]">
+<body class="light-mode">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

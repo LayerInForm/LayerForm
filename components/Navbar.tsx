@@ -1,58 +1,84 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
+import { LOGO_URL, COMPANY_NAME } from '../src/constants';
 
 interface NavbarProps {
   currentView: string;
   setView: (view: any) => void;
+  toggleTheme: () => void;
+  isDarkMode: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, toggleTheme, isDarkMode }) => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const navItems = [
-    { id: 'home', label: 'Start' },
-    { id: 'shop', label: 'Leistungen' },
-    { id: 'inquiry', label: 'Anfrage' },
-    { id: 'booking', label: 'Termin' },
-    { id: 'contact', label: 'Kontakt' },
+    { label: 'Leistungen', view: 'shop', href: '#services' },
+    { label: 'Materialien', view: 'home', href: '#materials' },
+    { label: 'Galerie', view: 'home', href: '#gallery' },
+    { label: 'Kontakt', view: 'contact', href: '#contact' },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 apple-blur border-b border-gray-100">
-      <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div 
-          className="flex items-center cursor-pointer group space-x-2"
-          onClick={() => setView('home')}
-        >
-          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-soft group-hover:scale-110">
-            <path d="M50 15L80 30L50 45L20 30L50 15Z" fill="#00E5FF" />
-            <path d="M20 35L50 50L80 35V42L50 57L20 42V35Z" fill="#00B8D4" />
-            <path d="M20 48L50 63L80 48V55L50 70L20 55V48Z" fill="#0097A7" />
-            <path d="M20 61L50 76L80 61V68L50 83L20 68V61Z" fill="#006064" />
-            <path d="M20 74L50 89L80 74V81L50 96L20 81V74Z" fill="#001C3D" />
-            <path d="M50 45V96L80 81V30L50 45Z" fill="black" fillOpacity="0.08" />
-          </svg>
-          
-          <div className="flex text-xl font-bold tracking-tight">
-            <span className="text-[#00E5FF]">Layer</span>
-            <span className="text-[#001C3D]">Form</span>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'py-6' : 'py-12'}`}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className={`glass rounded-full px-10 py-5 flex items-center justify-between border-white/5 shadow-2xl transition-all ${scrolled ? 'scale-[0.98]' : ''}`}>
+          <div 
+            className="flex items-center cursor-pointer group" 
+            onClick={() => {
+              setView('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            <div className="flex items-center space-x-3">
+              <img 
+                src={LOGO_URL} 
+                alt={`${COMPANY_NAME} Logo`} 
+                className="w-12 h-12 rounded-2xl object-cover transition-transform group-hover:rotate-12 shadow-lg"
+              />
+              <span className={`text-2xl font-bold tracking-tighter transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>{COMPANY_NAME}</span>
+            </div>
           </div>
-        </div>
-        
-        <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setView(item.id)}
-              className={`transition-soft hover:text-black ${
-                currentView === item.id ? 'text-black font-bold' : 'text-gray-500'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
 
-        <div className="md:hidden">
-             <button onClick={() => setView('booking')} className="bg-[#00E5FF] text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg shadow-cyan-500/20">Termin</button>
+          <div className="hidden md:flex items-center space-x-12">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={(e) => {
+                  if (item.view !== 'home' || currentView !== 'home') {
+                    setView(item.view as any);
+                  }
+                }}
+                className={`text-[12px] font-bold uppercase tracking-[0.3em] hover:text-[#00E5FF] transition-all hover:scale-110 ${currentView === item.view ? 'text-[#00E5FF]' : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center space-x-6">
+            <button 
+              onClick={toggleTheme}
+              className={`p-3 rounded-full transition-all hover:bg-[#00E5FF]/20 ${isDarkMode ? 'text-[#00E5FF]' : 'text-gray-500 hover:text-black'}`}
+              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button 
+              onClick={() => setView('inquiry')}
+              className="bg-[#00E5FF] text-black px-10 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:scale-[1.05] transition-soft shadow-[0_10px_30px_rgba(0,229,255,0.4)]"
+            >
+              Anfrage
+            </button>
+          </div>
         </div>
       </div>
     </nav>

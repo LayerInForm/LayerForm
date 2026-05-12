@@ -4,64 +4,49 @@ import React from 'react';
 export const Process: React.FC = () => {
   const steps = [
     {
-      title: 'Consulting & CAD',
-      desc: 'Wir analysieren Ihre Daten oder Ihr Logo und optimieren es für die additive Fertigung.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      )
+      title: 'Anfrage',
+      desc: 'Senden Sie uns Ihre STL-Datei oder Skizze. Wir prüfen Details und Materialwahl.',
+      icon: '01'
     },
     {
-      title: 'Material-Check',
-      desc: 'Wahl des optimalen Polymers für mechanische Belastung oder ästhetischen Anspruch.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      )
+      title: 'Kalkulation',
+      desc: 'Sie erhalten ein präzises Angebot basierend auf Druckzeit und Materialaufwand.',
+      icon: '02'
     },
     {
-      title: 'Serienfertigung',
-      desc: 'Skalierbare Produktion auf vernetzten Bambu Lab Systemen für garantierte Liefertreue.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
+      title: 'Druck',
+      desc: 'Fertigung auf industriellen Bambu Lab Systemen mit höchster Oberflächengüte.',
+      icon: '03'
     },
     {
-      title: 'Logistik & Support',
-      desc: 'Versandfertig konfektioniert und termingerecht an Ihren Standort oder Ihr Event geliefert.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      )
+      title: 'Lieferung',
+      desc: 'Sorgfältige Prüfung, ggf. Nachbearbeitung und schneller, sicherer Versand.',
+      icon: '04'
     }
   ];
 
   return (
-    <section className="py-24 bg-[#fbfbfd]">
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Effizienz in jeder Phase.</h2>
-          <p className="text-gray-400 text-lg font-light">Industrielle Präzision, handwerkliche Leidenschaft.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {steps.map((step, idx) => (
-            <div key={idx} className="relative group">
-              <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 text-[#00B8D4] border border-gray-100 group-hover:scale-110 transition-soft">
-                {step.icon}
-              </div>
-              <h3 className="font-semibold text-lg mb-3">{step.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
-              {idx < steps.length - 1 && (
-                <div className="hidden md:block absolute top-6 left-full w-full h-[1px] bg-gradient-to-r from-gray-100 to-transparent -translate-x-4 z-0"></div>
-              )}
+    <section id="process" className="py-48 px-6 max-w-7xl mx-auto">
+      <div className="text-center mb-32 max-w-3xl mx-auto">
+        <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#00E5FF] mb-6 block">Der Workflow</span>
+        <h2 className="text-4xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">Vom Entwurf zum fertigen Bauteil.</h2>
+        <p className="text-gray-500 text-lg font-light leading-relaxed">
+          Unser transparenter Prozess garantiert Ihnen beste Ergebnisse bei minimalem Aufwand.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 relative">
+        <div className="hidden lg:block absolute top-[60px] left-0 w-full h-[1px] bg-white/5"></div>
+        
+        {steps.map((step, idx) => (
+          <div key={idx} className="relative group z-10 flex flex-col items-center text-center">
+            <div className="w-28 h-28 glass rounded-full flex items-center justify-center mb-12 border-white/5 transition-all duration-700 group-hover:border-[#00E5FF]/40 group-hover:scale-110 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+              <span className="text-3xl font-black group-hover:text-[#00E5FF] tracking-tighter">{step.icon}</span>
             </div>
-          ))}
-        </div>
+            <h3 className="font-bold text-2xl mb-5 tracking-tight">{step.title}</h3>
+            <p className="text-gray-500 font-light leading-relaxed text-base max-w-[240px] opacity-80 group-hover:opacity-100 transition-opacity">{step.desc}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

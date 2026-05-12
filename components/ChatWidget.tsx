@@ -53,27 +53,27 @@ export const ChatWidget: React.FC = () => {
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-[320px] md:w-[380px] h-[500px] bg-white rounded-[32px] shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-fade-in ring-1 ring-black/5">
-          <div className="p-6 border-b bg-white flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="font-bold text-sm tracking-tight text-[#1d1d1f]">LayerForm Concierge</span>
+        <div className="absolute bottom-24 right-0 w-[350px] md:w-[420px] h-[600px] glass rounded-[48px] border-white/10 flex flex-col overflow-hidden animate-fade-in shadow-[0_30px_70px_rgba(0,0,0,0.8)]">
+          <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <div className="flex items-center space-x-4">
+              <div className="w-2.5 h-2.5 bg-[#00E5FF] rounded-full animate-pulse shadow-[0_0_12px_#00E5FF]"></div>
+              <span className="font-bold text-xs uppercase tracking-[0.3em] text-white">Project Assistant</span>
             </div>
             <button 
               onClick={() => setIsOpen(false)} 
-              className="text-gray-400 hover:text-black transition-colors p-1"
+              className="p-2 text-gray-500 hover:text-white transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
           
-          <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-4 bg-[#fbfbfd]">
+          <div ref={scrollRef} className="flex-grow overflow-y-auto p-10 space-y-8 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm ${
+                <div className={`max-w-[85%] px-6 py-5 rounded-[32px] text-sm leading-relaxed shadow-xl ${
                   m.role === 'user' 
-                    ? 'bg-black text-white rounded-tr-none' 
-                    : 'bg-white text-[#1d1d1f] border border-gray-100 rounded-tl-none'
+                    ? 'bg-[#00E5FF] text-black font-black rounded-tr-none' 
+                    : 'glass text-gray-200 border-white/10 rounded-tl-none font-light'
                 }`}>
                   {m.text}
                 </div>
@@ -81,29 +81,29 @@ export const ChatWidget: React.FC = () => {
             ))}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-tl-none flex space-x-1">
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="glass border-white/10 px-6 py-5 rounded-[32px] rounded-tl-none flex space-x-2">
+                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce [animation-delay:0.4s]"></div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="p-4 bg-white border-t border-gray-50">
+          <div className="p-8 bg-white/5 border-t border-white/5">
             <div className="relative">
               <input 
-                className="w-full px-5 py-3 bg-[#f5f5f7] rounded-full text-sm outline-none focus:bg-white focus:ring-2 focus:ring-black/5 transition-all pr-12" 
-                placeholder="Was möchten Sie drucken?" 
+                className="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-full text-sm outline-none focus:border-[#00E5FF] transition-all pr-16 text-white placeholder:text-gray-600 focus:bg-white/10" 
+                placeholder="Projekt beschreiben..." 
                 value={input} 
                 onChange={e => setInput(e.target.value)} 
                 onKeyDown={e => e.key === 'Enter' && handleSend()} 
               />
               <button 
                 onClick={handleSend}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#00E5FF] text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform shadow-[0_5px_20px_rgba(0,229,255,0.4)]"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l7-7-7-7M5 12h14" /></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 19l7-7-7-7M5 12h14" /></svg>
               </button>
             </div>
           </div>
@@ -111,13 +111,15 @@ export const ChatWidget: React.FC = () => {
       )}
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="w-16 h-16 bg-black text-white rounded-full shadow-2xl flex items-center justify-center transition-soft hover:scale-110 active:scale-90 group relative"
+        className="w-20 h-20 glass border-white/10 text-white rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex items-center justify-center transition-all duration-500 hover:scale-[1.15] hover:border-[#00E5FF]/40 active:scale-90 group"
       >
-        <div className="absolute inset-0 rounded-full bg-black animate-ping opacity-20 group-hover:hidden"></div>
         {isOpen ? (
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" /></svg>
         ) : (
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+          <div className="relative">
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#00E5FF] rounded-full border-2 border-[#050505] animate-ping"></div>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+          </div>
         )}
       </button>
     </div>

@@ -21,50 +21,55 @@ export interface Product {
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'custom-manufacturing-service',
-    name: 'Individuelle Fertigung',
-    shortDescription: 'Einzelstücke (1-5) oder Kleinserien (6-50+). Ihr Projekt, unser Know-how.',
-    fullDescription: 'Sie haben eine Skizze, eine CAD-Datei oder einfach nur eine Vision? Wir fertigen für Sie alles an – von personalisierten Firmenlogos über technische Prototypen bis hin zu Event-Gadgets. Wir sind spezialisiert auf die Umsetzung von Einzelstücken bis 5 Einheiten sowie effiziente Kleinserien. Nehmen Sie Kontakt auf für ein unverbindliches Angebot.',
+    id: '3d-printing-manufaktur',
+    name: '3D-Druck Manufaktur',
+    shortDescription: 'Präzisionsgefertigte Kunststoffteile für Privat und Technik. Von der Idee zum fertigen Objekt.',
+    fullDescription: 'Wir fertigen Ihre 3D-Dateien präzise und zuverlässig. Egal ob technisches Bauteil, dekoratives Element oder Prototyp – wir nutzen modernste FDM-Systeme (Bambu Lab), um höchste Oberflächenqualität und Maßhaltigkeit zu garantieren. Wir unterstützen Sie bei der Materialwahl für optimale Stabilität und Ästhetik.',
     basePrice: 0,
     isCustomizable: true,
-    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800', 
+    imageUrl: 'https://images.unsplash.com/photo-1631415147131-7b7463f8546b?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { 
-        id: 'v_custom', 
-        name: 'Unverbindliche Anfrage', 
-        colorCode: '#00E5FF', 
-        priceOffset: 0, 
-        stripeLink: '', 
-        variantImageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800' 
-      }
+      { id: '3d_fdm', name: 'FDM Präzisionsdruck', priceOffset: 0, colorCode: '#00E5FF' },
+      { id: '3d_consult', name: 'Materialberatung', priceOffset: 0, colorCode: '#001C3D' }
     ]
   },
   {
-    id: 'modular-organizer',
-    name: 'Modularer Organizer',
-    shortDescription: 'Individuelles Ordnungssystem für Schubladen und Schränke. Beliebig erweiterbar.',
-    fullDescription: 'Schluss mit Chaos. Unser modulares System passt sich Ihren Bedürfnissen an. Wählen Sie aus verschiedenen Modulgrößen und stellen Sie sich Ihren perfekten Organizer zusammen. Jedes Modul wird mit höchster Präzision gefertigt und lässt sich nahtlos mit anderen verbinden.',
+    id: 'textile-printing-service',
+    name: 'Textil-Veredelung',
+    shortDescription: 'Hochwertiger Textildruck für Arbeitskleidung, Merchandise oder individuelle Einzelstücke.',
+    fullDescription: 'LayerForm bringt Ihre Designs auf Textilien. Ob Firmen-Shirts in Kleinserie oder das eine, ganz besondere Geschenk – wir bedrucken Textilien mit höchster Präzision und Langlebigkeit. Wir nutzen hochwertige Flex- und Flockfolien für ein professionelles Finish, das auch nach vielen Wäschen überzeugt.',
     basePrice: 0,
     isCustomizable: true,
-    imageUrl: 'https://images.unsplash.com/photo-1591123120675-6f7f1aae0e5b?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { id: 'mod_small', name: 'Standard Modul (1x1)', priceOffset: 0, colorCode: '#4a4a4a' },
-      { id: 'mod_medium', name: 'Medium Modul (1x2)', priceOffset: 0, colorCode: '#4a4a4a' },
-      { id: 'mod_large', name: 'Large Modul (2x2)', priceOffset: 0, colorCode: '#4a4a4a' }
+      { id: 'text_flex', name: 'Flexdruck (Glatt)', priceOffset: 0, colorCode: '#ffffff' },
+      { id: 'text_flock', name: 'Flockdruck (Samtig)', priceOffset: 0, colorCode: '#ffffff' }
     ]
   },
   {
-    id: 'custom-logo-sign',
-    name: 'Firmenlogo & Schriftzüge',
-    shortDescription: 'Ihr Name oder Logo als hochwertiges 3D-Objekt für Wände oder Türen.',
-    fullDescription: 'Bringen Sie Ihre Marke an die Wand. Wir fertigen Ihren Firmennamen oder Ihr Logo als plastisches 3D-Objekt. Wählen Sie zwischen verschiedenen Schriftarten, Größen und Montagemöglichkeiten (selbstklebend oder zum Schrauben). Perfekt für Büros, Empfangsbereiche oder Messestände.',
+    id: 'spare-parts-reconstruction',
+    name: 'Ersatzteil-Service',
+    shortDescription: 'Nicht mehr lieferbare Bauteile? Wir rekonstruieren und drucken passgenaue Ersatzteile.',
+    fullDescription: 'Nachhaltigkeit durch Reparatur. Wenn ein Kunststoffteil bricht und das Original nicht mehr verfügbar ist, kommen wir ins Spiel. Wir vermessen Ihr defektes Teil, erstellen eine digitale Kopie (CAD) und drucken ein funktionales Ersatzteil, das oft stabiler ist als das Original.',
     basePrice: 0,
     isCustomizable: true,
-    imageUrl: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1631415147131-7b7463f8546b?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { id: 'sign_small', name: 'Small (bis 20cm)', priceOffset: 0, colorCode: '#000000' },
-      { id: 'sign_medium', name: 'Medium (bis 50cm)', priceOffset: 0, colorCode: '#000000' },
-      { id: 'sign_large', name: 'Large (bis 100cm)', priceOffset: 0, colorCode: '#000000' }
+      { id: 'spare_cad', name: 'CAD-Rekonstruktion', priceOffset: 0, colorCode: '#00E5FF' },
+      { id: 'spare_print', name: 'Ersatzteildruck', priceOffset: 0, colorCode: '#001C3D' }
+    ]
+  },
+  {
+    id: 'special-projects-series',
+    name: 'Spezialanfertigungen',
+    shortDescription: 'Exklusive Einzelstücke oder Serienproduktion. Von 1 bis 500+ Einheiten nach Maß.',
+    fullDescription: 'Ihre Vision ohne Grenzen. Wir realisieren komplexe Sonderwünsche für Privat- und Geschäftskunden. Von der ersten Skizze bis zur finalen Kleinserie begleiten wir Sie persönlich. Wir konstruieren gemeinsam die optimale Lösung, die perfekt auf Ihre Anforderungen zugeschnitten ist – nachhaltig und präzise.',
+    basePrice: 0,
+    isCustomizable: true,
+    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800',
+    variants: [
+      { id: 'spec_single', name: 'Einzelstück / Prototyp', priceOffset: 0, colorCode: '#00E5FF' },
+      { id: 'spec_series', name: 'Serienproduktion', priceOffset: 0, colorCode: '#001C3D' }
     ]
   }
 ];
