@@ -16,9 +16,10 @@ export const Reviews: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const defaultReviews: ReviewData[] = [
-    { name: "Nikolas K.", rating: 5, text: "Schnelle und qualitativ sehr hochwertige Erstellung von individuellen 3D-Drucken. Sehr zu empfehlen!", date: "Google Rezension" },
-    { name: "Alexander W.", rating: 5, text: "Super Service, sehr kompetente Beratung und die Qualität der Drucke ist hervorragend. Benjamin geht auf alle Wünsche ein.", date: "Google Rezension" },
-    { name: "Mona S.", rating: 5, text: "Vielen Dank für die tollen Organizer! Endlich Ordnung auf dem Schreibtisch. Die Qualität ist top und der Kontakt war sehr nett.", date: "Google Rezension" }
+    { name: "Mirco Zimmermann", rating: 5, text: "Junges aufstrebendes Unternehmen mit hoher Motivation, schneller Bearbeitungszeit und toller individueller Umsetzung. Weitere Aufträge werden bestimmt folgen. Vielen Dank", date: "Google Rezension" },
+    { name: "Peter Sauer", rating: 5, text: "Schnelle Abwicklung des Druckauftrags (Endstück für Dachrinne mit Rohranschluss), incl. Probedrucks. Gerne wieder!", date: "Google Rezension" },
+    { name: "Cork Kinsale", rating: 5, text: "Sehr kompetente Beratung. Schnelle Lieferung einer Starlink mini Halterung für die Befestigung an der Kederschiene meines LMC Wohnwagens. Spitzenqualität zum fairen Preis. Absolute Empfehlung.", date: "Google Rezension" },
+    { name: "Konstantin Riedel", rating: 5, text: "Sehr schnelle und professionelle 3D-Druck-Leistung. Top Qualität und ein hervorragendes Preis-Leistungs-Verhältnis. Absolut empfehlenswert!", date: "Google Rezension" }
   ];
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export const Reviews: React.FC = () => {
           const snippets = Array.isArray(sources) && sources.length > 0 ? sources[0].reviewSnippets : null;
 
           if (Array.isArray(snippets) && snippets.length > 0) {
-            const mapped = snippets.slice(0, 3).map((s: any) => ({
+            const mapped = snippets.slice(0, 4).map((s: any) => ({
               name: "Google Nutzer",
               rating: 5,
               text: typeof s === 'string' ? s : (s.text || "Exzellente Qualität und sehr freundliche Beratung."),
@@ -81,44 +82,44 @@ export const Reviews: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-48 px-6 max-w-7xl mx-auto overflow-hidden text-center">
-      <div className="flex flex-col items-center mb-24 gap-12">
+    <section className="py-24 md:py-48 px-4 md:px-6 max-w-7xl mx-auto overflow-hidden text-center">
+      <div className="flex flex-col items-center mb-16 md:mb-24 gap-6 md:gap-12">
         <div className="animate-fade-in text-center max-w-3xl">
-          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#00E5FF] mb-6 block">Referenzen</span>
-          <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-tight">
+          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#00E5FF] mb-4 md:mb-6 block">Referenzen</span>
+          <h2 className="text-3xl md:text-7xl font-bold tracking-tight leading-tight">
             Kundenstimmen
           </h2>
         </div>
-        <div className="flex items-center space-x-6 glass px-8 py-4 rounded-full border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-fade-in">
+        <div className="flex items-center space-x-6 glass px-6 py-3 md:px-8 py-4 rounded-full border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-fade-in">
           <div className="flex text-[#00E5FF]">
             {[...Array(5)].map((_, i) => (
-              <svg key={i} className="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+              <svg key={i} className="w-5 h-5 md:w-6 md:h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
             ))}
           </div>
-          <span className="font-bold text-xl">5.0 / 5.0</span>
+          <span className="font-bold text-lg md:text-xl">5.0 / 5.0</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
         {(reviews.length > 0 ? reviews : defaultReviews).map((review, idx) => (
           <div 
             key={idx} 
-            className="glass p-12 rounded-[48px] flex flex-col items-center text-center justify-between h-full transition-soft hover:scale-[1.03] hover:border-[#00E5FF]/40 border-white/5 animate-fade-in shadow-xl"
+            className="glass p-6 md:p-10 rounded-[24px] md:rounded-[48px] flex flex-col items-center text-center justify-between h-full transition-soft hover:scale-[1.03] hover:border-[#00E5FF]/40 border-white/5 animate-fade-in shadow-xl"
             style={{ animationDelay: `${idx * 150}ms` }}
           >
             <div>
-              <div className="flex justify-center mb-10 text-[#00E5FF]">
+              <div className="flex justify-center mb-6 md:mb-10 text-[#00E5FF]">
                 {[...Array(review.rating)].map((_, i) => (
-                  <svg key={i} className="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                  <svg key={i} className="w-5 h-5 md:w-6 md:h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                 ))}
               </div>
-              <p className="italic mb-12 text-lg md:text-xl leading-relaxed font-light text-inherit opacity-90 tracking-tight">
+              <p className="italic mb-8 md:mb-12 text-sm md:text-base lg:text-lg leading-relaxed font-light text-inherit opacity-90 tracking-tight">
                 &bdquo;{review.text}&ldquo;
               </p>
             </div>
-            <div className="flex flex-col items-center pt-10 border-t border-white/5 mt-auto w-full">
-              <span className="font-bold text-base mb-2">{review.name}</span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{review.date}</span>
+            <div className="flex flex-col items-center pt-6 md:pt-8 border-t border-white/5 mt-auto w-full">
+              <span className="font-bold text-sm md:text-base mb-1 md:mb-2">{review.name}</span>
+              <span className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-bold">{review.date}</span>
             </div>
           </div>
         ))}

@@ -102,7 +102,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, toggleThem
 
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`p-2.5 md:hidden rounded-full transition-all text-inherit hover:bg-white/10`}
+                className={`p-2.5 md:hidden rounded-full transition-all z-50 ${
+                  isDarkMode 
+                    ? 'text-white hover:bg-white/10' 
+                    : 'text-black hover:bg-black/10'
+                }`}
                 aria-label="Toggle mobile menu"
               >
                 {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
