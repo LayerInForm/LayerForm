@@ -103,7 +103,7 @@ const App: React.FC = () => {
       </main>
 
       <Footer setView={setCurrentView} />
-      <ChatWidget />
+      <ChatWidget isDarkMode={isDarkMode} />
     </div>
   );
 };
