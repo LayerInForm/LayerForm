@@ -122,14 +122,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, toggleThem
       >
         {/* Backdrop */}
         <div 
-          className="absolute inset-0 bg-black/90 backdrop-blur-md"
+          className={`absolute inset-0 backdrop-blur-md transition-all duration-300 ${
+            isDarkMode ? 'bg-black/95' : 'bg-white/95'
+          }`}
           onClick={() => setIsMenuOpen(false)}
         />
         
         {/* Navigation contents */}
         <div className="absolute inset-x-0 top-32 px-6 flex flex-col items-center justify-center space-y-8 animate-fade-in z-50">
-          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#00E5FF]">Navigation</span>
-          <div className="w-12 h-[1px] bg-white/10 mb-4"></div>
+          <span className={`text-[10px] font-bold uppercase tracking-[0.5em] ${
+            isDarkMode ? 'text-[#00E5FF]' : 'text-[#0097A7]'
+          }`}>
+            Navigation
+          </span>
+          <div className={`w-12 h-[1px] mb-4 ${isDarkMode ? 'bg-white/10' : 'bg-black/10'}`}></div>
           
           <div className="flex flex-col space-y-6 w-full max-w-sm px-4">
             {navItems.map((item, idx) => (
@@ -137,10 +143,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, toggleThem
                 key={item.label}
                 href={item.href}
                 onClick={() => handleNavClick(item)}
-                className={`text-2xl font-black uppercase tracking-[0.2em] py-4 rounded-2xl border border-white/5 active:scale-95 transition-all transition-colors duration-300 ${
+                className={`text-2xl font-black uppercase tracking-[0.2em] py-4 rounded-2xl border active:scale-95 transition-all transition-colors duration-300 ${
                   currentView === item.view 
-                    ? 'text-[#00E5FF] bg-[#00E5FF]/5 border-[#00E5FF]/25' 
-                    : 'text-gray-300 hover:text-white glass'
+                    ? (isDarkMode 
+                        ? 'text-[#00E5FF] bg-[#00E5FF]/5 border-[#00E5FF]/25' 
+                        : 'text-[#0097A7] bg-[#0097A7]/5 border-[#0097A7]/25')
+                    : (isDarkMode 
+                        ? 'text-gray-300 hover:text-white border-white/5 glass' 
+                        : 'text-gray-700 hover:text-black border-black/5 glass')
                 }`}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
@@ -153,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, toggleThem
                 setView('inquiry');
                 setIsMenuOpen(false);
               }}
-              className="mt-6 bg-[#00E5FF] text-black w-full py-5 rounded-2xl font-black text-base uppercase tracking-widest active:scale-95 transition-all shadow-lg"
+              className="mt-6 bg-[#00E5FF] text-black w-full py-5 rounded-2xl font-black text-base uppercase tracking-widest active:scale-95 transition-all shadow-lg hover:bg-[#00B8D4]"
             >
               Anfrage starten
             </button>
