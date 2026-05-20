@@ -18,31 +18,31 @@ export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick }) => {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#00E5FF 0.5px, transparent 0.5px)', backgroundSize: '30px 30px' }}></div>
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4">
-        <div className="mb-10 animate-fade-in inline-flex items-center space-x-3 glass px-6 py-2.5 rounded-full border-white/5">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 mt-16 md:mt-24">
+        <div className="mb-8 md:mb-12 animate-fade-in inline-flex items-center space-x-3 glass px-5 py-2 md:px-6 md:py-2.5 rounded-full border-white/5">
           <span className="w-2 h-2 rounded-full bg-[#00E5FF] animate-ping"></span>
-          <span className="text-[10px] font-bold text-[#00E5FF] uppercase tracking-[0.5em]">Next Gen Manufacturing</span>
+          <span className="text-[9px] md:text-[10px] font-bold text-[#00E5FF] uppercase tracking-[0.4em] md:tracking-[0.5em]">Next Gen Manufacturing</span>
         </div>
 
-        <h1 className="text-[64px] md:text-[140px] leading-[0.85] font-bold tracking-[-0.07em] mb-16 animate-fade-in">
+        <h1 className="text-5xl sm:text-7xl md:text-[110px] lg:text-[140px] leading-[0.9] md:leading-[0.85] font-black tracking-[-0.05em] md:tracking-[-0.07em] mb-10 md:mb-16 animate-fade-in">
           LayerForm <br />
           <span className="text-glow text-[#00E5FF]">Precision Tech.</span>
         </h1>
         
-        <p className="text-xl md:text-3xl text-gray-400 font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
+        <p className="text-lg sm:text-xl md:text-3xl text-gray-400 font-light max-w-3xl mx-auto mb-12 md:mb-20 leading-relaxed tracking-tight px-2 md:px-0">
           Ihre Vision, perfektioniert durch hochpräzisen 3D-Druck und moderne Textilveredelung. Technisch kompetent, nachhaltig gefertigt.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 animate-fade-in">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 animate-fade-in w-full max-w-md sm:max-w-none mx-auto px-4">
           <button 
             onClick={onInquiryClick}
-            className="w-full sm:w-auto bg-[#00E5FF] text-black px-16 py-7 rounded-full font-bold text-xl hover:scale-[1.05] transition-soft active:scale-95 shadow-[0_0_50px_rgba(0,229,255,0.4)]"
+            className="w-full sm:w-auto bg-[#00E5FF] text-black px-10 py-5 sm:px-16 sm:py-7 rounded-full font-black text-base sm:text-xl hover:scale-[1.05] transition-soft active:scale-95 shadow-[0_0_50px_rgba(0,229,255,0.4)]"
           >
             Jetzt Anfragen
           </button>
           <button 
             onClick={onShopClick}
-            className="w-full sm:w-auto glass px-16 py-7 rounded-full font-bold text-xl hover:bg-white/10 transition-soft"
+            className="w-full sm:w-auto glass px-10 py-5 sm:px-16 sm:py-7 rounded-full font-bold text-base sm:text-xl hover:bg-white/10 transition-soft"
           >
             Leistungen entdecken
           </button>
