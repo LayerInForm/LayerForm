@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { CONTACT_EMAIL } from '../src/constants';
 
 export const Contact: React.FC = () => {
   const whatsAppLink = "https://wa.me/4915565994781";
@@ -22,8 +23,8 @@ export const Contact: React.FC = () => {
             </svg>
           </div>
           <h3 className="font-bold mb-2 md:mb-3 text-lg md:text-xl uppercase tracking-widest">E-Mail</h3>
-          <a href="mailto:layerform@web.de" className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
-            layerform@web.de
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
+            {CONTACT_EMAIL}
           </a>
         </div>
 

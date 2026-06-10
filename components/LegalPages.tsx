@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { CONTACT_EMAIL } from '../src/constants';
 
 const LegalLayout: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <section className="max-w-4xl mx-auto px-6 py-40 animate-fade-in">
@@ -28,7 +29,7 @@ export const Impressum: React.FC = () => (
         <h2 className="text-xl font-bold text-[#00E5FF] uppercase tracking-widest mb-4">Kontakt</h2>
         <p className="leading-relaxed">
           Telefon: +49 155 65994781<br />
-          E-Mail: <a href="mailto:layerform@web.de" className="text-[#00E5FF] hover:underline">layerform@web.de</a>
+          E-Mail: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#00E5FF] hover:underline">{CONTACT_EMAIL}</a>
         </p>
       </div>
 
@@ -83,14 +84,14 @@ export const Datenschutz: React.FC = () => (
   <LegalLayout title="Datenschutzerklärung">
     <div className="space-y-12 glass p-12 md:p-16 rounded-[48px] border-white/5 shadow-2xl">
       {[
-        { t: "1. Verantwortlicher", c: "Verantwortlicher im Sinne der DSGVO ist: Benjamin Ridel, LayerForm, Ludwig-Bechstein-Weg 25a, 22941 Bargteheide. E-Mail: layerform@web.de" },
+        { t: "1. Verantwortlicher", c: `Verantwortlicher im Sinne der DSGVO ist: Benjamin Ridel, LayerForm, Ludwig-Bechstein-Weg 25a, 22941 Bargteheide. E-Mail: ${CONTACT_EMAIL}` },
         { t: "2. Zugriffsdaten", c: "Beim Besuch der Website werden automatisch folgende Daten erhoben: IP-Adresse, Datum und Uhrzeit des Zugriffs, Browsertyp und Version, Betriebssystem. Diese Daten dienen ausschließlich der technischen Bereitstellung der Website." },
         { t: "3. Kontaktformular", c: "Wenn Sie uns über das Kontaktformular kontaktieren, werden Ihre Angaben zur Bearbeitung der Anfrage gespeichert. Diese Daten werden nicht ohne Ihre Einwilligung weitergegeben." },
         { t: "4. E-Mail-Kontakt", c: "Bei Kontaktaufnahme per E-Mail werden die übermittelten personenbezogenen Daten gespeichert, um die Anfrage zu bearbeiten." },
         { t: "5. Cookies", c: "Die Website verwendet derzeit nur technisch notwendige Cookies. Tracking- oder Marketing-Cookies werden aktuell nicht eingesetzt." },
         { t: "6. Zahlungsanbieter", c: "Bei Nutzung externer Zahlungsdienste (z. B. PayPal oder Stripe) gelten die Datenschutzbestimmungen der jeweiligen Anbieter." },
         { t: "7. Social Media", c: "LayerForm unterhält Profile auf Plattformen wie Instagram, TikTok, Etsy und eBay Kleinanzeigen. Beim Besuch dieser Seiten gelten die Datenschutzbestimmungen der jeweiligen Plattformbetreiber." },
-        { t: "8. Rechte der betroffenen Personen", c: "Sie haben jederzeit das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Anfragen richten Sie bitte an: layerform@web.de" },
+        { t: "8. Rechte der betroffenen Personen", c: `Sie haben jederzeit das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Anfragen richten Sie bitte an: ${CONTACT_EMAIL}` },
         { t: "9. Änderung der Datenschutzerklärung", c: "Diese Datenschutzerklärung kann angepasst werden, um rechtlichen Anforderungen zu entsprechen." }
       ].map((item, i) => (
         <div key={i} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">

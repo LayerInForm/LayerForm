@@ -75,7 +75,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   };
 
   const getMailtoLink = () => {
-    return `mailto:layerform@web.de?subject=Anfrage: ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(
+    return `mailto:info@layer-form.de?subject=Anfrage: ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(
       `Hallo LayerForm Team,\n\nich möchte eine Anfrage stellen.\n\nName: ${formData.name}\nE-Mail: ${formData.email}\nMaterial: ${formData.material}\n\nBeschreibung / Anforderungen:\n${formData.description}\n\n[Bitte hängen Sie Ihre Modelldateien (STL/STEP) an diese E-Mail an, wenn vorhanden.]`
     )}`;
   };
