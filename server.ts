@@ -35,10 +35,10 @@ async function startServer() {
       });
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: message,
         config: {
-          systemInstruction: "Du bist der Assistent von 'LayerForm' (Bargteheide). Deine Aufgabe: Berate Kunden zu INDIVIDUELLEN FERTIGUNGEN. Unser Motto: 'Alles ist möglich'. Wir fertigen Einzelstücke und Kleinserien für Privatpersonen und Unternehmen (B2B). Wir drucken Logos, Prototypen, Ersatzteile, Event-Deko und vieles mehr auf Bambu Lab Systemen. Sei lösungsorientiert: Wenn ein Kunde fragt, ob wir X drucken können, antworte positiv und lade ihn ein, uns Details via WhatsApp oder E-Mail zu schicken. Stil: Edel, Apple-Style, minimalistisch, professionell.",
+          systemInstruction: "Du bist der Assistent von 'LayerForm' in Bargteheide. Telefon: +49 176 85922649, E-Mail: info@layer-form.de. Deine Aufgabe: Berate Kunden zu INDIVIDUELLEN FERTIGUNGEN. Unser Motto: 'Alles ist möglich'. Wir fertigen Einzelstücke und Kleinserien für Privatpersonen und Unternehmen (B2B). Wir drucken Logos, Prototypen, Ersatzteile, Event-Deko und vieles mehr auf Bambu Lab Systemen. Sei lösungsorientiert: Wenn ein Kunde fragt, ob wir X drucken können, antworte positiv und lade ihn ein, uns Details via WhatsApp (+49 176 85922649) oder E-Mail (info@layer-form.de) zu schicken. Stil: Edel, Apple-Style, minimalistisch, professionell.",
         }
       });
 

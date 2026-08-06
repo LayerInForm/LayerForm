@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { CONTACT_EMAIL } from '../src/constants';
+import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_LINK } from '../src/constants';
 
 export const Contact: React.FC = () => {
-  const whatsAppLink = "https://wa.me/4915565994781";
-  
   return (
     <section id="contact" className="max-w-7xl mx-auto px-4 md:px-6 py-24 md:py-48 text-center">
       <div className="mb-16 md:mb-32">
@@ -35,7 +33,7 @@ export const Contact: React.FC = () => {
             </svg>
           </div>
           <h3 className="font-bold mb-2 md:mb-3 text-lg md:text-xl uppercase tracking-widest">WhatsApp</h3>
-          <a href={whatsAppLink} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
+          <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
             Chat starten
           </a>
         </div>
@@ -47,8 +45,8 @@ export const Contact: React.FC = () => {
             </svg>
           </div>
           <h3 className="font-bold mb-2 md:mb-3 text-lg md:text-xl uppercase tracking-widest">Telefon</h3>
-          <a href="tel:+4915565994781" className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
-            +49 155 65994781
+          <a href={`tel:${CONTACT_PHONE.replace(/\s+/g, '')}`} className="text-gray-400 hover:text-[#00E5FF] transition-soft text-base md:text-lg font-light">
+            {CONTACT_PHONE}
           </a>
         </div>
 

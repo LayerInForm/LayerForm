@@ -34,16 +34,16 @@ export const PRODUCTS: Product[] = [
     ]
   },
   {
-    id: 'textile-printing-service',
-    name: 'Textil-Veredelung',
-    shortDescription: 'Hochwertiger Textildruck für Arbeitskleidung, Merchandise oder individuelle Einzelstücke.',
-    fullDescription: 'LayerForm bringt Ihre Designs auf Textilien. Ob Firmen-Shirts in Kleinserie oder das eine, ganz besondere Geschenk – wir bedrucken Textilien mit höchster Präzision und Langlebigkeit. Wir nutzen hochwertige Flex- und Flockfolien für ein professionelles Finish, das auch nach vielen Wäschen überzeugt.',
+    id: 'cad-design-service',
+    name: '3D-CAD Konstruktion',
+    shortDescription: 'Professionelle Erstellung digitaler 3D-Modelle nach Ihrer Idee oder Zeichnung.',
+    fullDescription: 'Sie haben eine Idee, eine Handskizze oder ein defektes Bauteil, aber keine 3D-Datei? Wir erstellen präzise CAD-Modelle für den 3D-Druck oder die Weiterverarbeitung. Von einfachen Abdeckungen bis zu komplexen Gehäusen konstruieren wir Ihre Wünsche maßgenau.',
     basePrice: 0,
     isCustomizable: true,
-    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800',
     variants: [
-      { id: 'text_flex', name: 'Flexdruck (Glatt)', priceOffset: 0, colorCode: '#ffffff' },
-      { id: 'text_flock', name: 'Flockdruck (Samtig)', priceOffset: 0, colorCode: '#ffffff' }
+      { id: 'cad_basic', name: 'Basis Modellierung', priceOffset: 0, colorCode: '#00E5FF' },
+      { id: 'cad_expert', name: 'Komplexe Konstruktion', priceOffset: 0, colorCode: '#001C3D' }
     ]
   },
   {

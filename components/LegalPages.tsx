@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CONTACT_EMAIL } from '../src/constants';
+import { CONTACT_EMAIL, CONTACT_PHONE } from '../src/constants';
 
 const LegalLayout: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <section className="max-w-4xl mx-auto px-6 py-40 animate-fade-in">
@@ -28,7 +28,7 @@ export const Impressum: React.FC = () => (
       <div>
         <h2 className="text-xl font-bold text-[#00E5FF] uppercase tracking-widest mb-4">Kontakt</h2>
         <p className="leading-relaxed">
-          Telefon: +49 155 65994781<br />
+          Telefon: {CONTACT_PHONE}<br />
           E-Mail: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#00E5FF] hover:underline">{CONTACT_EMAIL}</a>
         </p>
       </div>

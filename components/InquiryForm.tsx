@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { CONTACT_EMAIL, WHATSAPP_LINK } from '../src/constants';
 
 interface InquiryFormProps {
   initialProduct?: string;
@@ -75,14 +76,14 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   };
 
   const getMailtoLink = () => {
-    return `mailto:info@layer-form.de?subject=Anfrage: ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(
+    return `mailto:${CONTACT_EMAIL}?subject=Anfrage: ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(
       `Hallo LayerForm Team,\n\nich möchte eine Anfrage stellen.\n\nName: ${formData.name}\nE-Mail: ${formData.email}\nMaterial: ${formData.material}\n\nBeschreibung / Anforderungen:\n${formData.description}\n\n[Bitte hängen Sie Ihre Modelldateien (STL/STEP) an diese E-Mail an, wenn vorhanden.]`
     )}`;
   };
 
   const getWhatsAppLink = () => {
     const text = `Hallo LayerForm! Ich möchte eine 3D-Druck Anfrage stellen.\n\n*Name:* ${formData.name}\n*E-Mail:* ${formData.email}\n*Material:* ${formData.material}\n\n*Details:* ${formData.description}`;
-    return `https://wa.me/4915565994781?text=${encodeURIComponent(text)}`;
+    return `${WHATSAPP_LINK}?text=${encodeURIComponent(text)}`;
   };
 
   if (isSubmitted) {
