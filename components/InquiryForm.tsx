@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { CONTACT_EMAIL, WHATSAPP_LINK } from '../src/constants';
+import { Mail, MessageSquare, Copy, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface InquiryFormProps {
   initialProduct?: string;
@@ -9,251 +9,248 @@ interface InquiryFormProps {
 
 export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization }) => {
   const [step, setStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    description: initialPersonalization || '',
-    material: 'PLA',
-    quantity: '1',
-    file: null as File | null
+    phone: '',
+    description: initialPersonalization || (initialProduct ? `Anfrage zum Produkt: ${initialProduct}` : ''),
+    material: 'Standard (PETG / PLA)',
+    quantity: '1'
   });
+
+  useEffect(() => {
+    if (initialPersonalization || initialProduct) {
+      setFormData(prev => ({
+        ...prev,
+        description: initialPersonalization || (initialProduct ? `Anfrage zum Produkt: ${initialProduct}` : prev.description)
+      }));
+    }
+  }, [initialPersonalization, initialProduct]);
 
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitError(null);
+  const generateMailBody = () => {
+    return `Hallo LayerForm Team,
 
-    // Retrieve access key from env or a direct fallback if you have one
-    const accessKey = (import.meta as any).env?.VITE_WEB3FORMS_ACCESS_KEY || "a6d8c437-788b-464a-a29b-4985a7e3f247";
+ich möchte ein 3D-Druck Projekt anfragen:
 
-    if (!accessKey) {
-      // If no API key is specified, show the helpful fallback options
-      setSubmitError("No_Key");
-      setIsSubmitting(false);
-      return;
-    }
+• Name / Firma: ${formData.name || '-'}
+• E-Mail: ${formData.email || '-'}
+• Telefon: ${formData.phone || '-'}
+• Stückzahl: ${formData.quantity || '1'}
+• Material: ${formData.material}
 
-    try {
-      const dataObj = new FormData();
-      dataObj.append("access_key", accessKey);
-      dataObj.append("subject", `Neue LayerForm Anfrage von ${formData.name}`);
-      dataObj.append("from_name", formData.name);
-      dataObj.append("name", formData.name);
-      dataObj.append("email", formData.email);
-      dataObj.append("material", formData.material);
-      dataObj.append("message", formData.description);
+Projektbeschreibung / Maße / Anforderungen:
+${formData.description}
 
-      if (formData.file) {
-        dataObj.append("file", formData.file);
-      }
-
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: dataObj,
-      });
-
-      const responseData = await response.json();
-
-      if (responseData.success) {
-        setIsSubmitted(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        throw new Error(responseData.message || "Übertragungsfehler");
-      }
-    } catch (err: any) {
-      console.error("Fehler beim Versenden der Anfrage:", err);
-      // Fallback to error state
-      setSubmitError("Failed_API");
-    } finally {
-      setIsSubmitting(false);
-    }
+(3D-Dateien wie .STEP, .STL oder Skizzen im Anhang dieser E-Mail)`;
   };
 
   const getMailtoLink = () => {
-    return `mailto:${CONTACT_EMAIL}?subject=Anfrage: ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(
-      `Hallo LayerForm Team,\n\nich möchte eine Anfrage stellen.\n\nName: ${formData.name}\nE-Mail: ${formData.email}\nMaterial: ${formData.material}\n\nBeschreibung / Anforderungen:\n${formData.description}\n\n[Bitte hängen Sie Ihre Modelldateien (STL/STEP) an diese E-Mail an, wenn vorhanden.]`
-    )}`;
+    const subject = `3D-Druck Anfrage: ${formData.name || 'Neues Projekt'}`;
+    const body = generateMailBody();
+    return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const getWhatsAppLink = () => {
-    const text = `Hallo LayerForm! Ich möchte eine 3D-Druck Anfrage stellen.\n\n*Name:* ${formData.name}\n*E-Mail:* ${formData.email}\n*Material:* ${formData.material}\n\n*Details:* ${formData.description}`;
+    const text = `Hallo LayerForm! Ich möchte ein 3D-Druck Projekt anfragen:\n\n*Name:* ${formData.name}\n*E-Mail:* ${formData.email}\n*Stückzahl:* ${formData.quantity}\n*Material:* ${formData.material}\n\n*Details:*\n${formData.description}`;
     return `${WHATSAPP_LINK}?text=${encodeURIComponent(text)}`;
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="max-w-3xl mx-auto py-32 px-6 text-center animate-fade-in text-white">
-        <div className="w-24 h-24 bg-[#00E5FF]/20 rounded-[32px] flex items-center justify-center mx-auto mb-10">
-          <svg className="w-12 h-12 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-        </div>
-        <h2 className="text-5xl font-bold mb-6">Anfrage versendet</h2>
-        <p className="text-gray-400 text-xl mb-12 font-light leading-relaxed">Vielen Dank für Ihr Vertrauen! Ihre Anfrage wurde erfolgreich per E-Mail an uns übermittelt. Wir prüfen Ihre Anforderungen und die Machbarkeit Ihrer Dateien und melden uns schnellstmöglich bei Ihnen.</p>
-        <button onClick={() => window.location.reload()} className="bg-white text-black px-12 py-5 rounded-full font-bold hover:scale-[1.05] transition-soft">Zurück zur Startseite</button>
-      </div>
-    );
-  }
+  const handleOpenMail = (e: React.FormEvent) => {
+    e.preventDefault();
+    const mailto = getMailtoLink();
+    window.location.href = mailto;
+  };
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(generateMailBody());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   return (
-    <div id="inquiry" className="max-w-4xl mx-auto py-24 md:py-48 px-4 md:px-6">
-      <div className="mb-12 md:mb-24 text-center">
-        <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#00E5FF] mb-4 md:mb-6 block">Projektstart</span>
-        <h2 className="text-3xl sm:text-4xl md:text-7xl font-bold tracking-tight mb-4 md:mb-8">Anfrage starten</h2>
-        <p className="text-gray-400 text-sm md:text-xl font-light max-w-2xl mx-auto leading-relaxed px-2">
-          Senden Sie uns Ihre Datei oder Idee. Wir kontaktieren Sie persönlich via Chat oder Telefon, um die perfekte Lösung für Sie zu konstruieren.
+    <div id="inquiry" className="max-w-3xl mx-auto py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+      <div className="mb-8 sm:mb-12 text-center">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#0096C7] bg-sky-50 border border-sky-100 px-3.5 py-1 rounded-full mb-3 inline-block">
+          Projektanfrage
+        </span>
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-2 mt-1">
+          E-Mail Anfrage vorbereiten.
+        </h2>
+        <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-xl mx-auto font-normal px-2">
+          Geben Sie Ihre Projektdaten ein. Die Nachricht wird direkt in Ihrer E-Mail App mit allen Angaben geöffnet.
         </p>
       </div>
 
-      <div className="glass rounded-[32px] md:rounded-[64px] p-6 sm:p-12 md:p-20 shadow-2xl">
-        <form onSubmit={handleSubmit} className="space-y-10 md:space-y-16">
+      <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10 border border-slate-200 shadow-2xs">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-between mb-6 sm:mb-8 pb-5 border-b border-slate-100">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 1 ? 'bg-[#0096C7] text-white' : 'bg-emerald-500 text-white'
+            }`}>
+              1
+            </span>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Kontaktdaten</span>
+          </div>
+          <div className="w-8 sm:w-12 h-0.5 bg-slate-200 mx-2" />
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 2 ? 'bg-[#0096C7] text-white' : 'bg-slate-100 text-slate-400'
+            }`}>
+              2
+            </span>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Projektdetails</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleOpenMail} className="space-y-5 sm:space-y-6">
           {step === 1 && (
-            <div className="space-y-8 md:space-y-12 animate-fade-in">
-              <h3 className="text-xl md:text-3xl font-bold pb-4 md:pb-8 border-b border-white/5">01 Kontakte</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-                <div className="space-y-3 md:space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#00E5FF] ml-4 md:ml-6">Name / Firma</label>
+            <div className="space-y-4 sm:space-y-5 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Name / Firma *</label>
                   <input 
                     required
                     type="text" 
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 md:px-10 md:py-6 focus:outline-none focus:border-[#00E5FF] transition-all text-inherit text-sm md:text-lg"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
                     placeholder="Max Mustermann"
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
                   />
                 </div>
-                <div className="space-y-3 md:space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#00E5FF] ml-4 md:ml-6">E-Mail Adresse</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">E-Mail Adresse *</label>
                   <input 
                     required
                     type="email" 
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 md:px-10 md:py-6 focus:outline-none focus:border-[#00E5FF] transition-all text-inherit text-sm md:text-lg"
-                    placeholder="hello@example.com"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
+                    placeholder="name@example.de"
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
                   />
                 </div>
               </div>
-              <div className="pt-4 md:pt-8 flex justify-end">
-                <button type="button" onClick={handleNext} className="w-full sm:w-auto bg-[#00E5FF] text-black px-10 py-4.5 md:px-16 md:py-6 rounded-full font-bold text-base md:text-lg hover:scale-105 transition-soft shadow-xl">Weiter zur Beschreibung →</button>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Telefonnummer (optional)</label>
+                <input 
+                  type="tel" 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
+                  placeholder="+49 ..."
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                />
+              </div>
+
+              <div className="pt-3 sm:pt-4 flex justify-end">
+                <button 
+                  type="button" 
+                  onClick={handleNext} 
+                  disabled={!formData.name || !formData.email}
+                  className="w-full sm:w-auto bg-[#0096C7] hover:bg-[#0077B6] disabled:opacity-50 text-white px-8 py-4 rounded-full font-bold text-sm transition-colors shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
+                >
+                  <span>Weiter zu Projektdetails</span>
+                  <ArrowRight size={16} />
+                </button>
               </div>
             </div>
           )}
 
           {step === 2 && (
-            <div className="space-y-8 md:space-y-12 animate-fade-in">
-              <h3 className="text-xl md:text-3xl font-bold pb-4 md:pb-8 border-b border-white/5">02 Projektdetails</h3>
-              <div className="space-y-3 md:space-y-4">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[#00E5FF] ml-4 md:ml-6">Beschreibung & Anforderungen</label>
+            <div className="space-y-4 sm:space-y-5 animate-fade-in">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Beschreibung &amp; Bauteildetails *</label>
                 <textarea 
                   required
-                  rows={5}
-                  className="w-full bg-white/5 border border-white/10 rounded-[24px] md:rounded-[40px] px-6 py-4 md:px-10 md:py-8 focus:outline-none focus:border-[#00E5FF] transition-all text-inherit text-sm md:text-lg leading-relaxed resize-none"
-                  placeholder="Beschreiben Sie Ihr Projekt, gewünschte Maße, Farbe oder Verwendungszweck..."
+                  rows={4}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors resize-none"
+                  placeholder="Beschreiben Sie Ihr Bauteil, Maße, gewünschte Funktion oder Anforderungen..."
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                 />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-                <div className="space-y-3 md:space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#00E5FF] ml-4 md:ml-6">Material (Optional)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Material / Wunsch</label>
                   <select 
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 md:px-10 md:py-6 focus:outline-none focus:border-[#00E5FF] appearance-none text-inherit cursor-pointer text-sm md:text-lg"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
                     value={formData.material}
                     onChange={e => setFormData({...formData, material: e.target.value})}
                   >
-                    <option value="PLA" className="bg-[#0d0d0d] text-white">PLA (Standard)</option>
-                    <option value="PETG" className="bg-[#0d0d0d] text-white">PETG (Stabil)</option>
-                    <option value="ABS" className="bg-[#0d0d0d] text-white">ABS (Hitzebeständig)</option>
+                    <option value="Standard (PETG / PLA)">Standard (PETG / PLA)</option>
+                    <option value="Hitze- & Wetterfest (ABS / ASA)">Hitze- &amp; Wetterfest (ABS / ASA)</option>
+                    <option value="Flexibel (TPU Gummi)">Flexibel (TPU Gummi)</option>
+                    <option value="Carbonfaser-verstärkt (CF)">Carbonfaser-verstärkt (CF)</option>
+                    <option value="Beratung erwünscht">Beratung erwünscht</option>
                   </select>
                 </div>
                 
-                <div className="space-y-3 md:space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[#00E5FF] ml-4 md:ml-6">Datei hochladen (STL/STEP/Design)</label>
-                  <div className="relative group">
-                    <input 
-                      type="file" 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      onChange={e => setFormData({...formData, file: e.target.files?.[0] || null})}
-                    />
-                    <div className="w-full bg-white/5 border border-dashed border-white/20 rounded-full px-6 py-4 md:px-10 md:py-6 group-hover:border-[#00E5FF]/50 transition-all text-center">
-                      <span className="text-sm md:text-base text-gray-400 group-hover:text-inherit line-clamp-1 block">
-                        {formData.file ? formData.file.name : 'Datei oder Bild hochladen'}
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Stückzahl</label>
+                  <input 
+                    type="number"
+                    min="1"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
+                    value={formData.quantity}
+                    onChange={e => setFormData({...formData, quantity: e.target.value})}
+                  />
                 </div>
               </div>
 
-              {submitError && (
-                <div className="p-6 md:p-8 bg-black/40 border border-[#00E5FF]/20 rounded-[24px] md:rounded-[32px] text-left space-y-4">
-                  <div className="flex items-center space-x-3 text-[#00E5FF]">
-                    <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h4 className="font-bold text-base md:text-lg">Anfrage absenden</h4>
-                  </div>
-                  <p className="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
-                    {submitError === "No_Key" 
-                      ? "Das Web-Formular ist bereit! Um Anfragen als automatisierte E-Mails zu erhalten, richten Sie einfach Ihren kostenlosen Web3Forms-Schlüssel in der .env ein. Bis dahin können Sie Ihre eingegebenen Daten sofort direkt an uns senden:"
-                      : "Ein Übertragungsfehler ist aufgetreten. Senden Sie uns Ihre Anfrage bitte direkt per E-Mail oder WhatsApp:"}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                    <a 
-                      href={getMailtoLink()}
-                      className="flex items-center justify-center space-x-2 bg-white text-black px-6 py-3 rounded-full font-bold text-xs md:text-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
-                    >
-                      <span>Per E-Mail senden</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </a>
-                    <a 
-                      href={getWhatsAppLink()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center space-x-2 bg-[#25D366] text-white px-6 py-3 rounded-full font-bold text-xs md:text-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
-                    >
-                      <span>Per WhatsApp senden</span>
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.224-3.52c1.54.914 3.033 1.397 4.604 1.398 5.233 0 9.492-4.259 9.494-9.493.002-5.233-4.258-9.492-9.493-9.493-2.535 0-4.918.988-6.71 2.781-1.791 1.792-2.777 4.174-2.778 6.709-.001 1.664.47 3.248 1.36 4.632l-.899 3.28 3.422-.894zm11.233-6.578c-.092-.153-.339-.244-.712-.431-.372-.187-2.199-1.085-2.541-1.209-.341-.125-.59-.187-.838.187-.248.374-.959 1.209-1.176 1.458-.216.248-.433.279-.806.092-.373-.187-1.573-.581-2.996-1.851-1.107-.988-1.855-2.207-2.071-2.58-.217-.373-.023-.574.164-.76.168-.168.373-.434.56-.651.186-.217.248-.372.372-.62.124-.248.062-.465-.031-.652-.093-.187-.838-2.016-1.148-2.761-.303-.728-.61-.63-.838-.641-.216-.011-.465-.013-.713-.013-.248 0-.651.093-.991.465-.34.372-1.299 1.271-1.299 3.102 0 1.83 1.332 3.6 1.518 3.849.187.248 2.622 4.004 6.353 5.613.888.383 1.58.611 2.119.783.892.283 1.703.243 2.345.147.715-.107 2.199-.899 2.509-1.768.311-.869.311-1.613.217-1.768z" />
-                      </svg>
-                    </a>
-                  </div>
+              {/* Preview of the ready Mail text */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">
+                    Vorschau der E-Mail Nachricht
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyText}
+                    className="flex items-center space-x-1 text-[#0096C7] hover:text-[#0077B6] font-bold text-[11px] p-1 -m-1"
+                  >
+                    {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                    <span>{copied ? 'Kopiert!' : 'Text kopieren'}</span>
+                  </button>
                 </div>
-              )}
+                <div className="whitespace-pre-wrap text-slate-600 bg-white p-3 rounded-xl border border-slate-200/80 max-h-36 overflow-y-auto leading-relaxed text-[11px]">
+                  {generateMailBody()}
+                </div>
+              </div>
 
-              <div className="pt-4 md:pt-8 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                <button 
-                  type="button" 
-                  onClick={handleBack} 
-                  disabled={isSubmitting}
-                  className="text-gray-500 font-bold hover:text-[#00E5FF] transition-colors underline underline-offset-8 decoration-2 text-sm md:text-base mr-auto sm:mr-0 pl-1 disabled:opacity-50"
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="order-2 sm:order-1 px-5 py-3 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all flex items-center justify-center space-x-2 min-h-[44px]"
                 >
-                  Zurück
+                  <ArrowLeft size={16} />
+                  <span>Zurück</span>
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-[#00E5FF] text-black px-10 py-4.5 md:px-16 md:py-6 rounded-full font-bold text-base md:text-lg hover:scale-105 active:scale-95 transition-soft disabled:opacity-50 disabled:scale-100 shadow-[0_0_50px_rgba(0,229,255,0.4)] flex items-center justify-center space-x-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Wird übertragen...</span>
-                    </>
-                  ) : (
-                    <span>Anfrage jetzt absenden</span>
-                  )}
-                </button>
+
+                <div className="order-1 sm:order-2 flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
+                  <a
+                    href={getWhatsAppLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1EBE5D] text-white px-5 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
+                  >
+                    <MessageSquare size={16} />
+                    <span>Per WhatsApp senden</span>
+                  </a>
+
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto bg-[#0096C7] hover:bg-[#0077B6] text-white px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
+                  >
+                    <Mail size={16} />
+                    <span>In E-Mail App öffnen</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

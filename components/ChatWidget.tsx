@@ -1,13 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 
-interface ChatWidgetProps {
-  isDarkMode: boolean;
-}
-
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ isDarkMode }) => {
+export const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([
-    { role: 'ai', text: 'Willkommen bei LayerForm. Wir machen fast alles im 3D-Druck möglich. Was haben Sie für ein Projekt geplant?' }
+    { role: 'ai', text: 'Willkommen bei LayerForm! Haben Sie Fragen zu 3D-Druck, Materialien oder einem Projekt? Ich helfe Ihnen gerne weiter.' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -46,54 +43,49 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isDarkMode }) => {
       setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (error) {
       console.error("Error communicating with Gemini backend:", error);
-      setMessages(prev => [...prev, { role: 'ai', text: 'Unser KI-Assistent ist momentan ausgelastet. Kontaktieren Sie uns gerne direkt via WhatsApp oder E-Mail.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: 'Unser Assistent ist momentan nicht erreichbar. Schreiben Sie uns gerne direkt via WhatsApp (+49 176 85922649) oder E-Mail (info@layer-form.de).' }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100]">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
       {isOpen && (
-        <div className={`absolute bottom-24 right-0 w-[350px] md:w-[420px] h-[600px] glass rounded-[48px] flex flex-col overflow-hidden animate-fade-in shadow-[0_30px_70px_rgba(0,0,0,0.6)] border ${
-          isDarkMode ? 'border-white/10' : 'border-black/10'
-        }`}>
+        <div className="fixed sm:absolute bottom-20 right-4 sm:right-0 w-[calc(100vw-32px)] sm:w-[380px] h-[480px] max-h-[75vh] bg-white rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-slate-200 animate-fade-in z-50">
           {/* Header */}
-          <div className={`p-8 border-b flex justify-between items-center ${
-            isDarkMode 
-              ? 'border-white/5 bg-white/5' 
-              : 'border-black/5 bg-black/[0.02]'
-          }`}>
-            <div className="flex items-center space-x-4">
-              <div className="w-2.5 h-2.5 bg-[#00E5FF] rounded-full animate-pulse shadow-[0_0_12px_#00E5FF]"></div>
-              <span className={`font-bold text-xs uppercase tracking-[0.3em] ${
-                isDarkMode ? 'text-white' : 'text-gray-800'
-              }`}>
-                Project Assistant
-              </span>
+          <div className="p-3.5 sm:p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-sky-100 flex items-center justify-center text-[#0096C7]">
+                <Sparkles size={16} />
+              </div>
+              <div>
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-900 block">
+                  LayerForm Assistent
+                </span>
+                <span className="text-[10px] text-emerald-600 font-medium flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                  <span>Online &bull; Beratung</span>
+                </span>
+              </div>
             </div>
             <button 
               onClick={() => setIsOpen(false)} 
-              className={`p-2 transition-colors ${
-                isDarkMode ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-black'
-              }`}
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+              aria-label="Chat schließen"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X size={18} />
             </button>
           </div>
           
           {/* Message Area */}
-          <div ref={scrollRef} className="flex-grow overflow-y-auto p-10 space-y-8 scrollbar-hide">
+          <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-3.5 text-xs sm:text-sm">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] px-6 py-5 rounded-[32px] text-sm leading-relaxed shadow-xl border ${
+                <div className={`max-w-[88%] px-4 py-2.5 rounded-2xl leading-relaxed ${
                   m.role === 'user' 
-                    ? 'bg-[#00E5FF] text-black font-black rounded-tr-none border-[#00E5FF]' 
-                    : `glass rounded-tl-none font-light ${
-                        isDarkMode ? 'text-gray-200 border-white/10' : 'text-gray-800 border-black/10'
-                      }`
+                    ? 'bg-[#0096C7] text-white rounded-tr-none shadow-2xs' 
+                    : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200/60'
                 }`}>
                   {m.text}
                 </div>
@@ -101,70 +93,47 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isDarkMode }) => {
             ))}
             {isTyping && (
               <div className="flex justify-start">
-                <div className={`glass px-6 py-5 rounded-[32px] rounded-tl-none flex space-x-2 border ${
-                  isDarkMode ? 'border-white/10' : 'border-black/10'
-                }`}>
-                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-1.5 h-1.5 bg-[#00E5FF] rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="bg-slate-100 text-slate-500 px-4 py-2 rounded-2xl text-xs rounded-tl-none animate-pulse">
+                  Antwort wird geladen...
                 </div>
               </div>
             )}
           </div>
-
-          {/* Form Input Footer */}
-          <div className={`p-8 border-t ${
-            isDarkMode ? 'bg-white/5 border-white/5' : 'bg-black/[0.02]'
-          }`}>
-            <div className="relative">
+          
+          {/* Input Area */}
+          <div className="p-2.5 sm:p-3 border-t border-slate-100 bg-white">
+            <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-1 focus-within:border-[#0096C7] transition-colors">
               <input 
-                className={`w-full px-8 py-5 border rounded-full text-sm outline-none transition-all pr-16 ${
-                  isDarkMode 
-                    ? 'bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-[#00E5FF] focus:bg-white/10' 
-                    : 'bg-black/[0.02] border-black/15 text-gray-800 placeholder:text-gray-400 focus:border-[#0097A7] focus:bg-black/[0.04]'
-                }`} 
-                placeholder="Projekt beschreiben..." 
-                value={input} 
-                onChange={e => setInput(e.target.value)} 
-                onKeyDown={e => e.key === 'Enter' && handleSend()} 
+                type="text" 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Frage stellen..." 
+                className="w-full bg-transparent border-none outline-none text-base sm:text-xs text-slate-800 placeholder:text-slate-400 py-1.5"
               />
               <button 
                 onClick={handleSend}
-                className={`absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform ${
-                  isDarkMode 
-                    ? 'bg-[#00E5FF] text-black shadow-[0_5px_20px_rgba(0,229,255,0.4)]' 
-                    : 'bg-[#0097A7] text-white shadow-[0_5px_20px_rgba(0,151,167,0.3)]'
-                }`}
+                disabled={isTyping || !input.trim()}
+                className="p-2 rounded-xl bg-[#0096C7] hover:bg-[#0077B6] disabled:opacity-40 text-white transition-all flex-shrink-0 min-w-[34px] min-h-[34px] flex items-center justify-center"
+                aria-label="Nachricht senden"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 19l7-7-7-7M5 12h14" />
-                </svg>
+                <Send size={13} />
               </button>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Launcher Button */}
+
+      {/* Floating Toggle Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className={`w-20 h-20 glass rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex items-center justify-center transition-all duration-500 hover:scale-[1.15] active:scale-90 group border ${
-          isDarkMode 
-            ? 'border-white/10 text-white hover:border-[#00E5FF]/40' 
-            : 'border-black/5 text-gray-800 hover:border-[#0097A7]/40 hover:text-[#0097A7]'
-        }`}
+        className="w-12 h-12 sm:w-13 sm:h-13 p-3 bg-slate-900 hover:bg-[#0096C7] text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center active:scale-95 group border-2 border-white"
+        aria-label="Chat öffnen"
       >
         {isOpen ? (
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-          </svg>
+          <X size={20} />
         ) : (
-          <div className="relative">
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#00E5FF] rounded-full border-2 border-[#050505] animate-ping"></div>
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-          </div>
+          <MessageSquare size={20} className="group-hover:scale-105 transition-transform" />
         )}
       </button>
     </div>
