@@ -1,6 +1,7 @@
 import React from 'react';
 import { MessageCircle, Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
 import { Reveal } from './effects';
+import { SOCIALS } from './social';
 
 interface ConsultationHubProps {
   onInquiryClick: () => void;
@@ -40,6 +41,24 @@ export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick
             <MapPin size={17} className="text-cyan" aria-hidden="true" />
             Werkstatt in Bargteheide, Versand in ganz Deutschland
           </a>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {SOCIALS.map(({ name, handle, href, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`LayerForm auf ${name}`}
+                className="group flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[.06] py-2 pl-2 pr-4 text-[15px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan/50 hover:bg-white/10"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan/15 text-cyan transition-transform duration-300 group-hover:scale-110">
+                  <Icon size={17} />
+                </span>
+                {handle}
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col gap-3 md:justify-center">

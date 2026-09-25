@@ -2,6 +2,7 @@ import React from 'react';
 import type { View } from '../App';
 import { BrandLogo } from './Navbar';
 import { ETSY_URL } from './links';
+import { SOCIALS } from './social';
 
 interface FooterProps {
   setView: (view: View) => void;
@@ -21,6 +22,21 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => (
         <BrandLogo dark={false} size="sm" />
         <span className="text-sm text-muted">© {new Date().getFullYear()} LayerForm, Bargteheide</span>
       </div>
+      <div className="flex flex-col gap-5 md:flex-row md:items-center md:gap-8">
+      <div className="flex gap-2">
+        {SOCIALS.map(({ name, href, Icon }) => (
+          <a
+            key={name}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`LayerForm auf ${name}`}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-mid hover:text-cyan-mid"
+          >
+            <Icon size={18} />
+          </a>
+        ))}
+      </div>
       <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
         <a href={ETSY_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-ink">
           Etsy-Shop
@@ -31,6 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => (
           </button>
         ))}
       </nav>
+      </div>
     </div>
   </footer>
 );
