@@ -185,11 +185,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                           role="radio"
                           aria-checked={type === key}
                           onClick={() => setType(key)}
-                          className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold transition ${
+                          className={`flex items-center justify-center gap-2 rounded-xl border px-2 py-3 text-sm font-semibold min-[400px]:px-4 min-[400px]:text-base transition ${
                             type === key ? 'border-navy bg-navy text-white' : 'border-line bg-white text-ink/75 hover:border-ink/40'
                           }`}
                         >
-                          <Icon size={18} aria-hidden="true" /> {label}
+                          <Icon size={18} className="hidden shrink-0 min-[400px]:block" aria-hidden="true" /> {label}
                         </button>
                       ))}
                     </div>

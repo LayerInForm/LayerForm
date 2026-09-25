@@ -106,7 +106,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
           </div>
 
           {/* Umschalter mit gleitendem Hintergrund */}
-          <div className="flex rounded-full border border-line bg-white p-1.5" role="tablist" aria-label="Kundengruppe">
+          <div className="flex w-full rounded-full border border-line bg-white p-1.5 sm:w-auto" role="tablist" aria-label="Kundengruppe">
             {(Object.keys(GROUPS) as Group[]).map((key) => {
               const TabIcon = GROUPS[key].icon;
               const on = key === group;
@@ -116,7 +116,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
                   role="tab"
                   aria-selected={on}
                   onClick={() => setGroup(key)}
-                  className={`relative flex items-center gap-2 rounded-full px-5 py-2.5 text-[15px] font-semibold transition-colors ${
+                  className={`relative flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-2.5 text-sm font-semibold min-[360px]:px-3 sm:flex-none sm:px-5 sm:text-[15px] transition-colors ${
                     on ? 'text-white' : 'text-ink/70 hover:text-ink'
                   }`}
                 >
@@ -127,7 +127,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
                       transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32 }}
                     />
                   )}
-                  <TabIcon size={17} className="relative" aria-hidden="true" />
+                  <TabIcon size={17} className="relative hidden shrink-0 min-[360px]:block" aria-hidden="true" />
                   <span className="relative">{GROUPS[key].tab}</span>
                 </button>
               );

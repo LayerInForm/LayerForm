@@ -64,7 +64,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
     <header className="fixed inset-x-0 top-0 z-40 px-3 pt-3 md:px-6 md:pt-4">
       <div
         className={`mx-auto max-w-6xl rounded-[1.75rem] border transition-all duration-300 ${
-          solid
+          open
+            ? 'border-white/10 bg-navy/[.97] shadow-[0_12px_40px_-12px_rgba(4,17,43,.55)] backdrop-blur-xl'
+            : solid
             ? 'border-white/10 bg-navy/85 shadow-[0_12px_40px_-12px_rgba(4,17,43,.55)] backdrop-blur-xl'
             : 'border-transparent bg-transparent'
         }`}
