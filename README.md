@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# LayerForm – Website
 
-# Run and deploy your AI Studio app
+3D-Druck & CAD für Privatkunden und Unternehmen – [layer-form.de](https://layer-form.de)
 
-This contains everything you need to run your app locally.
+## Lokal starten
 
-View your app in AI Studio: https://ai.studio/apps/e3f2f3bf-6a72-4fd4-9548-575ca0db8200
+```
+npm install
+npm run dev
+```
 
-## Run Locally
+Dann im Browser http://localhost:5173 öffnen.
 
-**Prerequisites:**  Node.js
+## Veröffentlichen (Vercel)
 
+Framework: **Vite** · Build-Befehl: `npm run build` · Ausgabeordner: `dist`
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Wo ändere ich was?
+
+| Was | Datei |
+| --- | --- |
+| Etsy-Link | `components/links.ts` |
+| Projekte & Bilder | `components/Projects.tsx`, Bilder in `public/projects/` |
+| Google-Rezensionen | `components/Reviews.tsx` (Liste `REVIEWS`, `REVIEW_COUNT`) |
+| Anfrage-Ziel (E-Mail / WhatsApp) | `components/InquiryForm.tsx` |
+| Kontaktdaten | `components/ConsultationHub.tsx` |
+| Impressum, AGB, Datenschutz | `components/LegalPages.tsx` |
+| Farben | `tailwind.config.js` |
