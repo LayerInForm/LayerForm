@@ -1,138 +1,72 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  MessageSquare, 
-  Phone, 
-  Mail, 
-  FileText, 
-  ArrowRight
-} from 'lucide-react';
-import { 
-  CONTACT_EMAIL, 
-  CONTACT_PHONE, 
-  WHATSAPP_LINK
-} from '../src/constants';
+import { MessageCircle, Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
+import { Reveal } from './effects';
 
 interface ConsultationHubProps {
   onInquiryClick: () => void;
 }
 
-export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick }) => {
-  const channels = [
-    {
-      title: "WhatsApp",
-      subtitle: "Direkter Draht",
-      desc: "Fotos, Maße oder kurze Fragen unkompliziert per Chat klären.",
-      icon: MessageSquare,
-      link: WHATSAPP_LINK,
-      isExternal: true,
-      actionText: "Chat starten",
-      color: "#25D366"
-    },
-    {
-      title: "Projektanfrage",
-      subtitle: "Online Formular",
-      desc: "CAD-Dateien (STEP/STL) und Spezifikationen direkt einreichen.",
-      icon: FileText,
-      onClick: onInquiryClick,
-      actionText: "Anfrage starten",
-      color: "#0096C7"
-    },
-    {
-      title: "Telefon",
-      subtitle: "Persönlich",
-      desc: "Machbarkeit, Material oder Fristen direkt besprechen.",
-      icon: Phone,
-      link: `tel:${CONTACT_PHONE.replace(/\s+/g, '')}`,
-      isExternal: false,
-      actionText: CONTACT_PHONE,
-      color: "#0096C7"
-    },
-    {
-      title: "E-Mail",
-      subtitle: "Dokumente",
-      desc: "Technische Zeichnungen oder Leistungsverzeichnisse zusenden.",
-      icon: Mail,
-      link: `mailto:${CONTACT_EMAIL}`,
-      isExternal: false,
-      actionText: CONTACT_EMAIL,
-      color: "#0096C7"
-    }
-  ];
+const CHANNELS = [
+  { icon: MessageCircle, label: 'WhatsApp', value: '+49 176 85922649', href: 'https://wa.me/4917685922649' },
+  { icon: Mail, label: 'E-Mail', value: 'info@layer-form.de', href: 'mailto:info@layer-form.de' },
+  { icon: Phone, label: 'Telefon', value: '+49 176 85922649', href: 'tel:+4917685922649' },
+];
 
-  return (
-    <section id="consultation" className="py-16 md:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
-      <div className="text-center mb-10 md:mb-14">
-        <span className="text-xs font-bold uppercase tracking-widest text-[#0096C7] bg-sky-50 border border-sky-100 px-3.5 py-1 rounded-full mb-3 inline-block">
-          Kontakt
-        </span>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-2 mt-1">
-          Jetzt Projekt anfragen.
-        </h2>
-        <p className="text-slate-600 text-base md:text-lg max-w-xl mx-auto font-normal">
-          Wählen Sie Ihren bevorzugten Kontaktkanal.
-        </p>
+// TODO: Bei Bedarf durch den direkten Link zum Google-Unternehmensprofil ersetzen.
+const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=LayerForm+Bargteheide';
+
+export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick }) => (
+  <section id="kontakt" className="bg-white px-3 py-20 md:px-6 md:py-24">
+    <Reveal className="glow-border mx-auto max-w-6xl rounded-[2.5rem] p-[2px]">
+    <div className="hero-bg relative overflow-hidden rounded-[calc(2.5rem-2px)] text-white">
+      <div className="grid-lines absolute inset-0" aria-hidden="true" />
+
+      <div className="relative grid gap-12 px-7 py-14 md:grid-cols-[1.1fr_1fr] md:px-14 md:py-20">
+        <div>
+          <h2 className="text-4xl font-semibold leading-[1.05] md:text-[3.4rem]">
+            Erzählen Sie uns, was Sie brauchen.
+          </h2>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-white/70">
+            Eine kurze Beschreibung, ein Foto, eine Skizze oder eine Datei reicht für eine erste Einschätzung.
+          </p>
+          <button onClick={onInquiryClick} className="btn-primary mt-10">Anfrageformular öffnen</button>
+
+          <a
+            href={MAPS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 flex items-center gap-2.5 text-[15px] text-white/60 transition-colors hover:text-white"
+          >
+            <MapPin size={17} className="text-cyan" aria-hidden="true" />
+            Werkstatt in Bargteheide, Versand in ganz Deutschland
+          </a>
+        </div>
+
+        <div className="flex flex-col gap-3 md:justify-center">
+          {CHANNELS.map(({ icon: Icon, label, value, href }, i) => (
+            <Reveal key={label} delay={0.15 + i * 0.1} y={16}>
+            <div>
+              <a
+                href={href}
+                target={href.startsWith('http') ? '_blank' : undefined}
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="group flex items-center gap-4 rounded-2xl transition-transform duration-300 hover:-translate-y-0.5 border border-white/10 bg-white/[.06] p-4 transition-colors hover:border-cyan/50 hover:bg-white/10 md:p-5"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan/15 text-cyan transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-6deg]">
+                  <Icon size={20} aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm text-white/55">{label}</span>
+                  <span className="block truncate text-lg font-medium">{value}</span>
+                </span>
+                <ArrowUpRight size={18} className="text-white/40 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-cyan" aria-hidden="true" />
+              </a>
+            </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
-
-      {/* Grid of channels */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {channels.map((ch, idx) => {
-          const Icon = ch.icon;
-          return (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.4, delay: idx * 0.08 }}
-              className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#0096C7]/50 transition-all flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div 
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center transition-colors shadow-2xs"
-                    style={{ backgroundColor: `${ch.color}15`, color: ch.color }}
-                  >
-                    <Icon size={20} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                    {ch.subtitle}
-                  </span>
-                </div>
-
-                <h3 className="font-bold text-lg text-slate-900 mb-1 group-hover:text-[#0096C7] transition-colors">
-                  {ch.title}
-                </h3>
-                <p className="text-slate-600 text-xs leading-relaxed mb-6 font-normal">
-                  {ch.desc}
-                </p>
-              </div>
-
-              <div>
-                {ch.link ? (
-                  <a
-                    href={ch.link}
-                    target={ch.isExternal ? "_blank" : undefined}
-                    rel={ch.isExternal ? "noopener noreferrer" : undefined}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-[#0096C7] text-slate-800 hover:text-white border border-slate-200/80 hover:border-[#0096C7] text-xs font-bold transition-all flex items-center justify-between group/btn"
-                  >
-                    <span className="truncate">{ch.actionText}</span>
-                    <ArrowRight size={13} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                  </a>
-                ) : (
-                  <button
-                    onClick={ch.onClick}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-[#0096C7] text-slate-800 hover:text-white border border-slate-200/80 hover:border-[#0096C7] text-xs font-bold transition-all flex items-center justify-between group/btn"
-                  >
-                    <span>{ch.actionText}</span>
-                    <ArrowRight size={13} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-    </section>
-  );
-};
+    </div>
+    </Reveal>
+  </section>
+);

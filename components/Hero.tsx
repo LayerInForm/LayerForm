@@ -1,163 +1,220 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  ArrowRight, 
-  MessageSquare, 
-  Layers, 
-  ShieldCheck, 
-  Zap, 
-  Star,
-  Printer,
-  FileCode
-} from 'lucide-react';
-import { WHATSAPP_LINK, GOOGLE_MAPS_LINK } from '../src/constants';
+import { Star, ArrowUpRight } from 'lucide-react';
+import { ETSY_URL } from './links';
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
+import { formatRating, REVIEW_COUNT } from './Reviews';
 
 interface HeroProps {
-  onShopClick: () => void;
   onInquiryClick: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onShopClick, onInquiryClick }) => {
+/* ---------- Isometrischer Schichtwürfel im Stil des Logos ---------- */
+
+const CX = 200;      // Mitte
+const W = 150;       // halbe Breite der Raute
+const H = 86.6;      // halbe Höhe der Raute (isometrisch: W * tan 30°)
+const T = 26;        // Dicke einer Schicht
+const STEP = 31;     // Abstand der Schichten (Dicke + Fuge)
+const LAYERS = 7;
+const TOP = 16;
+
+const pts = (p: [number, number][]) => p.map(([x, y]) => `${x},${y.toFixed(1)}`).join(' ');
+
+// Farbe zwischen zwei Hex-Werten mischen
+const mix = (a: string, b: string, t: number) => {
+  const n = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [x, y] = [n(a), n(b)];
+  return `rgb(${x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(',')})`;
+};
+
+const LayerCube: React.FC = () => {
+  const slabs = Array.from({ length: LAYERS }, (_, k) => {
+    const y = TOP + k * STEP;          // k = 0 ist die oberste Schicht
+    const t = k / (LAYERS - 1);        // 0 oben … 1 unten
+    return {
+      k,
+      top: pts([[CX, y], [CX + W, y + H], [CX, y + 2 * H], [CX - W, y + H]]),
+      left: pts([[CX - W, y + H], [CX, y + 2 * H], [CX, y + 2 * H + T], [CX - W, y + H + T]]),
+      right: pts([[CX, y + 2 * H], [CX + W, y + H], [CX + W, y + H + T], [CX, y + 2 * H + T]]),
+      topFill: mix('#00E5FF', '#1FA8E0', t),
+      leftFill: mix('#0B3F86', '#061A4F', t),
+      rightFill: mix('#19C9EE', '#0A3AA0', t),
+    };
+  });
+
+  // Öffnung in der obersten Fläche, wie im Logo
+  const s = 0.42;
+  const hy = TOP + H;
+  const hole: [number, number][] = [[CX, hy - s * H], [CX + s * W, hy], [CX, hy + s * H], [CX - s * W, hy]];
+  const D = 34;
+
   return (
-    <section className="relative pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 overflow-hidden">
-      {/* Subtle Background Lighting & Grid */}
-      <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute top-8 sm:top-12 left-1/2 -translate-x-1/2 w-[350px] sm:w-[650px] md:w-[850px] h-[350px] sm:h-[450px] bg-gradient-to-b from-sky-100/70 via-cyan-50/30 to-transparent rounded-full blur-3xl" />
-        <div 
-          className="absolute inset-0 opacity-[0.03]" 
-          style={{ 
-            backgroundImage: 'linear-gradient(to right, #0f172a 1px, transparent 1px), linear-gradient(to bottom, #0f172a 1px, transparent 1px)', 
-            backgroundSize: '28px 28px' 
-          }}
-        />
-      </div>
+    <svg viewBox="0 0 400 420" className="h-auto w-full" role="img" aria-label="Würfel aus gedruckten Schichten">
+      <defs>
+        <linearGradient id="lf-top" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#00E5FF" />
+          <stop offset="1" stopColor="#8FF5FF" />
+        </linearGradient>
+        <clipPath id="lf-hole"><polygon points={pts(hole)} /></clipPath>
+      </defs>
 
-      <div className="max-w-5xl mx-auto text-center">
-        {/* Top 3D Printing Badge */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center space-x-2 bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-2xs mb-5 sm:mb-6"
-        >
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0096C7] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0096C7]"></span>
-          </span>
-          <span className="text-[10px] sm:text-xs font-bold text-slate-800 tracking-wide font-mono uppercase">
-            3D-Druck &amp; CAD-Fertigung
-          </span>
-        </motion.div>
+      {[...slabs].reverse().map((sl) => (
+        <g key={sl.k} className="slab" style={{ animationDelay: `${(LAYERS - 1 - sl.k) * 0.12 + 0.15}s` }}>
+          <polygon points={sl.top} fill={sl.k === 0 ? 'url(#lf-top)' : sl.topFill} />
+          <polygon points={sl.left} fill={sl.leftFill} />
+          <polygon points={sl.right} fill={sl.rightFill} />
+          {sl.k === 0 && (
+            <g clipPath="url(#lf-hole)">
+              <polygon points={pts(hole)} fill="#041B47" />
+              <polygon points={pts([hole[3], hole[0], [hole[0][0], hole[0][1] + D], [hole[3][0], hole[3][1] + D]])} fill="#0B3F86" />
+              <polygon points={pts([hole[0], hole[1], [hole[1][0], hole[1][1] + D], [hole[0][0], hole[0][1] + D]])} fill="#139DD0" />
+            </g>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+};
 
-        {/* Main Headline */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-6 max-w-4xl mx-auto"
-        >
-          Präziser <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0077B6] via-[#0096C7] to-[#00B4D8]">3D-Druck</span> nach Maß.
-        </motion.h1>
-        
-        {/* Subtitle */}
-        <motion.p 
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="text-sm sm:text-base md:text-lg text-slate-600 font-normal max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-1"
-        >
-          Wir fertigen Ihre Bauteile, Prototypen und Kleinserien schnell und passgenau. Schicken Sie uns einfach Ihre 3D-Datei oder Idee.
-        </motion.p>
-        
-        {/* Call to Action Buttons */}
-        <motion.div 
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-md sm:max-w-none mx-auto mb-8 sm:mb-10"
-        >
-          <button 
-            onClick={onInquiryClick}
-            className="group w-full sm:w-auto bg-[#0096C7] hover:bg-[#0077B6] text-white px-7 py-4 rounded-full font-bold text-sm sm:text-base transition-all shadow-md hover:shadow-cyan-500/20 active:scale-98 flex items-center justify-center space-x-2 min-h-[48px]"
+/* ---------- Hero ---------- */
+
+// Kleine "Druckpartikel", die um den Würfel aufsteigen (feste Werte, damit nichts springt)
+const PARTICLES = [
+  { l: 12, d: 0, s: 6, t: 7 }, { l: 24, d: 2.4, s: 4, t: 9 }, { l: 38, d: 1.1, s: 5, t: 8 },
+  { l: 55, d: 3.2, s: 4, t: 10 }, { l: 68, d: 0.6, s: 6, t: 7.5 }, { l: 80, d: 2, s: 4, t: 9.5 },
+  { l: 90, d: 4.1, s: 5, t: 8.5 }, { l: 46, d: 5, s: 3, t: 11 },
+];
+
+const lineVariants = {
+  hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
+  show: (i: number) => ({
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { delay: 0.1 + i * 0.12, duration: 0.8, ease: [0.2, 0.8, 0.2, 1] as const },
+  }),
+};
+
+export const Hero: React.FC<HeroProps> = ({ onInquiryClick }) => {
+  const reduce = useReducedMotion();
+
+  // Würfel neigt sich leicht zur Maus
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotY = useSpring(useTransform(mx, [-1, 1], [-12, 12]), { stiffness: 80, damping: 18 });
+  const rotX = useSpring(useTransform(my, [-1, 1], [8, -8]), { stiffness: 80, damping: 18 });
+  const glowX = useSpring(useTransform(mx, [-1, 1], [-30, 30]), { stiffness: 60, damping: 20 });
+
+  const onMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    mx.set(((e.clientX - r.left) / r.width) * 2 - 1);
+    my.set(((e.clientY - r.top) / r.height) * 2 - 1);
+  };
+
+  const fromHidden = reduce ? false : 'hidden';
+
+  return (
+    <section
+      className="hero-bg relative overflow-hidden text-white"
+      onPointerMove={onMove}
+      onPointerLeave={() => { mx.set(0); my.set(0); }}
+    >
+      <div className="grid-lines grid-drift absolute inset-0" aria-hidden="true" />
+
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-36 md:grid-cols-[1.15fr_1fr] md:pb-28 md:pt-44">
+        <div>
+          <motion.p
+            variants={lineVariants} initial={fromHidden} animate="show" custom={0}
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm text-white/80 backdrop-blur"
           >
-            <Printer size={18} />
-            <span>Projekt anfragen</span>
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+            <span className="flex text-cyan" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={13} fill="currentColor" strokeWidth={0} className="star-pop" style={{ animationDelay: `${0.6 + i * 0.08}s` }} />
+              ))}
+            </span>
+            {formatRating()} bei Google
+            <span className="text-white/50">({REVIEW_COUNT})</span>
+          </motion.p>
 
-          <a 
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-6 py-4 rounded-full font-bold text-sm sm:text-base transition-all shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
+          <h1 className="mt-7 text-[clamp(2.7rem,6.4vw,5.4rem)] font-semibold leading-[1.02]">
+            <motion.span className="block" variants={lineVariants} initial={fromHidden} animate="show" custom={1}>
+              Ihre Idee.
+            </motion.span>
+            <motion.span className="block" variants={lineVariants} initial={fromHidden} animate="show" custom={2}>
+              Gedruckt &amp; <span className="shimmer-text">geliefert.</span>
+            </motion.span>
+          </h1>
+
+          <motion.p
+            variants={lineVariants} initial={fromHidden} animate="show" custom={3}
+            className="mt-7 max-w-lg text-lg leading-relaxed text-white/70 md:text-xl"
           >
-            <MessageSquare size={18} className="text-[#25D366]" />
-            <span>WhatsApp Chat</span>
-          </a>
-        </motion.div>
+            Von Funktionsteilen bis zur Deko, vom Einzelstück bis zur Serie: Wir fertigen im
+            3D-Druck, was Sie brauchen. Für Unternehmen und Privatkunden in ganz Deutschland.
+          </motion.p>
 
-        {/* Supported Formats */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-500 font-mono mb-10 sm:mb-14">
-          <span className="font-bold text-slate-700 uppercase tracking-wider text-[10px] sm:text-[11px] mr-1">Dateiformate:</span>
-          <span className="px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-800 font-bold">.STEP</span>
-          <span className="px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-800 font-bold">.STL</span>
-          <span className="px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-800 font-bold">.3MF</span>
-          <span className="px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-800 font-bold">.OBJ</span>
+          <motion.div
+            variants={lineVariants} initial={fromHidden} animate="show" custom={4}
+            className="mt-10 flex flex-wrap gap-3"
+          >
+            <button onClick={onInquiryClick} className="btn-primary">Projekt anfragen</button>
+            <a href={ETSY_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost-dark">
+              Zum Etsy-Shop <ArrowUpRight size={17} aria-hidden="true" />
+            </a>
+          </motion.div>
         </div>
 
-        {/* Value Highlights Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 p-2.5 sm:p-4 bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-2xs text-left"
-        >
-          <div className="p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 flex items-center space-x-2.5 sm:space-x-3.5 shadow-2xs">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center flex-shrink-0">
-              <Zap size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-slate-900 truncate">Express &lt; 48h</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Schneller Vorlauf</div>
-            </div>
+        <div className="relative mx-auto w-full max-w-[17rem] md:max-w-none">
+          <motion.div
+            className="glow-pulse absolute inset-[16%] rounded-full bg-cyan/30 blur-3xl"
+            style={reduce ? undefined : { x: glowX }}
+            aria-hidden="true"
+          />
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            {PARTICLES.map((p, i) => (
+              <span
+                key={i}
+                className="particle"
+                style={{ left: `${p.l}%`, width: p.s, height: p.s, animationDelay: `${p.d}s`, animationDuration: `${p.t}s` }}
+              />
+            ))}
           </div>
-
-          <div className="p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 flex items-center space-x-2.5 sm:space-x-3.5 shadow-2xs">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center flex-shrink-0">
-              <Layers size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-slate-900 truncate">Passgenau</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Hohe Maßhaltigkeit</div>
-            </div>
-          </div>
-
-          <div className="p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 flex items-center space-x-2.5 sm:space-x-3.5 shadow-2xs">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center flex-shrink-0">
-              <FileCode size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-slate-900 truncate">CAD-Service</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">3D-Modellierung</div>
-            </div>
-          </div>
-
-          <a 
-            href={GOOGLE_MAPS_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 hover:border-[#0096C7]/50 flex items-center space-x-2.5 sm:space-x-3.5 shadow-2xs group transition-colors"
+          <motion.div
+            className="relative"
+            style={reduce ? undefined : { rotateX: rotX, rotateY: rotY, transformPerspective: 1000 }}
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
-              <Star size={16} className="fill-amber-400 text-amber-400 sm:w-[18px] sm:h-[18px]" />
+            <div className="cube-float">
+              <LayerCube />
             </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-slate-900 group-hover:text-[#0096C7] transition-colors truncate">5.0 Sterne</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Google Profil</div>
-            </div>
-          </a>
-        </motion.div>
+            <div className="scan-line" aria-hidden="true" />
+          </motion.div>
+        </div>
       </div>
+
+      <Marquee />
     </section>
   );
 };
+
+/* ---------- Laufband: was alles gedruckt werden kann ---------- */
+
+const ITEMS = [
+  'Funktionsteile', 'Ersatzteile', 'Prototypen', 'Gehäuse', 'Halterungen', 'Firmenlogos',
+  'Giveaways mit Logo', 'Werbeartikel', 'Messe-Giveaways', 'Event-Deko', 'Wohndeko', 'Geschenke', 'Einzelanfertigungen', 'Serienproduktion',
+];
+
+const Marquee: React.FC = () => (
+  <div className="marquee relative border-t border-white/10 bg-white/[.03] py-5" aria-label="Was wir drucken">
+    <div className="marquee-track flex w-max items-center">
+      {[0, 1].map((copy) => (
+        <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1}>
+          {ITEMS.map((item) => (
+            <li key={item} className="flex items-center whitespace-nowrap text-lg font-medium text-white/75 md:text-xl">
+              <span className="mx-7 inline-block h-2.5 w-2.5 rotate-45 rounded-[2px] bg-cyan shadow-[0_0_10px_#00E5FF]" aria-hidden="true" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+);

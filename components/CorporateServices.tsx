@@ -1,178 +1,90 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { Layers, Cpu, Box, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Layers, DraftingCompass, Building2, Boxes } from 'lucide-react';
+import { Reveal, SpotlightCard } from './effects';
 
 interface CorporateServicesProps {
-  onInquiryClick?: () => void;
+  onInquiryClick: () => void;
 }
 
-export const CorporateServices: React.FC<CorporateServicesProps> = ({ onInquiryClick }) => {
-  return (
-    <section id="services" className="py-16 md:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-14 gap-6">
-        <div className="max-w-xl">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#0096C7] bg-sky-50 border border-sky-100 px-3.5 py-1 rounded-full mb-3 inline-block">
-            Leistungen
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-2 mt-1">
-            Fertigung &amp; Engineering.
-          </h2>
-          <p className="text-slate-600 text-base md:text-lg font-normal">
-            Präzise 3D-Drucke, CAD-Konstruktion und additive Kleinserien.
+export const CorporateServices: React.FC<CorporateServicesProps> = ({ onInquiryClick }) => (
+  <section id="leistungen" className="bg-white">
+    <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+      <Reveal className="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-semibold md:text-5xl">Was wir machen</h2>
+          <p className="mt-4 max-w-md text-lg text-muted">
+            Vom Einzelstück bis zur Serie – von der Idee bis zum fertigen Produkt.
           </p>
         </div>
+        <button onClick={onInquiryClick} className="btn-ghost">Projekt anfragen</button>
+      </Reveal>
 
-        {onInquiryClick && (
-          <button
-            onClick={onInquiryClick}
-            className="self-start md:self-end px-5 py-2.5 rounded-full bg-white border border-slate-200 hover:border-[#0096C7] text-slate-800 text-xs font-bold uppercase tracking-wider transition-all shadow-2xs hover:shadow flex items-center space-x-2"
+      <div className="mt-14 grid gap-4 md:grid-cols-3">
+        {/* Hauptleistung: groß und dunkel, im Farbverlauf des Würfels */}
+        <Reveal className="md:col-span-2">
+          <SpotlightCard
+            tilt={3}
+            glow="rgba(0,229,255,.22)"
+            className="h-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-navy-2 via-deep to-[#0B5FA8] p-8 text-white md:p-10"
           >
-            <span>Projekt anfragen</span>
-            <ArrowRight size={14} className="text-[#0096C7]" />
-          </button>
-        )}
+            <div className="orb absolute -right-16 -top-16 h-64 w-64 rounded-full bg-cyan/20 blur-3xl" aria-hidden="true" />
+            <Layers size={30} className="icon-hop relative text-cyan" aria-hidden="true" />
+            <h3 className="relative mt-10 text-3xl font-semibold md:text-4xl">FDM-3D-Druck</h3>
+            <p className="relative mt-3 max-w-md text-lg leading-relaxed text-white/75">
+              Funktionsteile, Deko und alles dazwischen – gedruckt auf Bambu-Lab-Systemen. Sie haben eine Idee oder eine Datei, wir setzen sie um.
+            </p>
+            <p className="relative mt-6 text-[15px] text-white/55">Funktionsteile, Ersatzteile, Deko, Giveaways</p>
+          </SpotlightCard>
+        </Reveal>
+
+        <Reveal delay={0.08}>
+          <ServiceCard
+            icon={<DraftingCompass size={26} />}
+            title="CAD-Konstruktion"
+            text="Keine Datei? Wir konstruieren das Teil nach Skizze, Foto oder Muster."
+            examples="Nachbauten, Anpassungen, Neuentwicklungen"
+          />
+        </Reveal>
+        <Reveal delay={0.04}>
+          <ServiceCard
+            icon={<Building2 size={26} />}
+            title="Für Unternehmen"
+            text="Individuelle Lösungen für Ihren Betrieb – vom ersten Prototyp bis zur Lieferung."
+            examples="Prototypen, Firmenlogos, Giveaways"
+          />
+        </Reveal>
+
+        <Reveal delay={0.12} className="md:col-span-2">
+          <SpotlightCard
+            tilt={3}
+            glow="rgba(0,121,160,.16)"
+            className="flex h-full flex-col justify-between gap-8 overflow-hidden rounded-[2rem] bg-cyan/15 p-8 md:flex-row md:items-end md:p-10"
+          >
+            <div className="relative">
+              <Boxes size={28} className="icon-hop text-cyan-text" aria-hidden="true" />
+              <h3 className="mt-8 text-3xl font-semibold">Vom Einzelstück zur Serie</h3>
+              <p className="mt-3 max-w-md text-lg leading-relaxed text-ink/75">
+                Ein einzelnes Teil oder eine ganze Serienproduktion – ohne Werkzeugkosten wie beim Spritzguss.
+              </p>
+            </div>
+            <p className="relative text-[15px] text-muted md:text-right">Einzelanfertigungen, Serienproduktion</p>
+          </SpotlightCard>
+        </Reveal>
       </div>
+    </div>
+  </section>
+);
 
-      {/* Modern Bento-style Service Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Card 1: Core 3D Printing */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.4 }}
-          className="md:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#0096C7]/50 transition-all flex flex-col justify-between group"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-11 h-11 rounded-2xl bg-sky-50 text-[#0096C7] flex items-center justify-center group-hover:bg-[#0096C7] group-hover:text-white transition-colors shadow-2xs">
-                <Layers size={22} />
-              </div>
-              <span className="text-[11px] uppercase font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 tracking-wider">
-                CoreXY
-              </span>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 group-hover:text-[#0096C7] transition-colors">
-              FDM 3D-Druck
-            </h3>
-            <p className="text-slate-600 text-sm leading-relaxed mb-5 font-normal">
-              Präzise Fertigung mit hoher Maßhaltigkeit und Schichtstärken ab 0.08 mm. Materialien: PLA, PETG, ABS, ASA, TPU &amp; Carbon.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
-            <div className="flex items-center space-x-1.5">
-              <CheckCircle2 size={14} className="text-[#0096C7] flex-shrink-0" />
-              <span>Passgenau</span>
-            </div>
-            <div className="flex items-center space-x-1.5">
-              <CheckCircle2 size={14} className="text-[#0096C7] flex-shrink-0" />
-              <span>Stabil</span>
-            </div>
-            <div className="flex items-center space-x-1.5">
-              <CheckCircle2 size={14} className="text-[#0096C7] flex-shrink-0" />
-              <span>Glatt</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Card 2: CAD-Konstruktion */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="md:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#0096C7]/50 transition-all flex flex-col justify-between group"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-11 h-11 rounded-2xl bg-sky-50 text-[#0096C7] flex items-center justify-center group-hover:bg-[#0096C7] group-hover:text-white transition-colors shadow-2xs">
-                <Cpu size={22} />
-              </div>
-              <span className="text-[11px] uppercase font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 tracking-wider">
-                CAD
-              </span>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 group-hover:text-[#0096C7] transition-colors">
-              CAD-Konstruktion
-            </h3>
-            <p className="text-slate-600 text-sm leading-relaxed mb-5 font-normal">
-              Von der Skizze oder dem Musterteil zum fertigungsgerechten 3D-Modell (STEP, STL, 3MF).
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Rekonstruktion &amp; Design</span>
-            <ArrowRight size={14} className="text-[#0096C7]" />
-          </div>
-        </motion.div>
-
-        {/* Card 3: Kleinserien */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.4, delay: 0.16 }}
-          className="md:col-span-6 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#0096C7]/50 transition-all flex flex-col justify-between group"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-11 h-11 rounded-2xl bg-sky-50 text-[#0096C7] flex items-center justify-center group-hover:bg-[#0096C7] group-hover:text-white transition-colors shadow-2xs">
-                <Box size={22} />
-              </div>
-              <span className="text-[11px] uppercase font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 tracking-wider">
-                Serie
-              </span>
-            </div>
-
-            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#0096C7] transition-colors">
-              Kleinserien &amp; B2B
-            </h3>
-            <p className="text-slate-600 text-sm leading-relaxed mb-5 font-normal">
-              Wirtschaftliche Produktion von 1 bis 500+ Stück ohne Werkzeugkosten für Gehäuse, Halterungen und Vorrichtungen.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Keine Mindestmenge</span>
-            <span className="text-[#0096C7] font-bold">1–500+ Stück</span>
-          </div>
-        </motion.div>
-
-        {/* Card 4: Rapid Prototyping */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.4, delay: 0.24 }}
-          className="md:col-span-6 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#0096C7]/50 transition-all flex flex-col justify-between group"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-11 h-11 rounded-2xl bg-sky-50 text-[#0096C7] flex items-center justify-center group-hover:bg-[#0096C7] group-hover:text-white transition-colors shadow-2xs">
-                <Zap size={22} />
-              </div>
-              <span className="text-[11px] uppercase font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 tracking-wider">
-                Express
-              </span>
-            </div>
-
-            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#0096C7] transition-colors">
-              Prototypen &amp; Muster
-            </h3>
-            <p className="text-slate-600 text-sm leading-relaxed mb-5 font-normal">
-              Schnelle Funktionsmuster zur Prüfung von Geometrie, Haptik und Passgenauigkeit.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Lieferzeit</span>
-            <span className="text-[#0096C7] font-bold">&lt; 48h Vorlauf</span>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
+const ServiceCard: React.FC<{ icon: React.ReactNode; title: string; text: string; examples: string }> = ({
+  icon, title, text, examples,
+}) => (
+  <SpotlightCard
+    glow="rgba(0,229,255,.2)"
+    className="h-full overflow-hidden rounded-[2rem] border border-line bg-ice p-8 transition-colors hover:border-cyan/60"
+  >
+    <span className="icon-hop relative inline-block text-cyan-text" aria-hidden="true">{icon}</span>
+    <h3 className="relative mt-8 text-2xl font-semibold">{title}</h3>
+    <p className="relative mt-3 leading-relaxed text-ink/75">{text}</p>
+    <p className="relative mt-5 text-[15px] text-muted">{examples}</p>
+  </SpotlightCard>
+);

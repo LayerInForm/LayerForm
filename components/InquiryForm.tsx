@@ -1,261 +1,307 @@
-import React, { useState, useEffect } from 'react';
-import { CONTACT_EMAIL, WHATSAPP_LINK } from '../src/constants';
-import { Mail, MessageSquare, Copy, Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { User, Building2, MessageCircle, Mail, ArrowLeft, CheckCircle2, Paperclip } from 'lucide-react';
 
 interface InquiryFormProps {
+  /** Vorausgefüllter Produktname (optional) */
   initialProduct?: string;
+  /** Vorausgefüllter Betreff / Text, z. B. "Anfrage: Giveaways für Unternehmen" */
   initialPersonalization?: string;
+  onBack?: () => void;
+  onPrivacy?: () => void;
 }
 
-export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization }) => {
-  const [step, setStep] = useState(1);
-  const [copied, setCopied] = useState(false);
-  const [formData, setFormData] = useState({
+// Ziel für die Anfragen
+const WHATSAPP_NUMBER = '4917685922649';
+const EMAIL = 'auftrag@layer-form.de';
+
+const TOPICS = ['Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
+
+type CustomerType = 'privat' | 'unternehmen';
+
+const inputCls =
+  'w-full rounded-xl border border-line bg-white px-4 py-3 text-[16px] text-ink placeholder:text-muted/70 outline-none transition focus:border-cyan-mid focus:ring-4 focus:ring-cyan/20';
+
+const Field: React.FC<{ label: string; optional?: boolean; error?: string; children: React.ReactNode; className?: string }> = ({
+  label, optional, error, children, className = '',
+}) => (
+  <label className={`block ${className}`}>
+    <span className="mb-1.5 flex items-baseline justify-between text-sm font-semibold text-ink">
+      {label}
+      {optional && <span className="text-xs font-normal text-muted">optional</span>}
+    </span>
+    {children}
+    {error && <span className="mt-1.5 block text-sm text-red-600">{error}</span>}
+  </label>
+);
+
+export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization, onBack, onPrivacy }) => {
+  const reduce = useReducedMotion();
+
+  // Themen aus dem vorausgefüllten Text erkennen
+  const preset = `${initialProduct ?? ''} ${initialPersonalization ?? ''}`;
+  const presetType: CustomerType = /unternehmen|giveaway|serie/i.test(preset) ? 'unternehmen' : 'privat';
+  const presetTopics = TOPICS.filter((t) => new RegExp(t.split(' ')[0], 'i').test(preset));
+
+  const [type, setType] = useState<CustomerType>(presetType);
+  const [topics, setTopics] = useState<string[]>(presetTopics);
+  const [form, setForm] = useState({
     name: '',
+    company: '',
     email: '',
     phone: '',
-    description: initialPersonalization || (initialProduct ? `Anfrage zum Produkt: ${initialProduct}` : ''),
-    material: 'Standard (PETG / PLA)',
-    quantity: '1'
+    quantity: '',
+    deadline: '',
+    message: [initialProduct, initialPersonalization].filter(Boolean).join(' – '),
   });
+  const [consent, setConsent] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | null>(null);
 
-  useEffect(() => {
-    if (initialPersonalization || initialProduct) {
-      setFormData(prev => ({
-        ...prev,
-        description: initialPersonalization || (initialProduct ? `Anfrage zum Produkt: ${initialProduct}` : prev.description)
-      }));
-    }
-  }, [initialPersonalization, initialProduct]);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, []);
 
-  const handleNext = () => setStep(step + 1);
-  const handleBack = () => setStep(step - 1);
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const generateMailBody = () => {
-    return `Hallo LayerForm Team,
+  const toggleTopic = (t: string) =>
+    setTopics((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
-ich möchte ein 3D-Druck Projekt anfragen:
+  // Fertiger Nachrichtentext für WhatsApp und E-Mail
+  const text = useMemo(() => {
+    const lines = [
+      'Hallo LayerForm,',
+      '',
+      form.message.trim(),
+      '',
+      `Kunde: ${type === 'unternehmen' ? 'Unternehmen' : 'Privatkunde'}`,
+      topics.length ? `Thema: ${topics.join(', ')}` : '',
+      form.quantity ? `Stückzahl: ${form.quantity}` : '',
+      form.deadline ? `Wunschtermin: ${form.deadline}` : '',
+      '',
+      `Name: ${form.name.trim()}`,
+      type === 'unternehmen' && form.company ? `Firma: ${form.company.trim()}` : '',
+      form.email ? `E-Mail: ${form.email.trim()}` : '',
+      form.phone ? `Telefon: ${form.phone.trim()}` : '',
+    ];
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }, [form, type, topics]);
 
-• Name / Firma: ${formData.name || '-'}
-• E-Mail: ${formData.email || '-'}
-• Telefon: ${formData.phone || '-'}
-• Stückzahl: ${formData.quantity || '1'}
-• Material: ${formData.material}
-
-Projektbeschreibung / Maße / Anforderungen:
-${formData.description}
-
-(3D-Dateien wie .STEP, .STL oder Skizzen im Anhang dieser E-Mail)`;
+  const validate = (via: 'whatsapp' | 'email') => {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = 'Bitte geben Sie Ihren Namen an.';
+    if (form.message.trim().length < 10) e.message = 'Beschreiben Sie Ihr Projekt bitte in ein paar Worten.';
+    if (via === 'email' && form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Diese E-Mail-Adresse sieht nicht vollständig aus.';
+    if (!consent) e.consent = 'Bitte bestätigen Sie den Hinweis zum Datenschutz.';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const getMailtoLink = () => {
-    const subject = `3D-Druck Anfrage: ${formData.name || 'Neues Projekt'}`;
-    const body = generateMailBody();
-    return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
-  const getWhatsAppLink = () => {
-    const text = `Hallo LayerForm! Ich möchte ein 3D-Druck Projekt anfragen:\n\n*Name:* ${formData.name}\n*E-Mail:* ${formData.email}\n*Stückzahl:* ${formData.quantity}\n*Material:* ${formData.material}\n\n*Details:*\n${formData.description}`;
-    return `${WHATSAPP_LINK}?text=${encodeURIComponent(text)}`;
-  };
-
-  const handleOpenMail = (e: React.FormEvent) => {
-    e.preventDefault();
-    const mailto = getMailtoLink();
-    window.location.href = mailto;
-  };
-
-  const handleCopyText = () => {
-    navigator.clipboard.writeText(generateMailBody());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  const send = (via: 'whatsapp' | 'email') => {
+    if (!validate(via)) return;
+    const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? ` – ${form.company}` : ''}`;
+    const url =
+      via === 'whatsapp'
+        ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
+        : `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.open(url, via === 'whatsapp' ? '_blank' : '_self');
+    setSentVia(via);
   };
 
   return (
-    <div id="inquiry" className="max-w-3xl mx-auto py-12 sm:py-16 md:py-24 px-4 sm:px-6">
-      <div className="mb-8 sm:mb-12 text-center">
-        <span className="text-xs font-bold uppercase tracking-widest text-[#0096C7] bg-sky-50 border border-sky-100 px-3.5 py-1 rounded-full mb-3 inline-block">
-          Projektanfrage
-        </span>
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-2 mt-1">
-          E-Mail Anfrage vorbereiten.
-        </h2>
-        <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-xl mx-auto font-normal px-2">
-          Geben Sie Ihre Projektdaten ein. Die Nachricht wird direkt in Ihrer E-Mail App mit allen Angaben geöffnet.
-        </p>
-      </div>
+    <section className="bg-ice">
+      <div className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pb-32">
+        {onBack && (
+          <button onClick={onBack} className="mb-8 inline-flex items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">
+            <ArrowLeft size={18} aria-hidden="true" /> Zur Startseite
+          </button>
+        )}
 
-      <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10 border border-slate-200 shadow-2xs">
-        {/* Step Indicator */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8 pb-5 border-b border-slate-100">
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
-            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-              step === 1 ? 'bg-[#0096C7] text-white' : 'bg-emerald-500 text-white'
-            }`}>
-              1
-            </span>
-            <span className="text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Kontaktdaten</span>
+        <div className="grid gap-10 md:grid-cols-[1fr_1.6fr] md:gap-14">
+          {/* Linke Spalte */}
+          <div className="md:sticky md:top-28 md:self-start">
+            <h1 className="text-4xl font-semibold leading-[1.05] md:text-5xl">Projekt anfragen</h1>
+            <p className="mt-5 text-lg leading-relaxed text-muted">
+              Beschreiben Sie kurz, was Sie brauchen. Sie bekommen eine persönliche Rückmeldung mit Preis und Lieferzeit.
+            </p>
+            <div className="mt-8 rounded-2xl border border-line bg-white p-5">
+              <p className="flex items-center gap-2 font-semibold">
+                <Paperclip size={17} className="text-cyan-text" aria-hidden="true" /> Fotos oder Dateien?
+              </p>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                Senden Sie diese nach dem Absenden einfach in WhatsApp hinterher oder hängen Sie sie an die E-Mail an –
+                Foto, Skizze, STL oder STEP.
+              </p>
+            </div>
           </div>
-          <div className="w-8 sm:w-12 h-0.5 bg-slate-200 mx-2" />
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
-            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-              step === 2 ? 'bg-[#0096C7] text-white' : 'bg-slate-100 text-slate-400'
-            }`}>
-              2
-            </span>
-            <span className="text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Projektdetails</span>
+
+          {/* Formular */}
+          <div className="rounded-[2rem] border border-line bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,28,71,.25)] md:p-10">
+            <AnimatePresence mode="wait" initial={false}>
+              {sentVia ? (
+                <motion.div
+                  key="done"
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="py-10 text-center"
+                >
+                  <CheckCircle2 size={52} className="mx-auto text-cyan-mid" aria-hidden="true" />
+                  <h2 className="mt-6 text-3xl font-semibold">Fast geschafft!</h2>
+                  <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-muted">
+                    {sentVia === 'whatsapp'
+                      ? 'Ihre Nachricht ist in WhatsApp vorbereitet. Tippen Sie dort nur noch auf „Senden“.'
+                      : 'Ihre E-Mail ist in Ihrem Mailprogramm vorbereitet. Klicken Sie dort nur noch auf „Senden“.'}
+                  </p>
+                  <div className="mt-8 flex flex-wrap justify-center gap-3">
+                    <button onClick={() => send(sentVia)} className="btn-primary">Erneut öffnen</button>
+                    <button onClick={() => setSentVia(null)} className="btn-ghost">Anfrage bearbeiten</button>
+                  </div>
+                  <p className="mt-6 text-sm text-muted">
+                    Hat sich nichts geöffnet? Schreiben Sie direkt an{' '}
+                    <a href={`mailto:${EMAIL}`} className="font-semibold text-cyan-text underline">{EMAIL}</a>.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  noValidate
+                  onSubmit={(e) => e.preventDefault()}
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  {/* Kundentyp */}
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold">Ich frage an als</span>
+                    <div className="grid grid-cols-2 gap-2" role="radiogroup">
+                      {([
+                        ['privat', 'Privatkunde', User],
+                        ['unternehmen', 'Unternehmen', Building2],
+                      ] as const).map(([key, label, Icon]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          role="radio"
+                          aria-checked={type === key}
+                          onClick={() => setType(key)}
+                          className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold transition ${
+                            type === key ? 'border-navy bg-navy text-white' : 'border-line bg-white text-ink/75 hover:border-ink/40'
+                          }`}
+                        >
+                          <Icon size={18} aria-hidden="true" /> {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Themen */}
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold">
+                      Worum geht es? <span className="font-normal text-muted">(mehrere möglich)</span>
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {TOPICS.map((t) => {
+                        const on = topics.includes(t);
+                        return (
+                          <button
+                            key={t}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() => toggleTopic(t)}
+                            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                              on ? 'border-cyan-mid bg-cyan/20 text-ink' : 'border-line bg-white text-ink/70 hover:border-ink/40'
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <Field label="Ihre Nachricht" error={errors.message}>
+                    <textarea
+                      rows={5}
+                      value={form.message}
+                      onChange={set('message')}
+                      placeholder="Was soll gedruckt werden? Maße, Farbe, Einsatzzweck …"
+                      className={`${inputCls} resize-y`}
+                    />
+                  </Field>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field label="Stückzahl" optional>
+                      <input value={form.quantity} onChange={set('quantity')} inputMode="numeric" placeholder="z. B. 1 oder 250" className={inputCls} />
+                    </Field>
+                    <Field label="Wunschtermin" optional>
+                      <input value={form.deadline} onChange={set('deadline')} placeholder="z. B. Mitte Oktober" className={inputCls} />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field label="Name" error={errors.name}>
+                      <input value={form.name} onChange={set('name')} autoComplete="name" className={inputCls} />
+                    </Field>
+                    {type === 'unternehmen' ? (
+                      <Field label="Firma" optional>
+                        <input value={form.company} onChange={set('company')} autoComplete="organization" className={inputCls} />
+                      </Field>
+                    ) : (
+                      <Field label="Telefon" optional>
+                        <input value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
+                      </Field>
+                    )}
+                    <Field label="E-Mail" optional error={errors.email}>
+                      <input value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
+                    </Field>
+                    {type === 'unternehmen' && (
+                      <Field label="Telefon" optional>
+                        <input value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
+                      </Field>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="flex items-start gap-3 text-[15px] leading-relaxed text-ink/80">
+                      <input
+                        type="checkbox"
+                        checked={consent}
+                        onChange={(e) => setConsent(e.target.checked)}
+                        className="mt-1 h-5 w-5 shrink-0 accent-[#19B2D9]"
+                      />
+                      <span>
+                        Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden.{' '}
+                        {onPrivacy && (
+                          <button type="button" onClick={onPrivacy} className="font-semibold text-cyan-text underline">
+                            Datenschutzerklärung
+                          </button>
+                        )}
+                      </span>
+                    </label>
+                    {errors.consent && <span className="mt-1.5 block text-sm text-red-600">{errors.consent}</span>}
+                  </div>
+
+                  <div className="border-t border-line pt-6">
+                    <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <button type="button" onClick={() => send('whatsapp')} className="btn-primary w-full">
+                        <MessageCircle size={19} aria-hidden="true" /> WhatsApp
+                      </button>
+                      <button type="button" onClick={() => send('email')} className="btn-ghost w-full">
+                        <Mail size={19} aria-hidden="true" /> E-Mail
+                      </button>
+                    </div>
+                    <p className="mt-3 text-sm text-muted">
+                      Ihre Anfrage wird als fertige Nachricht vorbereitet – Sie müssen sie nur noch abschicken.
+                    </p>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-
-        <form onSubmit={handleOpenMail} className="space-y-5 sm:space-y-6">
-          {step === 1 && (
-            <div className="space-y-4 sm:space-y-5 animate-fade-in">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Name / Firma *</label>
-                  <input 
-                    required
-                    type="text" 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
-                    placeholder="Max Mustermann"
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">E-Mail Adresse *</label>
-                  <input 
-                    required
-                    type="email" 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
-                    placeholder="name@example.de"
-                    value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Telefonnummer (optional)</label>
-                <input 
-                  type="tel" 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
-                  placeholder="+49 ..."
-                  value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                />
-              </div>
-
-              <div className="pt-3 sm:pt-4 flex justify-end">
-                <button 
-                  type="button" 
-                  onClick={handleNext} 
-                  disabled={!formData.name || !formData.email}
-                  className="w-full sm:w-auto bg-[#0096C7] hover:bg-[#0077B6] disabled:opacity-50 text-white px-8 py-4 rounded-full font-bold text-sm transition-colors shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
-                >
-                  <span>Weiter zu Projektdetails</span>
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4 sm:space-y-5 animate-fade-in">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Beschreibung &amp; Bauteildetails *</label>
-                <textarea 
-                  required
-                  rows={4}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors resize-none"
-                  placeholder="Beschreiben Sie Ihr Bauteil, Maße, gewünschte Funktion oder Anforderungen..."
-                  value={formData.description}
-                  onChange={e => setFormData({...formData, description: e.target.value})}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Material / Wunsch</label>
-                  <select 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
-                    value={formData.material}
-                    onChange={e => setFormData({...formData, material: e.target.value})}
-                  >
-                    <option value="Standard (PETG / PLA)">Standard (PETG / PLA)</option>
-                    <option value="Hitze- & Wetterfest (ABS / ASA)">Hitze- &amp; Wetterfest (ABS / ASA)</option>
-                    <option value="Flexibel (TPU Gummi)">Flexibel (TPU Gummi)</option>
-                    <option value="Carbonfaser-verstärkt (CF)">Carbonfaser-verstärkt (CF)</option>
-                    <option value="Beratung erwünscht">Beratung erwünscht</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Stückzahl</label>
-                  <input 
-                    type="number"
-                    min="1"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#0096C7] focus:bg-white text-slate-900 text-base sm:text-sm transition-colors"
-                    value={formData.quantity}
-                    onChange={e => setFormData({...formData, quantity: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              {/* Preview of the ready Mail text */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">
-                    Vorschau der E-Mail Nachricht
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopyText}
-                    className="flex items-center space-x-1 text-[#0096C7] hover:text-[#0077B6] font-bold text-[11px] p-1 -m-1"
-                  >
-                    {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                    <span>{copied ? 'Kopiert!' : 'Text kopieren'}</span>
-                  </button>
-                </div>
-                <div className="whitespace-pre-wrap text-slate-600 bg-white p-3 rounded-xl border border-slate-200/80 max-h-36 overflow-y-auto leading-relaxed text-[11px]">
-                  {generateMailBody()}
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="order-2 sm:order-1 px-5 py-3 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all flex items-center justify-center space-x-2 min-h-[44px]"
-                >
-                  <ArrowLeft size={16} />
-                  <span>Zurück</span>
-                </button>
-
-                <div className="order-1 sm:order-2 flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
-                  <a
-                    href={getWhatsAppLink()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1EBE5D] text-white px-5 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
-                  >
-                    <MessageSquare size={16} />
-                    <span>Per WhatsApp senden</span>
-                  </a>
-
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto bg-[#0096C7] hover:bg-[#0077B6] text-white px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center space-x-2 min-h-[48px] active:scale-98"
-                  >
-                    <Mail size={16} />
-                    <span>In E-Mail App öffnen</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </form>
       </div>
-    </div>
+    </section>
   );
 };
