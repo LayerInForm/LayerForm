@@ -1,19 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Seite nicht gefunden | LayerForm</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#040B1D">
+  <title>Seite nicht gefunden | LayerForm</title>
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <style>
+    *{box-sizing:border-box;margin:0}
+    body{min-height:100dvh;display:grid;place-items:center;padding:1.5rem;background:#040B1D;color:#E8F1F7;
+      font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
+      background-image:repeating-linear-gradient(to bottom,rgba(232,241,247,.035) 0 1px,transparent 1px 7px)}
+    main{max-width:32rem;text-align:center}
+    img{width:64px;height:64px}
+    h1{margin-top:1.5rem;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.03em;line-height:1.05}
+    p{margin-top:1rem;color:#9AABC2;font-size:1.125rem;line-height:1.6}
+    a{display:inline-block;margin-top:2rem;padding:.9rem 1.6rem;border-radius:999px;background:#00E5FF;color:#001C47;
+      font-weight:600;text-decoration:none;transition:transform .16s cubic-bezier(.23,1,.32,1),background-color .2s}
+    a:hover{background:#8CF1FF} a:active{transform:scale(.97)}
+    a:focus-visible{outline:2px solid #00E5FF;outline-offset:3px}
+  </style>
 </head>
-<body class="bg-[#fbfbfd] text-[#1d1d1f] flex items-center justify-center min-h-screen">
-    <div class="text-center px-6">
-        <h1 class="text-6xl font-bold mb-4">404</h1>
-        <p class="text-xl text-gray-500 mb-8">Diese Seite existiert leider nicht.</p>
-        <a href="/" class="bg-black text-white px-8 py-3 rounded-full font-semibold transition-all hover:opacity-80">
-            Zur Startseite
-        </a>
-    </div>
+<body>
+  <main>
+    <img src="/logo-icon.png" alt="LayerForm">
+    <h1>Diese Schicht fehlt.</h1>
+    <p>Die Seite gibt es nicht oder nicht mehr. Auf der Startseite finden Sie alles zu 3D-Druck und CAD.</p>
+    <a href="/">Zur Startseite</a>
+  </main>
 </body>
 </html>

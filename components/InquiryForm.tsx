@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { User, Building2, MessageCircle, Mail, ArrowLeft, CheckCircle2, Paperclip } from 'lucide-react';
+import { ArrowLeft, Buildings, CheckCircle, EnvelopeSimple, Paperclip, User, WhatsappLogo } from '@phosphor-icons/react';
 
 interface InquiryFormProps {
   /** Vorausgefüllter Produktname (optional) */
@@ -20,18 +20,18 @@ const TOPICS = ['Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Seri
 type CustomerType = 'privat' | 'unternehmen';
 
 const inputCls =
-  'w-full rounded-xl border border-line bg-white px-4 py-3 text-[16px] text-ink placeholder:text-muted/70 outline-none transition focus:border-cyan-mid focus:ring-4 focus:ring-cyan/20';
+  'w-full rounded-xl border border-white/[.12] bg-bg/70 px-4 py-3 text-[16px] text-fg placeholder:text-fg-subtle outline-none transition-[border-color,box-shadow] duration-200 focus:border-cyan focus:ring-4 focus:ring-cyan/15';
 
 const Field: React.FC<{ label: string; optional?: boolean; error?: string; children: React.ReactNode; className?: string }> = ({
   label, optional, error, children, className = '',
 }) => (
   <label className={`block ${className}`}>
-    <span className="mb-1.5 flex items-baseline justify-between text-sm font-semibold text-ink">
+    <span className="mb-1.5 flex items-baseline justify-between text-sm font-semibold text-fg">
       {label}
-      {optional && <span className="text-xs font-normal text-muted">optional</span>}
+      {optional && <span className="text-xs font-normal text-fg-muted">optional</span>}
     </span>
     {children}
-    {error && <span className="mt-1.5 block text-sm text-red-600">{error}</span>}
+    {error && <span className="mt-1.5 block text-sm text-red-300">{error}</span>}
   </label>
 );
 
@@ -52,7 +52,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     phone: '',
     quantity: '',
     deadline: '',
-    message: [initialProduct, initialPersonalization].filter(Boolean).join(' – '),
+    message: [initialProduct, initialPersonalization].filter(Boolean).join('\n'),
   });
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -98,7 +98,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
   const send = (via: 'whatsapp' | 'email') => {
     if (!validate(via)) return;
-    const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? ` – ${form.company}` : ''}`;
+    const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? `, ${form.company}` : ''}`;
     const url =
       via === 'whatsapp'
         ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
@@ -108,10 +108,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   };
 
   return (
-    <section className="bg-ice">
-      <div className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pb-32">
+    <section>
+      <div className="mx-auto max-w-7xl px-5 pb-24 pt-8 md:px-8 md:pb-32">
         {onBack && (
-          <button onClick={onBack} className="mb-8 inline-flex items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">
+          <button onClick={onBack} className="mb-8 inline-flex items-center gap-2 text-[15px] font-semibold text-fg-muted hover:text-fg">
             <ArrowLeft size={18} aria-hidden="true" /> Zur Startseite
           </button>
         )}
@@ -120,22 +120,22 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
           {/* Linke Spalte */}
           <div className="md:sticky md:top-28 md:self-start">
             <h1 className="text-4xl font-semibold leading-[1.05] md:text-5xl">Projekt anfragen</h1>
-            <p className="mt-5 text-lg leading-relaxed text-muted">
+            <p className="mt-5 text-lg leading-relaxed text-fg-muted">
               Beschreiben Sie kurz, was Sie brauchen. Sie bekommen eine persönliche Rückmeldung mit Preis und Lieferzeit.
             </p>
-            <div className="mt-8 rounded-2xl border border-line bg-white p-5">
+            <div className="mt-8 rounded-panel border border-white/[.07] bg-surface p-5">
               <p className="flex items-center gap-2 font-semibold">
-                <Paperclip size={17} className="text-cyan-text" aria-hidden="true" /> Fotos oder Dateien?
+                <Paperclip size={17} className="text-cyan" aria-hidden="true" /> Fotos oder Dateien?
               </p>
-              <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                Senden Sie diese nach dem Absenden einfach in WhatsApp hinterher oder hängen Sie sie an die E-Mail an –
+              <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">
+                Senden Sie diese nach dem Absenden einfach in WhatsApp hinterher oder hängen Sie sie an die E-Mail an:
                 Foto, Skizze, STL oder STEP.
               </p>
             </div>
           </div>
 
           {/* Formular */}
-          <div className="rounded-[2rem] border border-line bg-white p-6 shadow-[0_24px_60px_-30px_rgba(0,28,71,.25)] md:p-10">
+          <div className="rounded-panel border border-white/[.07] bg-surface p-6 md:p-10">
             <AnimatePresence mode="wait" initial={false}>
               {sentVia ? (
                 <motion.div
@@ -145,9 +145,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   exit={{ opacity: 0 }}
                   className="py-10 text-center"
                 >
-                  <CheckCircle2 size={52} className="mx-auto text-cyan-mid" aria-hidden="true" />
-                  <h2 className="mt-6 text-3xl font-semibold">Fast geschafft!</h2>
-                  <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-muted">
+                  <CheckCircle size={52} className="mx-auto text-cyan" aria-hidden="true" />
+                  <h2 className="mt-6 text-3xl font-semibold">Fast geschafft</h2>
+                  <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-fg-muted">
                     {sentVia === 'whatsapp'
                       ? 'Ihre Nachricht ist in WhatsApp vorbereitet. Tippen Sie dort nur noch auf „Senden“.'
                       : 'Ihre E-Mail ist in Ihrem Mailprogramm vorbereitet. Klicken Sie dort nur noch auf „Senden“.'}
@@ -156,9 +156,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     <button onClick={() => send(sentVia)} className="btn-primary">Erneut öffnen</button>
                     <button onClick={() => setSentVia(null)} className="btn-ghost">Anfrage bearbeiten</button>
                   </div>
-                  <p className="mt-6 text-sm text-muted">
+                  <p className="mt-6 text-sm text-fg-muted">
                     Hat sich nichts geöffnet? Schreiben Sie direkt an{' '}
-                    <a href={`mailto:${EMAIL}`} className="font-semibold text-cyan-text underline">{EMAIL}</a>.
+                    <a href={`mailto:${EMAIL}`} className="font-semibold text-cyan underline">{EMAIL}</a>.
                   </p>
                 </motion.div>
               ) : (
@@ -177,7 +177,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     <div className="grid grid-cols-2 gap-2" role="radiogroup">
                       {([
                         ['privat', 'Privatkunde', User],
-                        ['unternehmen', 'Unternehmen', Building2],
+                        ['unternehmen', 'Unternehmen', Buildings],
                       ] as const).map(([key, label, Icon]) => (
                         <button
                           key={key}
@@ -186,7 +186,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                           aria-checked={type === key}
                           onClick={() => setType(key)}
                           className={`flex items-center justify-center gap-2 rounded-xl border px-2 py-3 text-sm font-semibold min-[400px]:px-4 min-[400px]:text-base transition ${
-                            type === key ? 'border-navy bg-navy text-white' : 'border-line bg-white text-ink/75 hover:border-ink/40'
+                            type === key ? 'border-cyan bg-cyan text-ink' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
                           }`}
                         >
                           <Icon size={18} className="hidden shrink-0 min-[400px]:block" aria-hidden="true" /> {label}
@@ -198,7 +198,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   {/* Themen */}
                   <div>
                     <span className="mb-2 block text-sm font-semibold">
-                      Worum geht es? <span className="font-normal text-muted">(mehrere möglich)</span>
+                      Worum geht es? <span className="font-normal text-fg-muted">(mehrere möglich)</span>
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {TOPICS.map((t) => {
@@ -210,7 +210,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                             aria-pressed={on}
                             onClick={() => toggleTopic(t)}
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                              on ? 'border-cyan-mid bg-cyan/20 text-ink' : 'border-line bg-white text-ink/70 hover:border-ink/40'
+                              on ? 'border-cyan bg-cyan/15 text-fg' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
                             }`}
                           >
                             {t}
@@ -263,37 +263,37 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   </div>
 
                   <div>
-                    <label className="flex items-start gap-3 text-[15px] leading-relaxed text-ink/80">
+                    <label className="flex items-start gap-3 text-[15px] leading-relaxed text-fg/80">
                       <input
                         type="checkbox"
                         checked={consent}
                         onChange={(e) => setConsent(e.target.checked)}
-                        className="mt-1 h-5 w-5 shrink-0 accent-[#19B2D9]"
+                        className="mt-1 h-5 w-5 shrink-0 accent-[#00E5FF]"
                       />
                       <span>
                         Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden.{' '}
                         {onPrivacy && (
-                          <button type="button" onClick={onPrivacy} className="font-semibold text-cyan-text underline">
+                          <button type="button" onClick={onPrivacy} className="font-semibold text-cyan underline">
                             Datenschutzerklärung
                           </button>
                         )}
                       </span>
                     </label>
-                    {errors.consent && <span className="mt-1.5 block text-sm text-red-600">{errors.consent}</span>}
+                    {errors.consent && <span className="mt-1.5 block text-sm text-red-300">{errors.consent}</span>}
                   </div>
 
-                  <div className="border-t border-line pt-6">
+                  <div className="border-t border-white/10 pt-6">
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('whatsapp')} className="btn-primary w-full">
-                        <MessageCircle size={19} aria-hidden="true" /> WhatsApp
+                        <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
                       </button>
                       <button type="button" onClick={() => send('email')} className="btn-ghost w-full">
-                        <Mail size={19} aria-hidden="true" /> E-Mail
+                        <EnvelopeSimple size={20} aria-hidden="true" /> E-Mail
                       </button>
                     </div>
-                    <p className="mt-3 text-sm text-muted">
-                      Ihre Anfrage wird als fertige Nachricht vorbereitet – Sie müssen sie nur noch abschicken.
+                    <p className="mt-3 text-sm text-fg-muted">
+                      Ihre Anfrage wird als fertige Nachricht vorbereitet. Sie müssen sie nur noch abschicken.
                     </p>
                   </div>
                 </motion.form>

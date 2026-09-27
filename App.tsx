@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
 
   const { scrollYProgress } = useScroll();
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 25 });
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -40,17 +40,27 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-ink selection:bg-cyan/30 font-sans">
-      <motion.div style={{ scaleX: progress }} className="progress-bar fixed inset-x-0 top-0 z-50 h-[3px] origin-left" />
+    <div className="grain flex min-h-[100dvh] flex-col">
+      <a
+        href="#main"
+        className="sr-only z-nav rounded-full bg-cyan px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Zum Inhalt springen
+      </a>
+      <motion.div
+        style={{ scaleX: progress }}
+        className="fixed inset-x-0 top-0 z-progress h-[2px] origin-left bg-cyan"
+        aria-hidden="true"
+      />
       <Navbar currentView={currentView} setView={setCurrentView} />
 
-      <main className="flex-grow">
+      <main id="main" className="flex-grow">
         {currentView === 'home' && (
           <>
             <Hero onInquiryClick={openInquiry} />
             <Projects onInquiry={handleInquiryWithTopic} />
             <CorporateServices onInquiryClick={openInquiry} />
-            <CadShowcase onInquiryClick={openInquiry} />
+            <CadShowcase onInquiry={handleInquiryWithTopic} />
             <Reviews />
             <ConsultationHub onInquiryClick={openInquiry} />
           </>
@@ -74,9 +84,9 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {currentView === 'impressum' && <div className="pt-28"><Impressum /></div>}
-        {currentView === 'agb' && <div className="pt-28"><AGB /></div>}
-        {currentView === 'datenschutz' && <div className="pt-28"><Datenschutz /></div>}
+        {currentView === 'impressum' && <div className="legal pt-28"><Impressum /></div>}
+        {currentView === 'agb' && <div className="legal pt-28"><AGB /></div>}
+        {currentView === 'datenschutz' && <div className="legal pt-28"><Datenschutz /></div>}
       </main>
 
       <Footer setView={setCurrentView} />

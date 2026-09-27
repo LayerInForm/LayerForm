@@ -1,40 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Box, Scan, CheckCircle2 } from 'lucide-react';
-import { Reveal } from './effects';
+import { EASE_OUT, Reveal } from './effects';
 
 interface CadShowcaseProps {
-  onInquiryClick: () => void;
+  onInquiry: (topic?: string) => void;
 }
 
 const STEPS = [
   {
     key: 'innen',
-    icon: Scan,
     label: 'Konstruktion innen',
-    text: 'Verstärkungsrippen, Schraublaschen und Aufnahmen – passgenau nach Maß konstruiert.',
+    text: 'Verstärkungsrippen, Schraublaschen und Aufnahmen, passgenau nach Maß konstruiert.',
     image: '/projects/cad-innen.webp',
-    chip: 'CAD-Modell',
+    caption: 'CAD-Modell, Innenansicht',
   },
   {
     key: 'aussen',
-    icon: Box,
     label: 'Konstruktion außen',
     text: 'Auf Wunsch mit eigenem Motiv, hier ein Herz als Aussparung.',
     image: '/projects/cad-aussen.webp',
-    chip: 'CAD-Modell',
+    caption: 'CAD-Modell, Außenansicht',
   },
   {
     key: 'fertig',
-    icon: CheckCircle2,
     label: 'Gedrucktes Teil',
     text: 'Aus dem Modell wird ein stabiles, einsatzfertiges Bauteil.',
     image: '/projects/eckteil-gedruckt.webp',
-    chip: 'Fertiger Druck',
+    caption: 'Fertiger Druck',
   },
 ];
 
-export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiryClick }) => {
+const DURATION = 5;
+
+export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiry }) => {
   const [active, setActive] = useState(0);
   const [auto, setAuto] = useState(true);
   const reduce = useReducedMotion();
@@ -42,26 +40,24 @@ export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiryClick }) => {
   // Wechselt automatisch, bis jemand selbst klickt
   useEffect(() => {
     if (!auto || reduce) return;
-    const t = setInterval(() => setActive((a) => (a + 1) % STEPS.length), 4500);
+    const t = setInterval(() => setActive((a) => (a + 1) % STEPS.length), DURATION * 1000);
     return () => clearInterval(t);
   }, [auto, reduce]);
 
   const step = STEPS[active];
 
   return (
-    <section className="hero-bg relative overflow-hidden text-white">
-      <div className="grid-lines absolute inset-0" aria-hidden="true" />
-
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 md:grid-cols-[1fr_1.25fr] md:py-32">
-        <Reveal>
+    <section className="relative border-y border-white/[.07] bg-navy">
+      <div className="layer-lines pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
+      <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-24 md:px-8 md:py-32 lg:grid-cols-12 lg:gap-10">
+        <Reveal className="lg:col-span-5">
           <h2 className="text-4xl font-semibold leading-[1.05] md:text-5xl">Vom CAD-Modell zum fertigen Teil</h2>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-white/70">
+          <p className="mt-5 max-w-[44ch] text-lg leading-relaxed text-fg-muted">
             Keine Datei? Kein Problem. Wir konstruieren Ihr Teil selbst und drucken es direkt im Anschluss.
           </p>
 
-          <div className="mt-10 flex flex-col gap-2" role="tablist" aria-label="Ansichten">
+          <div className="mt-10" role="tablist" aria-label="Ansichten">
             {STEPS.map((s, i) => {
-              const Icon = s.icon;
               const on = i === active;
               return (
                 <button
@@ -69,61 +65,57 @@ export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiryClick }) => {
                   role="tab"
                   aria-selected={on}
                   onClick={() => { setActive(i); setAuto(false); }}
-                  className={`relative flex items-start gap-4 overflow-hidden rounded-2xl border p-4 text-left transition-colors ${
-                    on ? 'border-cyan/50 bg-white/10' : 'border-white/10 bg-white/[.03] hover:bg-white/[.07]'
-                  }`}
+                  className="group relative block w-full py-4 pl-6 text-left"
                 >
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                      on ? 'bg-cyan text-ink' : 'bg-white/10 text-white/70'
-                    }`}
-                  >
-                    <Icon size={19} aria-hidden="true" />
-                  </span>
-                  <span>
-                    <span className="block font-semibold">{s.label}</span>
-                    <span className={`mt-0.5 block text-[15px] leading-snug ${on ? 'text-white/75' : 'text-white/50'}`}>{s.text}</span>
-                  </span>
-                  {/* Fortschrittsbalken beim automatischen Wechsel */}
-                  {on && auto && !reduce && (
+                  {/* Leiste links, füllt sich beim automatischen Wechsel */}
+                  <span className="absolute inset-y-0 left-0 w-[2px] rounded-full bg-white/10" aria-hidden="true" />
+                  {on && (
                     <motion.span
-                      key={`bar-${active}`}
-                      className="absolute bottom-0 left-0 h-[2px] bg-cyan"
-                      initial={{ width: '0%' }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: 4.5, ease: 'linear' }}
+                      key={`bar-${active}-${auto}`}
+                      className="absolute inset-y-0 left-0 w-[2px] origin-top rounded-full bg-cyan"
+                      initial={auto && !reduce ? { scaleY: 0 } : false}
+                      animate={{ scaleY: 1 }}
+                      transition={auto && !reduce ? { duration: DURATION, ease: 'linear' } : { duration: 0 }}
                       aria-hidden="true"
                     />
                   )}
+                  <span className={`block text-lg font-semibold transition-colors ${on ? 'text-fg' : 'text-fg-subtle group-hover:text-fg-muted'}`}>
+                    {s.label}
+                  </span>
+                  <span className={`mt-1 block max-w-[42ch] leading-snug transition-colors ${on ? 'text-fg-muted' : 'text-fg-subtle'}`}>
+                    {s.text}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          <button onClick={onInquiryClick} className="btn-primary mt-10">Konstruktion anfragen</button>
+          <button onClick={() => onInquiry('Anfrage: CAD-Konstruktion')} className="btn-primary mt-10">
+            Konstruktion anfragen
+          </button>
         </Reveal>
 
-        <Reveal delay={0.1}>
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-[0_30px_80px_-30px_rgba(0,229,255,.35)]">
-            <div className="relative aspect-[4/3]">
-              <AnimatePresence mode="popLayout" initial={false}>
+        <Reveal delay={0.08} className="lg:col-span-7">
+          <figure>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-panel bg-white shadow-[0_40px_80px_-40px_rgba(0,0,0,.6)]">
+              <AnimatePresence initial={false}>
                 <motion.img
                   key={step.key}
                   src={step.image}
                   alt={`${step.label}: ${step.text}`}
+                  width={1000}
+                  height={750}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover"
-                  initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.04, filter: 'blur(6px)' }}
-                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+                  transition={{ duration: 0.5, ease: EASE_OUT }}
                 />
               </AnimatePresence>
             </div>
-            <span className="absolute left-4 top-4 rounded-full bg-navy/85 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              {step.chip}
-            </span>
-          </div>
+            <figcaption className="mt-3 text-sm text-fg-subtle">{step.caption}</figcaption>
+          </figure>
         </Reveal>
       </div>
     </section>
