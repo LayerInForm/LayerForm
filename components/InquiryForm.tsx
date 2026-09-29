@@ -50,6 +50,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     company: '',
     email: '',
     phone: '',
+    street: '',
+    zip: '',
+    city: '',
     quantity: '',
     deadline: '',
     message: [initialProduct, initialPersonalization].filter(Boolean).join('\n'),
@@ -82,6 +85,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
       type === 'unternehmen' && form.company ? `Firma: ${form.company.trim()}` : '',
       form.email ? `E-Mail: ${form.email.trim()}` : '',
       form.phone ? `Telefon: ${form.phone.trim()}` : '',
+      [form.street.trim(), [form.zip.trim(), form.city.trim()].filter(Boolean).join(' ')].filter(Boolean).length
+        ? `Adresse: ${[form.street.trim(), [form.zip.trim(), form.city.trim()].filter(Boolean).join(' ')].filter(Boolean).join(', ')}`
+        : '',
     ];
     return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   }, [form, type, topics]);
@@ -261,6 +267,41 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                       </Field>
                     )}
                   </div>
+
+                  {/* Adresse, optional */}
+                  <fieldset>
+                    <legend className="mb-1.5 flex w-full items-baseline justify-between text-sm font-semibold text-fg">
+                      Adresse
+                      <span className="text-xs font-normal text-fg-muted">optional, für Versand und Angebot</span>
+                    </legend>
+                    <div className="grid grid-cols-6 gap-3">
+                      <input
+                        value={form.street}
+                        onChange={set('street')}
+                        autoComplete="street-address"
+                        placeholder="Straße und Hausnummer"
+                        aria-label="Straße und Hausnummer"
+                        className={`${inputCls} col-span-6`}
+                      />
+                      <input
+                        value={form.zip}
+                        onChange={set('zip')}
+                        autoComplete="postal-code"
+                        inputMode="numeric"
+                        placeholder="PLZ"
+                        aria-label="Postleitzahl"
+                        className={`${inputCls} col-span-2`}
+                      />
+                      <input
+                        value={form.city}
+                        onChange={set('city')}
+                        autoComplete="address-level2"
+                        placeholder="Ort"
+                        aria-label="Ort"
+                        className={`${inputCls} col-span-4`}
+                      />
+                    </div>
+                  </fieldset>
 
                   <div>
                     <label className="flex items-start gap-3 text-[15px] leading-relaxed text-fg/80">
