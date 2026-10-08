@@ -9,7 +9,7 @@
  */
 export const PRICING = {
   kwh: 0.4,        // € pro kWh Strom
-  printerKw: 0.12, // durchschnittliche Leistungsaufnahme beim Drucken in kW (ca. 120 W, Annahme)
+  printerKw: 0.25, // Leistungsaufnahme beim Drucken in kW (250 W)
   markup: 3.0,     // 300 % Aufschlag auf die Kosten (Kosten × 4)
   minimum: 9.0,    // € Mindestpreis pro Anfrage, noch VORLÄUFIG
 };
