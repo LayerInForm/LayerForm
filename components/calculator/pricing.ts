@@ -2,14 +2,16 @@
  * Kalkulationswerte des Preisrechners.
  * Hier werden alle Preise gepflegt. Der Rechner zeigt nur einen unverbindlichen Richtwert.
  *
- * Materialpreise: echte Werte von LayerForm (€ pro 1000 g).
- * base, perHour, perPlate, minimum: noch VORLÄUFIG, bitte durch eigene Werte ersetzen.
+ * Formel:  Richtpreis = (Material + Strom) × (1 + markup)
+ *          Material = Gramm × Materialpreis pro kg / 1000
+ *          Strom    = Druckstunden × printerKw × kwh
+ * Danach auf 0,50 € aufgerundet, mindestens "minimum".
  */
 export const PRICING = {
-  base: 3.0,      // € Grundgebühr pro Anfrage (Vorbereitung, Prüfung)
-  perHour: 1.8,   // € pro Druckstunde (Maschinenzeit)
-  perPlate: 1.0,  // € pro genutzter Druckplatte (Rüsten, Platte wechseln)
-  minimum: 9.0,   // € Mindestpreis pro Anfrage
+  kwh: 0.4,        // € pro kWh Strom
+  printerKw: 0.12, // durchschnittliche Leistungsaufnahme beim Drucken in kW (ca. 120 W, Annahme)
+  markup: 3.0,     // 300 % Aufschlag auf die Kosten (Kosten × 4)
+  minimum: 9.0,    // € Mindestpreis pro Anfrage, noch VORLÄUFIG
 };
 
 export const MAX_PART = 255; // mm, maximale Teilegröße je Achse und nutzbare Plattenfläche

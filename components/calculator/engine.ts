@@ -148,15 +148,16 @@ function partCost(p: PartData, m: Material, q: Quality, infill: number) {
 }
 
 export function estimate(entries: Entry[], parts: PartData[], plateCount: number, m: Material, q: Quality, infill: number) {
-  let grams = 0, hours = 0, usedPlates = 0;
+  let grams = 0, hours = 0;
   for (let i = 0; i < plateCount; i++) {
     const inst = instancesOn(i, entries, parts);
     if (!inst.length) continue;
-    usedPlates++;
-    hours += 0.1; // Vorbereitung je Platte
+    hours += 0.1; // Aufheizen und Vorbereitung je Platte
     inst.forEach((p) => { const c = partCost(p, m, q, infill); grams += c.grams; hours += c.hours; });
   }
-  let total = PRICING.base + usedPlates * PRICING.perPlate + grams * (m.perKg / 1000) + hours * PRICING.perHour;
+  const material = grams * (m.perKg / 1000);
+  const power = hours * PRICING.printerKw * PRICING.kwh;
+  let total = (material + power) * (1 + PRICING.markup);
   total = Math.ceil(total * 2) / 2; // auf 0,50 € aufrunden
   return Math.max(PRICING.minimum, total);
 }
