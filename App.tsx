@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -11,7 +11,13 @@ import { Projects } from './components/Projects';
 import { ConsultationHub } from './components/ConsultationHub';
 import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 
-export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz';
+// Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
+const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
+
+export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner';
+
+// Direkt verlinkbar: layer-form.de/#preisrechner
+const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner' };
 
 interface OrderSummary {
   product?: string;
@@ -19,7 +25,7 @@ interface OrderSummary {
 }
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('home');
+  const [currentView, setCurrentView] = useState<View>(() => HASH_VIEW[window.location.hash] ?? 'home');
   const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
 
   const { scrollYProgress } = useScroll();
@@ -27,6 +33,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
+    const hash = currentView === 'rechner' ? '#preisrechner' : '';
+    if (window.location.hash !== hash) history.replaceState(null, '', window.location.pathname + hash);
   }, [currentView]);
 
   const handleInquiryWithTopic = (topic?: string) => {
@@ -57,7 +65,7 @@ const App: React.FC = () => {
       <main id="main" className="flex-grow">
         {currentView === 'home' && (
           <>
-            <Hero onInquiryClick={openInquiry} />
+            <Hero onInquiryClick={openInquiry} onCalculatorClick={() => setCurrentView('rechner')} />
             <Projects onInquiry={handleInquiryWithTopic} />
             <CorporateServices onInquiryClick={openInquiry} />
             <CadShowcase onInquiry={handleInquiryWithTopic} />
@@ -75,6 +83,14 @@ const App: React.FC = () => {
               onBack={() => setCurrentView('home')}
               onPrivacy={() => setCurrentView('datenschutz')}
             />
+          </div>
+        )}
+
+        {currentView === 'rechner' && (
+          <div className="pt-28">
+            <Suspense fallback={<p className="px-5 py-24 text-center text-fg-muted">Preisrechner wird geladen …</p>}>
+              <PriceCalculator onBack={() => setCurrentView('home')} onPrivacy={() => setCurrentView('datenschutz')} />
+            </Suspense>
           </div>
         )}
 

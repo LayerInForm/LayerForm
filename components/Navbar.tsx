@@ -24,11 +24,12 @@ export const BrandLogo: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => 
   </span>
 );
 
-type NavItem = { label: string; anchor?: string; href?: string };
+type NavItem = { label: string; anchor?: string; href?: string; view?: View };
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Projekte', anchor: 'projekte' },
   { label: 'Leistungen', anchor: 'leistungen' },
+  { label: 'Preisrechner', view: 'rechner' },
   { label: 'Etsy-Shop', href: ETSY_URL },
   { label: 'Kontakt', anchor: 'kontakt' },
 ];
@@ -66,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
 
   const go = (item: NavItem) => {
     setOpen(false);
+    if (item.view) { setView(item.view); return; }
     if (!item.anchor) return;
     if (currentView === 'home') scrollTo(item.anchor);
     else {
@@ -106,12 +108,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                 <button
                   key={item.label}
                   onClick={() => go(item)}
-                  aria-current={active === item.anchor ? 'true' : undefined}
+                  aria-current={active === item.anchor || (item.view && item.view === currentView) ? 'true' : undefined}
                   className={`relative rounded-full px-4 py-2 text-[15px] font-medium transition-colors hover:text-fg ${
-                    active === item.anchor ? 'text-fg' : 'text-fg-muted'
+                    active === item.anchor || (item.view && item.view === currentView) ? 'text-fg' : 'text-fg-muted'
                   }`}
                 >
-                  {active === item.anchor && (
+                  {(active === item.anchor || (item.view && item.view === currentView)) && (
                     <motion.span
                       layoutId="nav-active"
                       className="absolute inset-0 rounded-full bg-white/[.07]"

@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowUpRight, Star } from '@phosphor-icons/react';
-import { ETSY_URL } from './links';
+import { Star } from '@phosphor-icons/react';
 import { EASE_OUT } from './effects';
 import { formatRating, REVIEW_COUNT } from './Reviews';
 
 interface HeroProps {
   onInquiryClick: () => void;
+  onCalculatorClick: () => void;
 }
 
 const item = {
@@ -33,7 +33,7 @@ const PrintedPhoto: React.FC<{ src: string; alt: string; className?: string; pri
   </div>
 );
 
-export const Hero: React.FC<HeroProps> = ({ onInquiryClick }) => {
+export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick }) => {
   const reduce = useReducedMotion();
   const from = reduce ? false : 'hidden';
 
@@ -78,9 +78,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick }) => {
             className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4"
           >
             <button onClick={onInquiryClick} className="btn-primary">Projekt anfragen</button>
-            <a href={ETSY_URL} target="_blank" rel="noopener noreferrer" className="link-arrow text-[15px]">
-              Fertige Stücke im Etsy-Shop <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
-            </a>
+            <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>
           </motion.div>
         </div>
 
