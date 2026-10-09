@@ -62,7 +62,7 @@ export const ZUSATZKOSTEN: Zusatzposition[] = [
   { id: 'paket-gross', name: 'Großes Paket', preis: 0 },
   { id: 'versand-klein', name: 'Kleiner Versand', preis: 0 },
   { id: 'versand-gross', name: 'Großer Versand', preis: 0 },
-  { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0 },
+  { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0.3 },
   { id: 'versandtasche', name: 'Versandtasche', preis: 0.18 }, // 18 € für 100 Stück
 ];
 
