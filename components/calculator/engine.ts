@@ -176,6 +176,7 @@ export function estimate(entries: Entry[], parts: PartData[], plateCount: number
     inst.forEach((p) => { const c = partCost(p, m, q, infill); grams += c.grams; hours += c.hours; });
   }
   // gemeinsame Formel aus src/pricing.ts, für den Richtwert auf 0,50 € aufgerundet
-  const { gesamt } = kalkuliere({ materialien: [{ gramm: grams, preisProKg: m.perKg }], stunden: hours });
+  const menge = entries.reduce((n, e) => n + e.qty, 0);
+  const { gesamt } = kalkuliere({ materialien: [{ gramm: grams, preisProKg: m.perKg }], stunden: hours, mengeFuerRabatt: menge });
   return Math.ceil(gesamt * 2) / 2;
 }

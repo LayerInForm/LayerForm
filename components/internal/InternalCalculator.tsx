@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CaretDown, Check, Copy, LockSimple, Minus, PencilSimple, Plus, Trash, X } from '@phosphor-icons/react';
 import {
-  FILAMENT_PER_KG, MARGE_STANDARD, MARGE_VORLAGEN, MINDESTPREIS, MWST_HINWEIS, STROM_PRO_STUNDE, VERSCHLEISS_PRO_STUNDE,
+  ARBEIT_STUNDENSATZ, AUSSCHUSS, BEARBEITUNGSPAUSCHALE, CAD_STUNDENSATZ, FILAMENT_PER_KG, MASCHINEN_STUNDENSATZ,
+  MATERIAL_MARGE_STANDARD, MATERIAL_MARGE_VORLAGEN, MENGENRABATT, MWST_HINWEIS, STROM_PRO_STUNDE, VERSCHLEISS_PRO_STUNDE,
   ZUSATZKOSTEN, euro, kalkuliere, type FilamentId, type Zusatzposition,
 } from '../../src/pricing';
 import { KALKULATION_PIN } from './config';
@@ -30,13 +31,16 @@ const storage = {
 interface Inputs {
   mat1: MatId; tpu1: string; g1: string; h: string; m: string;
   multi: boolean; mat2: MatId; tpu2: string; g2: string; purge: string;
-  qty: string; marge: string; cad: string;
+  qty: string; nacharbeit: string; cadMin: string;
+  mm: string; satz: string; pauschale: string; // Materialmarge %, Maschinenstundensatz €, Pauschale €
   extras: Record<string, number>; // Zusatzposition → Anzahl
 }
 const EMPTY: Inputs = {
   mat1: 'PLA', tpu1: '', g1: '', h: '', m: '',
   multi: false, mat2: 'PETG', tpu2: '', g2: '', purge: '',
-  qty: '1', marge: String(MARGE_STANDARD), cad: '', extras: {},
+  qty: '1', nacharbeit: '', cadMin: '',
+  mm: String(MATERIAL_MARGE_STANDARD), satz: String(MASCHINEN_STUNDENSATZ).replace('.', ','), pauschale: String(BEARBEITUNGSPAUSCHALE).replace('.', ','),
+  extras: {},
 };
 interface HistoryEntry { id: number; ts: number; label: string; inputs: Inputs; gesamt: number; proStueck: number }
 
@@ -150,15 +154,18 @@ const PinGate: React.FC<{ onOk: () => void }> = ({ onOk }) => {
 /* ---------- Kalkulator ---------- */
 const Stepper: React.FC<{ value: number; onChange: (n: number) => void; label: string; min?: number }> = ({ value, onChange, label, min = 0 }) => (
   <span className="flex h-11 shrink-0 items-center rounded-full border border-white/[.12]">
-    <button type="button" onClick={() => onChange(Math.max(min, value - 1))} aria-label={`${label} weniger`} className="grid h-full w-10 place-items-center text-fg-muted active:bg-white/10 rounded-l-full"><Minus size={16} /></button>
+    <button type="button" onClick={() => onChange(Math.max(min, value - 1))} aria-label={`${label} weniger`} className="grid h-full w-10 place-items-center rounded-l-full text-fg-muted active:bg-white/10"><Minus size={16} /></button>
     <span className="min-w-[2ch] text-center font-semibold tabular-nums">{value}</span>
-    <button type="button" onClick={() => onChange(value + 1)} aria-label={`${label} mehr`} className="grid h-full w-10 place-items-center text-fg-muted active:bg-white/10 rounded-r-full"><Plus size={16} /></button>
+    <button type="button" onClick={() => onChange(value + 1)} aria-label={`${label} mehr`} className="grid h-full w-10 place-items-center rounded-r-full text-fg-muted active:bg-white/10"><Plus size={16} /></button>
   </span>
 );
+
+const fmt = (v: number) => String(v).replace('.', ',');
 
 const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   const [v, setV] = useState<Inputs>(EMPTY);
   const [openDetails, setOpenDetails] = useState(false);
+  const [openRates, setOpenRates] = useState(false);
   const [copied, setCopied] = useState(false);
   const [label, setLabel] = useState('');
   const [editExtras, setEditExtras] = useState(false);
@@ -172,7 +179,8 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
 
   const n = {
     g1: num(v.g1), h: num(v.h), m: num(v.m), tpu1: num(v.tpu1), tpu2: num(v.tpu2),
-    g2: num(v.g2), purge: num(v.purge), qty: num(v.qty), marge: num(v.marge), cad: num(v.cad),
+    g2: num(v.g2), purge: num(v.purge), qty: num(v.qty), nacharbeit: num(v.nacharbeit), cadMin: num(v.cadMin),
+    mm: num(v.mm), satz: num(v.satz), pauschale: num(v.pauschale),
   };
   const kg = (m: MatId, tpu: number) => (m === 'TPU' ? tpu : FILAMENT_PER_KG[m]);
   const bad = (x: number) => Number.isNaN(x);
@@ -198,8 +206,11 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
       materialien: parts,
       stunden: n.h + n.m / 60,
       stueck: n.qty > 0 ? n.qty : 1,
-      margeProzent: n.marge,
-      cad: n.cad,
+      materialMargeProzent: n.mm,
+      stundensatz: n.satz,
+      pauschale: n.pauschale,
+      nacharbeitMinutenProStueck: n.nacharbeit,
+      cadMinuten: n.cadMin,
       zusatz: extrasSum,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,7 +230,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   /* Verlauf */
   const save = () => {
     if (!result) return;
-    const entry: HistoryEntry = { id: Date.now(), ts: Date.now(), label: label.trim(), inputs: v, gesamt: result.gesamt, proStueck: result.produkt / result.stueck };
+    const entry: HistoryEntry = { id: Date.now(), ts: Date.now(), label: label.trim(), inputs: v, gesamt: result.gesamt, proStueck: result.proStueck };
     const next = [entry, ...history].slice(0, 20);
     setHistory(next); storage.set(HIST_KEY, JSON.stringify(next)); setLabel('');
   };
@@ -228,8 +239,9 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
     setHistory(next); storage.set(HIST_KEY, JSON.stringify(next));
   };
   const load = (h: HistoryEntry) => {
-    const old = h.inputs as Inputs & { surcharge?: string };
-    setV({ ...EMPTY, ...old, cad: old.cad ?? old.surcharge ?? '', extras: old.extras ?? {} });
+    // ältere Einträge: Felder, die es nicht mehr gibt, werden durch Standardwerte ersetzt
+    const keep = Object.fromEntries(Object.entries(h.inputs).filter(([k]) => k in EMPTY));
+    setV({ ...EMPTY, ...keep, extras: (h.inputs as Inputs).extras ?? {} });
     setLabel(h.label); window.scrollTo({ top: 0 });
   };
 
@@ -239,15 +251,16 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
 
   const qty = n.qty > 0 ? Math.floor(n.qty) : 1;
   const time = (s: Inputs) => `${num(s.h) || 0} h ${num(s.m) || 0} min`;
-  const row = (k: string, val: string, strong = false) => (
-    <div className={`flex justify-between gap-4 py-1.5 ${strong ? 'font-semibold text-fg' : 'text-fg-muted'}`}>
+  const ratesChanged = n.mm !== MATERIAL_MARGE_STANDARD || n.satz !== MASCHINEN_STUNDENSATZ || n.pauschale !== BEARBEITUNGSPAUSCHALE;
+  const row = (k: string, val: string, opts: { strong?: boolean; sub?: boolean } = {}) => (
+    <div className={`flex justify-between gap-4 ${opts.sub ? 'py-0.5 pl-3 text-[13px] text-fg-subtle' : 'py-1.5'} ${opts.strong ? 'font-semibold text-fg' : opts.sub ? '' : 'text-fg-muted'}`}>
       <span className="min-w-0 truncate">{k}</span><span className="shrink-0 tabular-nums">{val}</span>
     </div>
   );
-  const stat = (k: string, val: number | undefined) => (
+  const stat = (k: string, val: number | undefined, accent = false) => (
     <div className="min-w-0 rounded-xl bg-white/[.05] px-2.5 py-2">
       <p className="truncate text-[11px] text-fg-subtle">{k}</p>
-      <p className="text-[15px] font-semibold tabular-nums">{val != null ? euro(val) : '–'}</p>
+      <p className={`text-[15px] font-semibold tabular-nums ${accent ? 'text-cyan' : ''}`}>{val != null ? euro(val) : '–'}</p>
     </div>
   );
 
@@ -271,6 +284,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
             <div className="min-w-0">
               <p className="text-sm text-fg-muted">Endpreis{qty > 1 ? ` für ${qty} Stück` : ''}</p>
               <p className="mt-0.5 text-5xl font-semibold leading-none tracking-tight tabular-nums">{result ? euro(result.gesamt) : '– €'}</p>
+              {result && qty > 1 && <p className="mt-1 text-sm text-fg-muted tabular-nums">{euro(result.proStueck)} pro Stück</p>}
             </div>
             <button
               onClick={copy}
@@ -281,14 +295,14 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
             </button>
           </div>
 
-          {/* Kosten auf einen Blick, pro Stück */}
+          {/* Bestandteile auf einen Blick */}
           <div className="mt-3 grid grid-cols-4 gap-1.5">
-            {stat('Material', result?.material)}
-            {stat('Strom', result?.strom)}
-            {stat('Verschleiß', result?.verschleiss)}
-            {stat('Herstellung', result?.herstellkosten)}
+            {stat('Material', result ? result.material * result.stueck : undefined)}
+            {stat('Maschine', result ? result.maschine * result.stueck : undefined)}
+            {stat('Arbeit', result ? result.pauschale + result.nacharbeit + result.cad : undefined)}
+            {stat('Gewinn', result?.gewinn, true)}
           </div>
-          {result?.mindestpreisGreift && <p className="mt-2.5 text-sm text-cyan">Mindestpreis von {euro(MINDESTPREIS)} greift.</p>}
+          {result && result.rabattProzent > 0 && <p className="mt-2.5 text-sm text-cyan">Mengenrabatt {result.rabattProzent} % ab {qty} Stück abgezogen.</p>}
 
           <button
             onClick={() => setOpenDetails((o) => !o)}
@@ -300,19 +314,27 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
             <CaretDown size={16} className={`transition-transform duration-200 ${openDetails ? 'rotate-180' : ''}`} />
           </button>
           {openDetails && result && (
-            <div className="mt-2 max-h-[45vh] overflow-y-auto border-t border-white/10 pt-2 text-[15px]">
-              {row('Material', euro(result.material))}
-              {row(`Strom (${euro(STROM_PRO_STUNDE)} / h)`, euro(result.strom))}
-              {row(`Verschleiß (${euro(VERSCHLEISS_PRO_STUNDE)} / h)`, euro(result.verschleiss))}
-              {row('Herstellkosten pro Stück', euro(result.herstellkosten), true)}
-              {row(`Marge ${result.margeProzent} %`, euro(result.marge))}
-              {row('Verkauf pro Stück', euro(result.verkaufProStueck), true)}
-              {qty > 1 && row(`× ${qty} Stück`, euro(result.zwischensumme))}
-              {result.mindestpreisGreift && row('Mindestpreis greift', euro(MINDESTPREIS))}
-              {row('Produkt', euro(result.produkt), true)}
-              {result.cad > 0 && row('CAD-Konstruktion', euro(result.cad))}
+            <div className="mt-2 max-h-[48vh] overflow-y-auto border-t border-white/10 pt-2 text-[15px]">
+              {row('Material pro Stück', euro(result.material))}
+              {row(`Einkauf ${euro(result.materialEinkauf)} + ${Math.round(AUSSCHUSS * 100)} % Ausschuss`, euro(result.materialMitAusschuss), { sub: true })}
+              {row(`+ ${result.materialMargeProzent} % Marge`, euro(result.material - result.materialMitAusschuss), { sub: true })}
+              {row(`Maschine ${fmt(Math.round(result.stunden * 100) / 100)} h × ${euro(result.stundensatz)}`, euro(result.maschine))}
+              {row('Produkt pro Stück', euro(result.produktProStueck), { strong: true })}
+              {qty > 1 && row(`× ${qty} Stück`, euro(result.produkt))}
+              {result.rabatt > 0 && row(`Mengenrabatt ${result.rabattProzent} %`, `− ${euro(result.rabatt)}`)}
+              {result.pauschale > 0 && row('Bearbeitungspauschale', euro(result.pauschale))}
+              {result.nacharbeit > 0 && row(`Nacharbeit (${euro(ARBEIT_STUNDENSATZ)} / h)`, euro(result.nacharbeit))}
+              {result.cad > 0 && row(`CAD-Konstruktion (${euro(CAD_STUNDENSATZ)} / h)`, euro(result.cad))}
               {extrasChosen.map((e) => row(`${v.extras[e.id] > 1 ? `${v.extras[e.id]} × ` : ''}${e.name}`, euro(e.preis * v.extras[e.id])))}
-              {row('Endpreis', euro(result.gesamt), true)}
+              {row('Endpreis', euro(result.gesamt), { strong: true })}
+              <div className="mt-3 border-t border-white/10 pt-2">
+                {row('Deine Kosten', euro(result.kosten.summe))}
+                {row('Filament inkl. Ausschuss', euro(result.kosten.material), { sub: true })}
+                {row(`Strom (${euro(STROM_PRO_STUNDE)} / h)`, euro(result.kosten.strom), { sub: true })}
+                {row(`Verschleiß (${euro(VERSCHLEISS_PRO_STUNDE)} / h)`, euro(result.kosten.verschleiss), { sub: true })}
+                {result.kosten.zusatz > 0 && row('Versand und Verpackung', euro(result.kosten.zusatz), { sub: true })}
+                {row('Gewinn (für deine Arbeitszeit)', euro(result.gewinn), { strong: true })}
+              </div>
               <p className="mt-2 text-xs text-fg-subtle">{MWST_HINWEIS}</p>
             </div>
           )}
@@ -359,33 +381,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
           </div>
         )}
 
-        {/* Marge */}
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-semibold text-fg-muted">Marge auf die Herstellkosten</span>
-          <div role="radiogroup" aria-label="Marge" className="grid grid-cols-4 gap-1.5">
-            {MARGE_VORLAGEN.map((m) => {
-              const on = n.marge === m.prozent;
-              return (
-                <button
-                  key={m.prozent}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => set('marge')(String(m.prozent))}
-                  className={`flex h-14 flex-col items-center justify-center rounded-2xl border text-[15px] font-semibold transition-colors active:scale-[.97] ${
-                    on ? 'border-cyan bg-cyan text-ink' : 'border-white/[.12] text-fg'
-                  }`}
-                >
-                  {m.label}
-                  {m.hinweis && <span className={`text-[11px] font-medium ${on ? 'text-ink/70' : 'text-fg-subtle'}`}>{m.hinweis}</span>}
-                </button>
-              );
-            })}
-          </div>
-          <Field label="Eigene Marge" unit="%" mode="numeric" value={v.marge} onChange={set('marge')} invalid={bad(n.marge)} hint="100 % = doppelter Preis, 300 % = vierfacher Preis" />
-        </div>
-
-        {/* Stückzahl und CAD */}
+        {/* Stückzahl */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex min-w-0 flex-col gap-1.5">
             <span className="text-sm font-semibold text-fg-muted">Stückzahl</span>
@@ -405,18 +401,63 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
               </button>
             </div>
           </div>
-          <Field label="CAD-Konstruktion" unit="€" value={v.cad} onChange={set('cad')} placeholder="0" invalid={bad(n.cad)} />
+          <Field label="Nacharbeit pro Stück" unit="min" mode="numeric" value={v.nacharbeit} onChange={set('nacharbeit')} placeholder="0" invalid={bad(n.nacharbeit)} />
         </div>
-        <p className="-mt-3 text-xs text-fg-subtle">Gewicht und Zeit pro Stück eingeben. CAD und Zusatzkosten kommen einmal pro Auftrag und ohne Marge dazu.</p>
+        <Field label="CAD-Konstruktion" unit="min" mode="numeric" value={v.cadMin} onChange={set('cadMin')} placeholder="0" invalid={bad(n.cadMin)}
+          hint={`${euro(CAD_STUNDENSATZ)} pro Stunde, einmal pro Auftrag`} />
+        <p className="-mt-3 text-xs text-fg-subtle">
+          Gewicht, Zeit und Nacharbeit pro Stück eingeben. Mengenrabatt: {MENGENRABATT.map((r) => `ab ${r.abStueck} Stück ${r.prozent} %`).join(', ')}.
+        </p>
+
+        {/* Sätze */}
+        <section className="rounded-panel border border-white/[.08] p-4">
+          <button type="button" onClick={() => setOpenRates((o) => !o)} aria-expanded={openRates} className="flex w-full items-center justify-between text-left">
+            <span>
+              <span className="block font-semibold">Marge und Sätze</span>
+              <span className={`block text-sm ${ratesChanged ? 'text-cyan' : 'text-fg-subtle'}`}>
+                Material +{v.mm || 0} % · Maschine {v.satz || 0} € / h · Pauschale {v.pauschale || 0} €
+              </span>
+            </span>
+            <CaretDown size={18} className={`shrink-0 text-fg-muted transition-transform duration-200 ${openRates ? 'rotate-180' : ''}`} />
+          </button>
+          {openRates && (
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-fg-muted">Marge auf das Material</span>
+                <div role="radiogroup" aria-label="Materialmarge" className="grid grid-cols-4 gap-1.5">
+                  {MATERIAL_MARGE_VORLAGEN.map((p) => {
+                    const on = n.mm === p;
+                    return (
+                      <button key={p} type="button" role="radio" aria-checked={on} onClick={() => set('mm')(String(p))}
+                        className={`flex h-12 items-center justify-center rounded-2xl border text-[15px] font-semibold transition-colors active:scale-[.97] ${on ? 'border-cyan bg-cyan text-ink' : 'border-white/[.12] text-fg'}`}>
+                        {p} %
+                      </button>
+                    );
+                  })}
+                </div>
+                <Field label="Eigene Materialmarge" unit="%" mode="numeric" value={v.mm} onChange={set('mm')} invalid={bad(n.mm)} hint="100 % = Materialkosten verdoppelt" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Maschinenstundensatz" unit="€ / h" value={v.satz} onChange={set('satz')} invalid={bad(n.satz)} />
+                <Field label="Pauschale" unit="€" value={v.pauschale} onChange={set('pauschale')} invalid={bad(n.pauschale)} />
+              </div>
+              <p className="-mt-2 text-xs text-fg-subtle">Für Firmenkunden z. B. Stundensatz erhöhen. Pauschale auf 0 bei Folgeaufträgen ohne neue Vorbereitung.</p>
+              <button type="button" onClick={() => setV((s) => ({ ...s, mm: EMPTY.mm, satz: EMPTY.satz, pauschale: EMPTY.pauschale }))}
+                className="self-start text-sm font-semibold text-fg-muted underline underline-offset-4">
+                Auf Standard zurücksetzen
+              </button>
+            </div>
+          )}
+        </section>
 
         {/* Zusatzkosten */}
         <section className="rounded-panel border border-white/[.08] p-4">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">Zusatzkosten <span className="ml-1 text-sm font-normal text-fg-subtle">ohne Marge</span></span>
+            <span className="font-semibold">Versand und Verpackung <span className="ml-1 text-sm font-normal text-fg-subtle">ohne Marge</span></span>
             <button
               type="button"
               onClick={() => setEditExtras((e) => !e)}
-              className="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-cyan active:bg-white/10"
+              className="flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-cyan active:bg-white/10"
             >
               {editExtras ? <><Check size={16} weight="bold" /> Fertig</> : <><PencilSimple size={16} /> Bearbeiten</>}
             </button>
@@ -501,7 +542,6 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
                 const i = h.inputs;
                 const mats = i.multi ? `${i.mat1} + ${i.mat2}` : i.mat1;
                 const q = num(i.qty) > 1 ? ` · ${Math.floor(num(i.qty))} Stk.` : '';
-                const mg = i.marge && num(i.marge) !== MARGE_STANDARD ? ` · ${i.marge} %` : '';
                 return (
                   <li key={h.id} className="flex items-center gap-2">
                     <button onClick={() => load(h)} className="min-w-0 flex-1 py-3 text-left active:opacity-70">
@@ -510,7 +550,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
                         <span className="shrink-0 font-semibold tabular-nums">{euro(h.gesamt)}</span>
                       </span>
                       <span className="mt-0.5 block truncate text-sm text-fg-subtle">
-                        {mats} · {i.g1} g · {time(i)}{q}{mg} · {new Date(h.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+                        {mats} · {i.g1} g · {time(i)}{q} · {new Date(h.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
                       </span>
                     </button>
                     <button onClick={() => remove(h.id)} aria-label={`${h.label || 'Eintrag'} löschen`} className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-fg-subtle active:bg-white/10">
