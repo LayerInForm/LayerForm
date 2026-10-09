@@ -2,7 +2,7 @@
   "name": "LayerForm Kalkulation",
   "short_name": "Kalkulation",
   "id": "/#kalkulation",
-  "start_url": "/#kalkulation",
+  "start_url": "/#kalk",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

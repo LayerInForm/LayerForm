@@ -13,14 +13,15 @@ import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 
 // Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
 const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
-// Interner Kalkulator, nur über layer-form.de/#kalkulation erreichbar (nicht verlinkt)
+// Interner Kalkulator, nur über layer-form.de/#kalk erreichbar (nicht verlinkt)
 const InternalCalculator = lazy(() => import('./components/internal/InternalCalculator'));
 
 export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner' | 'kalkulation';
 
-// Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalkulation (intern)
-const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#kalkulation': 'kalkulation' };
-const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#kalkulation' };
+// Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
+// #kalkulation bleibt als alte Adresse gültig und wird auf #kalk umgestellt
+const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
+const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#kalk' };
 
 interface OrderSummary {
   product?: string;

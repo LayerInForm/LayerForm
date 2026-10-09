@@ -1,6 +1,6 @@
 /**
  * Zentrale Preisdaten von LayerForm.
- * Werden vom internen Kalkulator (#kalkulation) und vom Kunden-Preisrechner (#preisrechner) genutzt,
+ * Werden vom internen Kalkulator (#kalk) und vom Kunden-Preisrechner (#preisrechner) genutzt,
  * damit beide immer gleich rechnen. Preise nur hier ändern.
  */
 
