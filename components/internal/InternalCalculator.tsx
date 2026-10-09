@@ -261,7 +261,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
     lines.push('');
     lines.push(result.stueck > 1 ? `Preis: ${euro(result.gesamt)} (${euro(result.proStueck)} pro Stück)` : `Preis: ${euro(result.gesamt)}`);
     if (result.rabattProzent > 0) lines.push(`Mengenrabatt von ${result.rabattProzent} % ist bereits abgezogen.`);
-    lines.push(MWST_HINWEIS, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid, dann starte ich den Druck.', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
+    lines.push(MWST_HINWEIS, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid. Ich erstelle Ihnen dann die Rechnung und starte den Druck, sobald die Zahlung eingegangen ist.', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
     return lines.join('\n');
   };
   const [offerCopied, setOfferCopied] = useState(false);
