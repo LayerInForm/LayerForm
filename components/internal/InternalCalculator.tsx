@@ -28,20 +28,52 @@ const storage = {
   del: (k: string) => { try { localStorage.removeItem(k); } catch { /* egal */ } },
 };
 
-interface Inputs {
+/** Eine Druckplatte, so wie Bambu Studio sie anzeigt */
+interface PlateIn {
+  id: number;
   mat1: MatId; tpu1: string; g1: string; h: string; m: string;
   multi: boolean; mat2: MatId; tpu2: string; g2: string; purge: string;
-  qty: string; nacharbeit: string; cadMin: string;
+  teile: string; // Teile auf dieser Platte
+  mal: string;   // wie oft die Platte gedruckt wird
+}
+interface Inputs {
+  plates: PlateIn[];
+  nacharbeit: string; cadMin: string;
   mm: string; satz: string; pauschale: string; // Materialmarge %, Maschinenstundensatz €, Pauschale €
   extras: Record<string, number>; // Zusatzposition → Anzahl
 }
-const EMPTY: Inputs = {
-  mat1: 'PLA', tpu1: '', g1: '', h: '', m: '',
-  multi: false, mat2: 'PETG', tpu2: '', g2: '', purge: '',
-  qty: '1', nacharbeit: '', cadMin: '',
+let plateSeq = 1;
+const newPlate = (mat1: MatId = 'PLA'): PlateIn => ({
+  id: plateSeq++, mat1, tpu1: '', g1: '', h: '', m: '',
+  multi: false, mat2: 'PETG', tpu2: '', g2: '', purge: '', teile: '1', mal: '1',
+});
+const EMPTY_BASE = {
+  nacharbeit: '', cadMin: '',
   mm: String(MATERIAL_MARGE_STANDARD), satz: String(MASCHINEN_STUNDENSATZ).replace('.', ','), pauschale: String(BEARBEITUNGSPAUSCHALE).replace('.', ','),
-  extras: {},
+  extras: {} as Record<string, number>,
 };
+const emptyInputs = (): Inputs => ({ plates: [newPlate()], ...EMPTY_BASE });
+
+/** Verlaufseinträge aus älteren Versionen (eine Platte, Stückzahl) übernehmen */
+function migrate(raw: Record<string, unknown>): Inputs {
+  const base = emptyInputs();
+  const pick = <T,>(k: string, d: T) => (raw[k] !== undefined ? (raw[k] as T) : d);
+  const order = {
+    nacharbeit: pick('nacharbeit', base.nacharbeit), cadMin: pick('cadMin', base.cadMin),
+    mm: pick('mm', base.mm), satz: pick('satz', base.satz), pauschale: pick('pauschale', base.pauschale),
+    extras: pick('extras', base.extras),
+  };
+  if (Array.isArray(raw.plates)) {
+    return { ...order, plates: (raw.plates as PlateIn[]).map((p) => ({ ...newPlate(), ...p, id: plateSeq++ })) };
+  }
+  const p = newPlate((raw.mat1 as MatId) ?? 'PLA');
+  (['tpu1', 'g1', 'h', 'm', 'mat2', 'tpu2', 'g2', 'purge'] as const).forEach((k) => {
+    if (raw[k] !== undefined) (p as unknown as Record<string, unknown>)[k] = raw[k];
+  });
+  p.multi = !!raw.multi;
+  p.mal = String(raw.qty ?? '1') || '1'; // früher: Werte pro Stück × Stückzahl
+  return { ...order, plates: [p] };
+}
 interface HistoryEntry { id: number; ts: number; label: string; inputs: Inputs; gesamt: number; proStueck: number }
 
 /* ---------- Seite für die App-Installation vorbereiten ---------- */
@@ -182,10 +214,10 @@ function mergeExtras(st: ExtraStore): Zusatzposition[] {
 }
 
 /* ---------- Kalkulator ---------- */
-const Stepper: React.FC<{ value: number; onChange: (n: number) => void; label: string; min?: number }> = ({ value, onChange, label, min = 0 }) => (
-  <span className="flex h-11 shrink-0 items-center rounded-full border border-white/[.12]">
+const Stepper: React.FC<{ value: number; onChange: (n: number) => void; label: string; min?: number; suffix?: string }> = ({ value, onChange, label, min = 0, suffix }) => (
+  <span className="flex h-11 shrink-0 items-center justify-between rounded-full border border-white/[.12]">
     <button type="button" onClick={() => onChange(Math.max(min, value - 1))} aria-label={`${label} weniger`} className="grid h-full w-10 place-items-center rounded-l-full text-fg-muted active:bg-white/10"><Minus size={16} /></button>
-    <span className="min-w-[2ch] text-center font-semibold tabular-nums">{value}</span>
+    <span className="min-w-[2ch] text-center font-semibold tabular-nums">{value}{suffix ? ` ${suffix}` : ''}</span>
     <button type="button" onClick={() => onChange(value + 1)} aria-label={`${label} mehr`} className="grid h-full w-10 place-items-center rounded-r-full text-fg-muted active:bg-white/10"><Plus size={16} /></button>
   </span>
 );
@@ -193,7 +225,7 @@ const Stepper: React.FC<{ value: number; onChange: (n: number) => void; label: s
 const fmt = (v: number) => String(v).replace('.', ',');
 
 const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
-  const [v, setV] = useState<Inputs>(EMPTY);
+  const [v, setV] = useState<Inputs>(emptyInputs);
   const [openDetails, setOpenDetails] = useState(false);
   const [openRates, setOpenRates] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -205,61 +237,78 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
     try { return JSON.parse(storage.get(HIST_KEY) || '[]'); } catch { return []; }
   });
   const set = <K extends keyof Inputs>(k: K) => (val: Inputs[K]) => setV((s) => ({ ...s, [k]: val }));
+  const setPlate = (id: number) => <K extends keyof PlateIn>(k: K) => (val: PlateIn[K]) =>
+    setV((s) => ({ ...s, plates: s.plates.map((p) => (p.id === id ? { ...p, [k]: val } : p)) }));
+  const addPlate = () => setV((s) => ({ ...s, plates: [...s.plates, newPlate(s.plates[s.plates.length - 1]?.mat1 ?? 'PLA')] }));
+  const removePlate = (id: number) => setV((s) => ({ ...s, plates: s.plates.filter((p) => p.id !== id) }));
 
-  const n = {
-    g1: num(v.g1), h: num(v.h), m: num(v.m), tpu1: num(v.tpu1), tpu2: num(v.tpu2),
-    g2: num(v.g2), purge: num(v.purge), qty: num(v.qty), nacharbeit: num(v.nacharbeit), cadMin: num(v.cadMin),
-    mm: num(v.mm), satz: num(v.satz), pauschale: num(v.pauschale),
-  };
+  const n = { nacharbeit: num(v.nacharbeit), cadMin: num(v.cadMin), mm: num(v.mm), satz: num(v.satz), pauschale: num(v.pauschale) };
   const kg = (m: MatId, tpu: number) => (m === 'TPU' ? tpu : FILAMENT_PER_KG[m]);
   const bad = (x: number) => Number.isNaN(x);
-  const needTpu1 = v.mat1 === 'TPU' && !(n.tpu1 > 0);
-  const needTpu2 = v.multi && v.mat2 === 'TPU' && !(n.tpu2 > 0);
-  const anyBad = Object.values(n).some(bad);
-  const ready = !anyBad && n.g1 > 0 && n.h * 60 + n.m > 0 && !needTpu1 && !needTpu2;
+  const count = (s: string) => { const x = num(s); return Number.isNaN(x) || x < 1 ? 1 : Math.floor(x); };
+
+  const plates = v.plates.map((p) => {
+    const pn = { g1: num(p.g1), h: num(p.h), m: num(p.m), tpu1: num(p.tpu1), tpu2: num(p.tpu2), g2: num(p.g2), purge: num(p.purge) };
+    const ok = !Object.values(pn).some(bad) && pn.g1 > 0 && pn.h * 60 + pn.m > 0
+      && !(p.mat1 === 'TPU' && !(pn.tpu1 > 0)) && !(p.multi && p.mat2 === 'TPU' && !(pn.tpu2 > 0));
+    return { p, pn, ok, teile: count(p.teile), mal: count(p.mal) };
+  });
+  const teile = plates.reduce((s, x) => s + x.teile * x.mal, 0);
+  const ready = plates.length > 0 && plates.every((x) => x.ok) && !Object.values(n).some(bad);
 
   const extrasChosen = extraList.filter((e) => (v.extras[e.id] ?? 0) > 0);
   const extrasSum = extrasChosen.reduce((s, e) => s + e.preis * (v.extras[e.id] ?? 0), 0);
 
   const result = useMemo(() => {
     if (!ready) return null;
-    const p1 = kg(v.mat1, n.tpu1);
-    const parts = [{ gramm: n.g1, preisProKg: p1 }];
-    if (v.multi) {
-      const p2 = kg(v.mat2, n.tpu2);
-      if (n.g2 > 0) parts.push({ gramm: n.g2, preisProKg: p2 });
-      // AMS-Spülmenge zum Durchschnittspreis beider Materialien
-      if (n.purge > 0) parts.push({ gramm: n.purge, preisProKg: (p1 + p2) / 2 });
+    const materialien: { gramm: number; preisProKg: number }[] = [];
+    let stunden = 0;
+    for (const { p, pn, mal } of plates) {
+      const p1 = kg(p.mat1, pn.tpu1);
+      materialien.push({ gramm: pn.g1 * mal, preisProKg: p1 });
+      if (p.multi) {
+        const p2 = kg(p.mat2, pn.tpu2);
+        if (pn.g2 > 0) materialien.push({ gramm: pn.g2 * mal, preisProKg: p2 });
+        // AMS-Spülmenge zum Durchschnittspreis beider Materialien
+        if (pn.purge > 0) materialien.push({ gramm: pn.purge * mal, preisProKg: (p1 + p2) / 2 });
+      }
+      stunden += (pn.h + pn.m / 60) * mal;
     }
-    return kalkuliere({
-      materialien: parts,
-      stunden: n.h + n.m / 60,
-      stueck: n.qty > 0 ? n.qty : 1,
+    const r = kalkuliere({
+      materialien,
+      stunden,
+      stueck: 1,                      // Platten enthalten bereits alle Teile
+      mengeFuerRabatt: teile,
       materialMargeProzent: n.mm,
       stundensatz: n.satz,
       pauschale: n.pauschale,
-      nacharbeitMinutenProStueck: n.nacharbeit,
+      nacharbeitMinutenProStueck: n.nacharbeit * teile,
       cadMinuten: n.cadMin,
       zusatz: extrasSum,
     });
+    return { ...r, proStueck: Math.round((r.gesamt / teile) * 100) / 100 };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, v, extrasSum]);
+
+  const allMats = [...new Set(v.plates.flatMap((p) => (p.multi ? [p.mat1, p.mat2] : [p.mat1])))];
+  const totalGrams = plates.reduce((s, x) => s + ((x.pn.g1 || 0) + (x.p.multi ? (x.pn.g2 || 0) + (x.pn.purge || 0) : 0)) * x.mal, 0);
+  const totalMin = plates.reduce((s, x) => s + ((x.pn.h || 0) * 60 + (x.pn.m || 0)) * x.mal, 0);
 
   /** Angebotstext für den Kunden: nur Leistung und Preis, keine internen Kosten oder Margen */
   const offerText = () => {
     if (!result) return '';
-    const mats = v.multi ? `${v.mat1} und ${v.mat2} (mehrfarbig)` : v.mat1;
+    const mats = allMats.length > 1 ? `${allMats.slice(0, -1).join(', ')} und ${allMats[allMats.length - 1]}` : allMats[0];
     const lines = [
       'Hallo,', '',
       'vielen Dank für Ihre Anfrage. Gerne fertige ich Ihr Teil im 3D-Druck:', '',
       `Material: ${mats}`,
-      `Stückzahl: ${result.stueck}`,
+      `Stückzahl: ${teile}`,
     ];
     if (result.cad > 0) lines.push('inklusive CAD-Konstruktion');
     if (result.nacharbeit > 0) lines.push('inklusive Nacharbeit');
     if (extrasChosen.length) lines.push('inklusive Verpackung');
     lines.push('');
-    lines.push(result.stueck > 1 ? `Preis: ${euro(result.gesamt)} (${euro(result.proStueck)} pro Stück)` : `Preis: ${euro(result.gesamt)}`);
+    lines.push(teile > 1 ? `Preis: ${euro(result.gesamt)} (${euro(result.proStueck)} pro Stück)` : `Preis: ${euro(result.gesamt)}`);
     if (result.rabattProzent > 0) lines.push(`Mengenrabatt von ${result.rabattProzent} % ist bereits abgezogen.`);
     lines.push(MWST_HINWEIS, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid. Ich erstelle Ihnen dann die Rechnung und starte den Druck, sobald die Zahlung eingegangen ist.', '',
       'Für die Rechnung benötige ich Ihren Vor- und Nachnamen, Ihre Adresse und Ihre E-Mail-Adresse. Falls Sie mir diese Daten noch nicht geschickt haben, senden Sie sie mir gerne direkt mit Ihrer Zusage:', '- Vor- und Nachname', '- Adresse', '- E-Mail-Adresse', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
@@ -304,8 +353,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   };
   const load = (h: HistoryEntry) => {
     // ältere Einträge: Felder, die es nicht mehr gibt, werden durch Standardwerte ersetzt
-    const keep = Object.fromEntries(Object.entries(h.inputs).filter(([k]) => k in EMPTY));
-    setV({ ...EMPTY, ...keep, extras: (h.inputs as Inputs).extras ?? {} });
+    setV(migrate(h.inputs as unknown as Record<string, unknown>));
     setLabel(h.label); window.scrollTo({ top: 0 });
   };
 
@@ -324,8 +372,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   const resetExtras = () => writeExtras({ items: [], removed: [] });
   const setExtraQty = (id: string, q: number) => setV((s) => ({ ...s, extras: { ...s.extras, [id]: q } }));
 
-  const qty = n.qty > 0 ? Math.floor(n.qty) : 1;
-  const time = (s: Inputs) => `${num(s.h) || 0} h ${num(s.m) || 0} min`;
+  const hm = (min: number) => `${Math.floor(min / 60)} h ${Math.round(min % 60)} min`;
   const ratesChanged = n.mm !== MATERIAL_MARGE_STANDARD || n.satz !== MASCHINEN_STUNDENSATZ || n.pauschale !== BEARBEITUNGSPAUSCHALE;
   const row = (k: string, val: string, opts: { strong?: boolean; sub?: boolean } = {}) => (
     <div className={`flex justify-between gap-4 ${opts.sub ? 'py-0.5 pl-3 text-[13px] text-fg-subtle' : 'py-1.5'} ${opts.strong ? 'font-semibold text-fg' : opts.sub ? '' : 'text-fg-muted'}`}>
@@ -357,9 +404,9 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
         <div className="rounded-panel bg-gradient-to-br from-deep to-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] sm:p-5">
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm text-fg-muted">Endpreis{qty > 1 ? ` für ${qty} Stück` : ''}</p>
+              <p className="text-sm text-fg-muted">Endpreis{teile > 1 ? ` für ${teile} Teile` : ''}</p>
               <p className="mt-0.5 text-5xl font-semibold leading-none tracking-tight tabular-nums">{result ? euro(result.gesamt) : '– €'}</p>
-              {result && qty > 1 && <p className="mt-1 text-sm text-fg-muted tabular-nums">{euro(result.proStueck)} pro Stück</p>}
+              {result && teile > 1 && <p className="mt-1 text-sm text-fg-muted tabular-nums">{euro(result.proStueck)} pro Stück</p>}
             </div>
             <button
               onClick={copy}
@@ -372,12 +419,12 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
 
           {/* Bestandteile auf einen Blick */}
           <div className="mt-3 grid grid-cols-4 gap-1.5">
-            {stat('Material', result ? result.material * result.stueck : undefined)}
-            {stat('Maschine', result ? result.maschine * result.stueck : undefined)}
+            {stat('Material', result?.material)}
+            {stat('Maschine', result?.maschine)}
             {stat('Arbeit', result ? result.pauschale + result.nacharbeit + result.cad : undefined)}
             {stat('Gewinn', result?.gewinn, true)}
           </div>
-          {result && result.rabattProzent > 0 && <p className="mt-2.5 text-sm text-cyan">Mengenrabatt {result.rabattProzent} % ab {qty} Stück abgezogen.</p>}
+          {result && result.rabattProzent > 0 && <p className="mt-2.5 text-sm text-cyan">Mengenrabatt {result.rabattProzent} % für {teile} Teile abgezogen.</p>}
 
           {/* Angebot an den Kunden */}
           <div className="mt-3 grid grid-cols-2 gap-1.5">
@@ -408,15 +455,14 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
           </button>
           {openDetails && result && (
             <div className="mt-2 max-h-[48vh] overflow-y-auto border-t border-white/10 pt-2 text-[15px]">
-              {row('Material pro Stück', euro(result.material))}
+              {row(`Material (${fmt(Math.round(totalGrams * 10) / 10)} g)`, euro(result.material))}
               {row(`Einkauf ${euro(result.materialEinkauf)} + ${Math.round(AUSSCHUSS * 100)} % Ausschuss`, euro(result.materialMitAusschuss), { sub: true })}
               {row(`+ ${result.materialMargeProzent} % Marge`, euro(result.material - result.materialMitAusschuss), { sub: true })}
               {row(`Maschine ${fmt(Math.round(result.stunden * 100) / 100)} h × ${euro(result.stundensatz)}`, euro(result.maschine))}
-              {row('Produkt pro Stück', euro(result.produktProStueck), { strong: true })}
-              {qty > 1 && row(`× ${qty} Stück`, euro(result.produkt))}
+              {row('Druck', euro(result.produkt), { strong: true })}
               {result.rabatt > 0 && row(`Mengenrabatt ${result.rabattProzent} %`, `− ${euro(result.rabatt)}`)}
               {result.pauschale > 0 && row('Bearbeitungspauschale', euro(result.pauschale))}
-              {result.nacharbeit > 0 && row(`Nacharbeit (${euro(ARBEIT_STUNDENSATZ)} / h)`, euro(result.nacharbeit))}
+              {result.nacharbeit > 0 && row(`Nacharbeit ${teile} × ${fmt(n.nacharbeit)} min (${euro(ARBEIT_STUNDENSATZ)} / h)`, euro(result.nacharbeit))}
               {result.cad > 0 && row(`CAD-Konstruktion (${euro(CAD_STUNDENSATZ)} / h)`, euro(result.cad))}
               {extrasChosen.map((e) => row(`${v.extras[e.id] > 1 ? `${v.extras[e.id]} × ` : ''}${e.name}`, euro(e.preis * v.extras[e.id])))}
               {row('Endpreis', euro(result.gesamt), { strong: true })}
@@ -436,70 +482,89 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
 
       {/* Eingaben */}
       <div className="mt-3 flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-semibold text-fg-muted">Material</span>
-          <MaterialPicker value={v.mat1} onChange={set('mat1')} label="Material" />
-        </div>
-        {v.mat1 === 'TPU' && (
-          <Field label="TPU-Preis" unit="€ / kg" value={v.tpu1} onChange={set('tpu1')} placeholder="z. B. 30" invalid={bad(n.tpu1)} />
-        )}
-        <Field label="Gewicht (inkl. Stützen)" unit="g" value={v.g1} onChange={set('g1')} placeholder="0" invalid={bad(n.g1)} />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Druckzeit" unit="h" mode="numeric" value={v.h} onChange={set('h')} placeholder="0" invalid={bad(n.h)} />
-          <Field label="Minuten" unit="min" mode="numeric" value={v.m} onChange={set('m')} placeholder="0" invalid={bad(n.m)} />
-        </div>
+        {/* Platten */}
+        {v.plates.map((p, idx) => {
+          const x = plates[idx];
+          const sp = setPlate(p.id);
+          const solo = v.plates.length === 1;
+          return (
+            <section key={p.id} className={solo ? 'flex flex-col gap-5' : 'flex flex-col gap-4 rounded-panel border border-white/[.08] p-4'}>
+              {!solo && (
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Platte {idx + 1}</span>
+                  <button onClick={() => removePlate(p.id)} aria-label={`Platte ${idx + 1} entfernen`} className="grid h-10 w-10 place-items-center rounded-full text-fg-muted active:bg-white/10">
+                    <Trash size={19} />
+                  </button>
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-fg-muted">Material</span>
+                <MaterialPicker value={p.mat1} onChange={sp('mat1')} label={`Material Platte ${idx + 1}`} />
+              </div>
+              {p.mat1 === 'TPU' && (
+                <Field label="TPU-Preis" unit="€ / kg" value={p.tpu1} onChange={sp('tpu1')} placeholder="z. B. 30" invalid={bad(x.pn.tpu1)} />
+              )}
+              <Field label="Gewicht (inkl. Stützen)" unit="g" value={p.g1} onChange={sp('g1')} placeholder="0" invalid={bad(x.pn.g1)} />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Druckzeit" unit="h" mode="numeric" value={p.h} onChange={sp('h')} placeholder="0" invalid={bad(x.pn.h)} />
+                <Field label="Minuten" unit="min" mode="numeric" value={p.m} onChange={sp('m')} placeholder="0" invalid={bad(x.pn.m)} />
+              </div>
 
-        {/* Mehrfarbe */}
-        {!v.multi ? (
-          <button onClick={() => set('multi')(true)} className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 font-semibold text-fg-muted active:bg-white/5">
-            <Plus size={18} /> Zweites Material / AMS
-          </button>
-        ) : (
-          <div className="flex flex-col gap-4 rounded-panel border border-white/[.08] p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">Zweites Material</span>
-              <button onClick={() => setV((s) => ({ ...s, multi: false, g2: '', purge: '', tpu2: '' }))} aria-label="Zweites Material entfernen" className="grid h-10 w-10 place-items-center rounded-full text-fg-muted active:bg-white/10">
-                <X size={20} />
-              </button>
-            </div>
-            <MaterialPicker value={v.mat2} onChange={set('mat2')} label="Zweites Material" />
-            {v.mat2 === 'TPU' && (
-              <Field label="TPU-Preis" unit="€ / kg" value={v.tpu2} onChange={set('tpu2')} placeholder="z. B. 30" invalid={bad(n.tpu2)} />
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Gewicht" unit="g" value={v.g2} onChange={set('g2')} placeholder="0" invalid={bad(n.g2)} />
-              <Field label="AMS-Spülung" unit="g" value={v.purge} onChange={set('purge')} placeholder="0" invalid={bad(n.purge)} />
-            </div>
-            <p className="-mt-2 text-xs text-fg-subtle">Spülmenge wird zum Durchschnittspreis beider Materialien berechnet.</p>
-          </div>
-        )}
+              {/* Mehrfarbe */}
+              {!p.multi ? (
+                <button onClick={() => sp('multi')(true)} className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 text-[15px] font-semibold text-fg-muted active:bg-white/5">
+                  <Plus size={17} /> Zweites Material / AMS
+                </button>
+              ) : (
+                <div className="flex flex-col gap-4 rounded-2xl bg-white/[.03] p-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">Zweites Material</span>
+                    <button onClick={() => setV((s) => ({ ...s, plates: s.plates.map((q) => (q.id === p.id ? { ...q, multi: false, g2: '', purge: '', tpu2: '' } : q)) }))} aria-label="Zweites Material entfernen" className="grid h-10 w-10 place-items-center rounded-full text-fg-muted active:bg-white/10">
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <MaterialPicker value={p.mat2} onChange={sp('mat2')} label={`Zweites Material Platte ${idx + 1}`} />
+                  {p.mat2 === 'TPU' && (
+                    <Field label="TPU-Preis" unit="€ / kg" value={p.tpu2} onChange={sp('tpu2')} placeholder="z. B. 30" invalid={bad(x.pn.tpu2)} />
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Gewicht" unit="g" value={p.g2} onChange={sp('g2')} placeholder="0" invalid={bad(x.pn.g2)} />
+                    <Field label="AMS-Spülung" unit="g" value={p.purge} onChange={sp('purge')} placeholder="0" invalid={bad(x.pn.purge)} />
+                  </div>
+                  <p className="-mt-2 text-xs text-fg-subtle">Spülmenge wird zum Durchschnittspreis beider Materialien berechnet.</p>
+                </div>
+              )}
 
-        {/* Stückzahl */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="text-sm font-semibold text-fg-muted">Stückzahl</span>
-            <div className={`flex h-14 items-center rounded-2xl border bg-bg/70 ${bad(n.qty) ? 'border-red-300' : 'border-white/[.12]'}`}>
-              <button type="button" onClick={() => set('qty')(String(Math.max(1, qty - 1)))} aria-label="Weniger" className="grid h-full w-12 shrink-0 place-items-center text-fg-muted active:bg-white/10">
-                <Minus size={18} />
-              </button>
-              <input
-                value={v.qty}
-                onChange={(e) => set('qty')(e.target.value.replace(/\D/g, ''))}
-                inputMode="numeric"
-                aria-label="Stückzahl"
-                className="h-full min-w-0 flex-1 bg-transparent text-center text-xl font-semibold tabular-nums outline-none"
-              />
-              <button type="button" onClick={() => set('qty')(String(qty + 1))} aria-label="Mehr" className="grid h-full w-12 shrink-0 place-items-center text-fg-muted active:bg-white/10">
-                <Plus size={18} />
-              </button>
-            </div>
-          </div>
-          <Field label="Nacharbeit pro Stück" unit="min" mode="numeric" value={v.nacharbeit} onChange={set('nacharbeit')} placeholder="0" invalid={bad(n.nacharbeit)} />
-        </div>
-        <Field label="CAD-Konstruktion" unit="min" mode="numeric" value={v.cadMin} onChange={set('cadMin')} placeholder="0" invalid={bad(n.cadMin)}
-          hint={`${euro(CAD_STUNDENSATZ)} pro Stunde, einmal pro Auftrag`} />
+              {/* Teile und Wiederholungen */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <span className="text-sm font-semibold text-fg-muted">Teile auf der Platte</span>
+                  <Stepper value={x.teile} onChange={(q) => sp('teile')(String(Math.max(1, q)))} label={`Teile Platte ${idx + 1}`} min={1} />
+                </div>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <span className="text-sm font-semibold text-fg-muted">Platte drucken</span>
+                  <Stepper value={x.mal} onChange={(q) => sp('mal')(String(Math.max(1, q)))} label={`Durchläufe Platte ${idx + 1}`} min={1} suffix="×" />
+                </div>
+              </div>
+            </section>
+          );
+        })}
+
+        <button onClick={addPlate} className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-dashed border-cyan/40 font-semibold text-cyan active:bg-white/5">
+          <Plus size={18} /> Platte hinzufügen
+        </button>
         <p className="-mt-3 text-xs text-fg-subtle">
-          Gewicht, Zeit und Nacharbeit pro Stück eingeben. Mengenrabatt: {MENGENRABATT.map((r) => `ab ${r.abStueck} Stück ${r.prozent} %`).join(', ')}.
+          Werte je Platte so eingeben, wie Bambu Studio sie anzeigt. Insgesamt {teile} {teile === 1 ? 'Teil' : 'Teile'}
+          {plates.length > 1 || plates[0]?.mal > 1 ? `, ${fmt(Math.round(totalGrams * 10) / 10)} g, ${hm(totalMin)}` : ''}.
+        </p>
+
+        {/* Auftrag */}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nacharbeit pro Teil" unit="min" mode="numeric" value={v.nacharbeit} onChange={set('nacharbeit')} placeholder="0" invalid={bad(n.nacharbeit)} />
+          <Field label="CAD-Konstruktion" unit="min" mode="numeric" value={v.cadMin} onChange={set('cadMin')} placeholder="0" invalid={bad(n.cadMin)} />
+        </div>
+        <p className="-mt-3 text-xs text-fg-subtle">
+          CAD {euro(CAD_STUNDENSATZ)} pro Stunde, einmal pro Auftrag. Mengenrabatt: {MENGENRABATT.map((r) => `ab ${r.abStueck} Teilen ${r.prozent} %`).join(', ')}.
         </p>
 
         {/* Sätze */}
@@ -535,7 +600,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
                 <Field label="Pauschale" unit="€" value={v.pauschale} onChange={set('pauschale')} invalid={bad(n.pauschale)} />
               </div>
               <p className="-mt-2 text-xs text-fg-subtle">Für Firmenkunden z. B. Stundensatz erhöhen. Pauschale auf 0 bei Folgeaufträgen ohne neue Vorbereitung.</p>
-              <button type="button" onClick={() => setV((s) => ({ ...s, mm: EMPTY.mm, satz: EMPTY.satz, pauschale: EMPTY.pauschale }))}
+              <button type="button" onClick={() => setV((s) => ({ ...s, mm: EMPTY_BASE.mm, satz: EMPTY_BASE.satz, pauschale: EMPTY_BASE.pauschale }))}
                 className="self-start text-sm font-semibold text-fg-muted underline underline-offset-4">
                 Auf Standard zurücksetzen
               </button>
@@ -613,7 +678,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
           )}
         </section>
 
-        <button onClick={() => { setV(EMPTY); setLabel(''); }} className="self-start text-sm font-semibold text-fg-muted underline underline-offset-4">
+        <button onClick={() => { setV(emptyInputs()); setLabel(''); }} className="self-start text-sm font-semibold text-fg-muted underline underline-offset-4">
           Eingaben leeren
         </button>
 
@@ -635,9 +700,12 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
           ) : (
             <ul className="mt-3 divide-y divide-white/[.08]">
               {history.map((h) => {
-                const i = h.inputs;
-                const mats = i.multi ? `${i.mat1} + ${i.mat2}` : i.mat1;
-                const q = num(i.qty) > 1 ? ` · ${Math.floor(num(i.qty))} Stk.` : '';
+                const i = migrate(h.inputs as unknown as Record<string, unknown>);
+                const mats = [...new Set(i.plates.flatMap((p) => (p.multi ? [p.mat1, p.mat2] : [p.mat1])))].join(' + ');
+                const g = i.plates.reduce((s, p) => s + ((num(p.g1) || 0) + (p.multi ? (num(p.g2) || 0) + (num(p.purge) || 0) : 0)) * count(p.mal), 0);
+                const mi = i.plates.reduce((s, p) => s + ((num(p.h) || 0) * 60 + (num(p.m) || 0)) * count(p.mal), 0);
+                const st = i.plates.reduce((s, p) => s + count(p.teile) * count(p.mal), 0);
+                const q = `${i.plates.length > 1 ? ` · ${i.plates.length} Platten` : ''}${st > 1 ? ` · ${st} Stk.` : ''}`;
                 return (
                   <li key={h.id} className="flex items-center gap-2">
                     <button onClick={() => load(h)} className="min-w-0 flex-1 py-3 text-left active:opacity-70">
@@ -646,7 +714,7 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
                         <span className="shrink-0 font-semibold tabular-nums">{euro(h.gesamt)}</span>
                       </span>
                       <span className="mt-0.5 block truncate text-sm text-fg-subtle">
-                        {mats} · {i.g1} g · {time(i)}{q} · {new Date(h.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+                        {mats} · {fmt(Math.round(g * 10) / 10)} g · {hm(mi)}{q} · {new Date(h.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
                       </span>
                     </button>
                     <button onClick={() => remove(h.id)} aria-label={`${h.label || 'Eintrag'} löschen`} className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-fg-subtle active:bg-white/10">
