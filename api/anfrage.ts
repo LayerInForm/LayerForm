@@ -6,8 +6,9 @@ import { Resend } from 'resend';
  * Umgebungsvariablen:
  *   RESEND_API_KEY      API-Schlüssel von resend.com (Pflicht)
  *   ANFRAGE_EMPFAENGER  Empfänger, Standard: auftrag@layer-form.de
- *   ANFRAGE_ABSENDER    Absender, Standard: LayerForm Preisrechner <rechner@layer-form.de>
+ *   ANFRAGE_ABSENDER    Absender, Standard: LayerForm <rechner@layer-form.de>
  *                       (die Domain muss bei Resend bestätigt sein)
+ *   ANFRAGE_BESTAETIGUNG "aus" schaltet die automatische Eingangsbestätigung an den Kunden ab
  */
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const clip = (s: unknown, n = 300) => String(s ?? '').trim().slice(0, n);
@@ -69,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const resend = new Resend(key);
     const { error } = await resend.emails.send({
-      from: process.env.ANFRAGE_ABSENDER || 'LayerForm Preisrechner <rechner@layer-form.de>',
+      from: process.env.ANFRAGE_ABSENDER || 'LayerForm <rechner@layer-form.de>',
       to: process.env.ANFRAGE_EMPFAENGER || 'auftrag@layer-form.de',
       replyTo: email,
       subject: `Druckanfrage von ${name} (${material}, Richtpreis ${estimate})`,
@@ -78,6 +79,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       attachments,
     });
     if (error) throw new Error(error.message);
+
+    // Eingangsbestätigung an den Kunden (Fehler hier blockieren die Anfrage nicht)
+    if (process.env.ANFRAGE_BESTAETIGUNG !== 'aus') {
+      const teile = plates.flatMap((p) => p.items).map((i) => `${Number(i.qty) || 1} × ${clip(i.name, 200)}`);
+      const ctext = [
+        `Hallo ${name},`, '',
+        'vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen.', '',
+        'Ihre Angaben:',
+        `Material: ${material}`, `Qualität: ${quality}`, `Infill: ${infill} %`,
+        `Teile: ${teile.join(', ') || '–'}`,
+        `Richtpreis: ${estimate} (unverbindlich)`, '',
+        'Wir prüfen Ihre Dateien und schicken Ihnen den finalen Preis inklusive Versand per E-Mail.',
+        'Bei Fragen antworten Sie einfach auf diese Nachricht oder schreiben uns per WhatsApp: +49 176 85922649', '',
+        'Viele Grüße',
+        'LayerForm',
+        'www.layer-form.de',
+      ].join('\n');
+      const chtml = `
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px;line-height:1.5">
+        <p>Hallo ${esc(name)},</p>
+        <p>vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen.</p>
+        <table style="margin:12px 0">${row('Material', esc(material))}${row('Qualität', esc(quality))}${row('Infill', `${esc(infill)} %`)}${row('Teile', teile.map(esc).join('<br>') || '–')}${row('Richtpreis', `${esc(estimate)} <span style="color:#667">(unverbindlich)</span>`)}</table>
+        <p>Wir prüfen Ihre Dateien und schicken Ihnen den finalen Preis inklusive Versand per E-Mail.</p>
+        <p>Bei Fragen antworten Sie einfach auf diese Nachricht oder schreiben uns per WhatsApp: <a href="https://wa.me/4917685922649">+49 176 85922649</a></p>
+        <p>Viele Grüße<br>LayerForm<br><a href="https://www.layer-form.de">www.layer-form.de</a></p>
+      </div>`;
+      try {
+        await resend.emails.send({
+          from: process.env.ANFRAGE_ABSENDER || 'LayerForm <rechner@layer-form.de>',
+          to: email,
+          replyTo: process.env.ANFRAGE_EMPFAENGER || 'auftrag@layer-form.de',
+          subject: 'Ihre Anfrage bei LayerForm',
+          text: ctext,
+          html: chtml,
+        });
+      } catch (e) {
+        console.error('Bestätigung fehlgeschlagen', e);
+      }
+    }
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('Versand fehlgeschlagen', e);
