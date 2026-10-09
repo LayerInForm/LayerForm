@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CaretDown, Check, Copy, LockSimple, Minus, PencilSimple, Plus, Trash, X } from '@phosphor-icons/react';
+import { CaretDown, Check, Copy, LockSimple, Minus, PencilSimple, Plus, ShareNetwork, Trash, X } from '@phosphor-icons/react';
 import {
   ARBEIT_STUNDENSATZ, AUSSCHUSS, BEARBEITUNGSPAUSCHALE, CAD_STUNDENSATZ, FILAMENT_PER_KG, MASCHINEN_STUNDENSATZ,
   MATERIAL_MARGE_STANDARD, MATERIAL_MARGE_VORLAGEN, MENGENRABATT, MWST_HINWEIS, STROM_PRO_STUNDE, VERSCHLEISS_PRO_STUNDE,
@@ -245,6 +245,40 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, v, extrasSum]);
 
+  /** Angebotstext für den Kunden: nur Leistung und Preis, keine internen Kosten oder Margen */
+  const offerText = () => {
+    if (!result) return '';
+    const mats = v.multi ? `${v.mat1} und ${v.mat2} (mehrfarbig)` : v.mat1;
+    const lines = [
+      'Hallo,', '',
+      'vielen Dank für Ihre Anfrage. Gerne fertige ich Ihr Teil im 3D-Druck:', '',
+      `Material: ${mats}`,
+      `Stückzahl: ${result.stueck}`,
+    ];
+    if (result.cad > 0) lines.push('inklusive CAD-Konstruktion');
+    if (result.nacharbeit > 0) lines.push('inklusive Nacharbeit');
+    if (extrasChosen.length) lines.push('inklusive Verpackung');
+    lines.push('');
+    lines.push(result.stueck > 1 ? `Preis: ${euro(result.gesamt)} (${euro(result.proStueck)} pro Stück)` : `Preis: ${euro(result.gesamt)}`);
+    if (result.rabattProzent > 0) lines.push(`Mengenrabatt von ${result.rabattProzent} % ist bereits abgezogen.`);
+    lines.push(MWST_HINWEIS, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid, dann starte ich den Druck.', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
+    return lines.join('\n');
+  };
+  const [offerCopied, setOfferCopied] = useState(false);
+  const copyText = async (text: string) => {
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+    }
+  };
+  const copyOffer = async () => { await copyText(offerText()); setOfferCopied(true); setTimeout(() => setOfferCopied(false), 1600); };
+  const shareOffer = async () => {
+    const text = offerText();
+    if (navigator.share) { try { await navigator.share({ text }); return; } catch { return; } }
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  };
+
   const copy = async () => {
     if (!result) return;
     const text = euro(result.gesamt);
@@ -343,6 +377,24 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
             {stat('Gewinn', result?.gewinn, true)}
           </div>
           {result && result.rabattProzent > 0 && <p className="mt-2.5 text-sm text-cyan">Mengenrabatt {result.rabattProzent} % ab {qty} Stück abgezogen.</p>}
+
+          {/* Angebot an den Kunden */}
+          <div className="mt-3 grid grid-cols-2 gap-1.5">
+            <button
+              onClick={copyOffer}
+              disabled={!result}
+              className="flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 text-sm font-semibold transition-colors active:bg-white/10 disabled:opacity-40"
+            >
+              {offerCopied ? <Check size={16} weight="bold" /> : <Copy size={16} />} {offerCopied ? 'Kopiert' : 'Angebot kopieren'}
+            </button>
+            <button
+              onClick={shareOffer}
+              disabled={!result}
+              className="flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 text-sm font-semibold transition-colors active:bg-white/10 disabled:opacity-40"
+            >
+              <ShareNetwork size={16} /> Angebot senden
+            </button>
+          </div>
 
           <button
             onClick={() => setOpenDetails((o) => !o)}
