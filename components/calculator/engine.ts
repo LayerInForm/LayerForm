@@ -1,4 +1,4 @@
-import { GAP, MAX_PART, type Material, type Quality } from './pricing';
+import { DRUCKER, GAP, MAX_PART, type Material, type Quality } from './pricing';
 import { kalkuliere } from '../../src/pricing';
 import type { OcctModule } from 'occt-import-js';
 
@@ -8,7 +8,11 @@ export interface PartData {
   file: File | null;       // Originaldatei für den Versand
   positions: Float32Array; // Dreiecke, Z oben, in mm
   volume: number;          // mm³
-  area: number;            // mm²
+  area: number;            // mm² gesamt
+  areaSide: number;        // mm² steile Flächen (Wände)
+  areaUp: number;          // mm² nach oben zeigende Flächen (Deckschichten)
+  areaDown: number;        // mm² nach unten zeigende Flächen (Bodenschichten, Überhänge)
+  footprint: number;       // mm² Auflagefläche auf der Platte
   size: { x: number; y: number; z: number };
 }
 export interface Entry { part: number; plate: number; qty: number }
@@ -75,8 +79,15 @@ export async function parseSTEP(buf: ArrayBuffer): Promise<{ positions: Float32A
 }
 
 export function measure(pos: Float32Array) {
-  let vol = 0, area = 0;
+  let vol = 0, area = 0, areaSide = 0, areaUp = 0, areaDown = 0;
   let minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = pos[i], y = pos[i + 1], z = pos[i + 2];
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+  }
+  let footprint = 0;
   for (let i = 0; i < pos.length; i += 9) {
     const ax = pos[i], ay = pos[i + 1], az = pos[i + 2];
     const bx = pos[i + 3], by = pos[i + 4], bz = pos[i + 5];
@@ -84,15 +95,21 @@ export function measure(pos: Float32Array) {
     vol += (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
     const ux = bx - ax, uy = by - ay, uz = bz - az, wx = cx - ax, wy = cy - ay, wz = cz - az;
     const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
-    area += Math.sqrt(nx * nx + ny * ny + nz * nz) / 2;
-    for (let k = 0; k < 9; k += 3) {
-      const x = pos[i + k], y = pos[i + k + 1], z = pos[i + k + 2];
-      if (x < minX) minX = x; if (x > maxX) maxX = x;
-      if (y < minY) minY = y; if (y > maxY) maxY = y;
-      if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-    }
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    const a = len / 2;
+    area += a;
+    if (!len) continue;
+    const cosZ = nz / len;
+    if (cosZ > 0.7) areaUp += a;                 // flacher als ca. 45°: Deckschicht
+    else if (cosZ < -0.7) {
+      areaDown += a;
+      if (Math.max(az, bz, cz) - minZ < 0.3) footprint += a; // liegt auf der Platte
+    } else areaSide += a;                         // Wand
   }
-  return { volume: Math.abs(vol), area, min: { x: minX, y: minY, z: minZ }, size: { x: maxX - minX, y: maxY - minY, z: maxZ - minZ } };
+  return {
+    volume: Math.abs(vol), area, areaSide, areaUp, areaDown, footprint,
+    min: { x: minX, y: minY, z: minZ }, size: { x: maxX - minX, y: maxY - minY, z: maxZ - minZ },
+  };
 }
 
 /** Teil zentrieren und auf Z=0 stellen */
@@ -158,12 +175,38 @@ export function autoDistribute(entries: Entry[], parts: PartData[]) {
 }
 
 /* ---------- Richtpreis ---------- */
-function partCost(p: PartData, m: Material, q: Quality, infill: number) {
-  const f = infill / 100;
-  const shell = Math.min(p.volume, p.area * 0.9);              // Wände und Deckschichten ca. 0,9 mm
-  const solid = shell + Math.max(0, p.volume - shell) * f;      // tatsächlich gedrucktes Volumen in mm³
-  const grams = (solid / 1000) * m.density * 1.05;               // +5 % für Ränder und Stützen
-  const hours = (solid / (q.flow * m.speed) + (p.size.z / q.lh) * 3) / 3600;
+/**
+ * Schätzt Gewicht und Druckzeit eines Teils für den Bambu Lab A1.
+ * Wände, Deck- und Bodenschichten werden aus den Flächen des Modells berechnet,
+ * die Füllung aus dem Restvolumen. Die Zeit ergibt sich aus Volumen ÷ Volumenstrom je Bereich.
+ */
+export function schaetze(p: PartData, m: Material, q: Quality, infill: number) {
+  const d = DRUCKER;
+  const lh = q.lh;
+  const wallMm = d.wandLinien * d.linienbreite;                       // 0,84 mm
+  const topMm = Math.max(d.deckschichten * lh, d.deckMinMm);
+  const bottomMm = d.bodenschichten * lh;
+  // Volumen der Bereiche (mm³), nie mehr als das Teil selbst
+  let wall = p.areaSide * wallMm;
+  let top = p.areaUp * topMm;
+  let bottom = p.areaDown * bottomMm;
+  const shell = wall + top + bottom;
+  if (shell > p.volume) { const k = p.volume / shell; wall *= k; top *= k; bottom *= k; }
+  const fill = Math.max(0, p.volume - wall - top - bottom) * (infill / 100);
+  const printed = wall + top + bottom + fill;
+  const grams = (printed / 1000) * m.density * d.korrektur.gewicht;
+
+  // Volumenstrom je Bereich, begrenzt durch das Filament
+  const flow = (speed: number, eff: number) => Math.min(d.linienbreite * lh * speed, m.maxFlow) * eff;
+  const wallFlow = (flow(d.speed.aussenwand, d.effizienz.wand) + flow(d.speed.innenwand, d.effizienz.wand)) / 2;
+  const sec =
+    wall / wallFlow +
+    (top + bottom) / flow(d.speed.deckflaeche, d.effizienz.deckflaeche) +
+    fill / flow(d.speed.fuellung, d.effizienz.fuellung) +
+    // erste Schicht langsamer: Auflagefläche mit 50 mm/s
+    (p.footprint * 0.2) / Math.min(0.5 * 0.2 * d.speed.ersteSchicht, m.maxFlow) +
+    (p.size.z / lh) * d.schichtwechselSek;
+  const hours = (sec * (1 + d.leerfahrtAufschlag) * d.korrektur.zeit) / 3600;
   return { grams, hours };
 }
 
@@ -172,8 +215,9 @@ export function estimate(entries: Entry[], parts: PartData[], plateCount: number
   for (let i = 0; i < plateCount; i++) {
     const inst = instancesOn(i, entries, parts);
     if (!inst.length) continue;
-    hours += 0.1; // Aufheizen und Vorbereitung je Platte
-    inst.forEach((p) => { const c = partCost(p, m, q, infill); grams += c.grams; hours += c.hours; });
+    hours += DRUCKER.startMinuten / 60; // Aufheizen und Kalibrierung je Platte
+    grams += DRUCKER.spuellinieGramm;    // Spüllinie je Platte
+    inst.forEach((p) => { const c = schaetze(p, m, q, infill); grams += c.grams; hours += c.hours; });
   }
   // gemeinsame Formel aus src/pricing.ts, für den Richtwert auf 0,50 € aufgerundet
   const menge = entries.reduce((n, e) => n + e.qty, 0);

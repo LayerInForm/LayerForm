@@ -109,7 +109,10 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
         throw new Error(`${name} ist größer als 255 × 255 × 255 mm. Bitte stellen Sie dafür eine Anfrage, wir finden eine Lösung, zum Beispiel durch Teilen des Modells.`);
       }
       normalize(positions, m.min, m.size);
-      const part: PartData = { id: nextId.current++, name, file, positions, volume: m.volume, area: m.area, size: m.size };
+      const part: PartData = {
+        id: nextId.current++, name, file, positions, volume: m.volume, area: m.area,
+        areaSide: m.areaSide, areaUp: m.areaUp, areaDown: m.areaDown, footprint: m.footprint, size: m.size,
+      };
       ps = [...ps, part];
       const r = placeNew(part, es, ps, pc);
       es = r.entries; pc = r.plateCount; last = r.plate;
