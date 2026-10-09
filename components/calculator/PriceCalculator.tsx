@@ -4,7 +4,7 @@ import {
   DEFAULT_INFILL, DEFAULT_QUALITY, MATERIALS, MAX_FILE_MB, MAX_PART, QUALITIES, type Material,
 } from './pricing';
 import {
-  addEntry, autoDistribute, estimate, instancesOn, measure, normalize, pack, parse3MF, parseSTL, placeNew,
+  addEntry, autoDistribute, estimate, instancesOn, measure, normalize, pack, parse3MF, parseSTEP, parseSTL, placeNew,
   type Entry, type PartData,
 } from './engine';
 import { PlateViewer } from './PlateViewer';
@@ -58,7 +58,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
   const [q, setQ] = useState(QUALITIES[DEFAULT_QUALITY]);
   const [infill, setInfill] = useState(DEFAULT_INFILL);
   const [fileErr, setFileErr] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', street: '', zip: '', city: '', comment: '', website: '' });
@@ -98,7 +98,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
 
   const readFiles = useCallback(async (files: FileList | File[]) => {
     const list = [...files]; if (!list.length) return;
-    setLoading(true);
+    setLoading(list.some((f) => /\.(step|stp)$/i.test(f.name)) ? 'STEP-Datei wird umgewandelt …' : 'Datei wird gelesen …');
     const msgs: string[] = [];
     let ps = parts, es = entries, pc = plateCount, last = active;
     const add = (positions: Float32Array, name: string, file: File) => {
@@ -116,13 +116,13 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
     };
     for (const file of list) {
       try {
-        if (!/\.(stl|3mf)$/i.test(file.name)) throw new Error(`${file.name}: bitte STL oder 3MF. Für STEP und andere Formate stellen Sie gern eine Anfrage.`);
+        if (!/\.(stl|3mf|step|stp)$/i.test(file.name)) throw new Error(`${file.name}: bitte STL, 3MF oder STEP. Für andere Formate stellen Sie gern eine Anfrage.`);
         if (file.size > MAX_FILE_MB * 1024 * 1024) throw new Error(`${file.name} ist größer als ${MAX_FILE_MB} MB.`);
         const buf = await file.arrayBuffer();
-        if (/\.3mf$/i.test(file.name)) {
-          const objs = await parse3MF(buf);
+        if (/\.(3mf|step|stp)$/i.test(file.name)) {
+          const objs = /\.3mf$/i.test(file.name) ? await parse3MF(buf) : await parseSTEP(buf);
           objs.forEach((o, i) => {
-            try { add(o.positions, o.label || (objs.length > 1 ? `${file.name} (Objekt ${i + 1})` : file.name), file); }
+            try { add(o.positions, objs.length === 1 ? file.name : o.label || `${file.name} (Objekt ${i + 1})`, file); }
             catch (e) { msgs.push((e as Error).message); }
           });
         } else add(parseSTL(buf), file.name, file);
@@ -132,7 +132,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
     }
     setParts(ps); setEntries(es); setPlateCount(pc); setActive(last);
     setFileErr(msgs.join(' '));
-    setLoading(false);
+    setLoading(null);
     if (fileInput.current) fileInput.current.value = '';
   }, [parts, entries, plateCount, active]);
 
@@ -269,7 +269,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
               </span>
               <p className="max-w-[30ch] text-fg-muted">
                 <strong className="block text-lg font-semibold text-fg">Dateien hierher ziehen</strong>
-                STL oder 3MF, bis {MAX_FILE_MB} MB je Datei. Ihre Teile erscheinen hier in 3D.
+                STL, 3MF oder STEP, bis {MAX_FILE_MB} MB je Datei. Ihre Teile erscheinen hier in 3D.
               </p>
             </div>
           )}
@@ -297,7 +297,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
           {parts.length > 0 && (
             <p className="pointer-events-none absolute bottom-3 left-4 text-sm text-fg-subtle">Ziehen zum Drehen, scrollen oder zwei Finger zum Zoomen</p>
           )}
-          {loading && <div className="absolute inset-0 grid place-items-center bg-bg/55 text-fg-muted">Datei wird gelesen …</div>}
+          {loading && <div className="absolute inset-0 grid place-items-center bg-bg/55 text-fg-muted">{loading}</div>}
         </div>
 
         {/* Schritte */}
@@ -306,14 +306,14 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
             <p className="mt-1.5 text-fg-subtle sm:ml-10">
               {parts.length
                 ? 'Teile werden automatisch mit 1 cm Abstand auf Platten verteilt. Sie können sie jederzeit verschieben.'
-                : 'Ein oder mehrere Teile als STL oder 3MF, Maße in Millimetern. Maximal 255 × 255 × 255 mm pro Teil.'}
+                : 'Ein oder mehrere Teile als STL, 3MF oder STEP. Maximal 255 × 255 × 255 mm pro Teil.'}
             </p>
             {!parts.length && (
               <div className="mt-4 sm:ml-10">
                 <button onClick={() => fileInput.current?.click()} className="btn-primary">Dateien auswählen</button>
               </div>
             )}
-            <input ref={fileInput} type="file" accept=".stl,.3mf" multiple className="sr-only" tabIndex={-1} onChange={(e) => e.target.files && readFiles(e.target.files)} />
+            <input ref={fileInput} type="file" accept=".stl,.3mf,.step,.stp" multiple className="sr-only" tabIndex={-1} onChange={(e) => e.target.files && readFiles(e.target.files)} />
 
             {parts.length > 0 && (
               <div className="mt-4 flex flex-col gap-3 sm:ml-10">

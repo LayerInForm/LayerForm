@@ -1,4 +1,5 @@
 import { GAP, MAX_PART, PRICING, type Material, type Quality } from './pricing';
+import type { OcctModule } from 'occt-import-js';
 
 export interface PartData {
   id: number;
@@ -52,6 +53,24 @@ export async function parse3MF(buf: ArrayBuffer): Promise<{ positions: Float32Ar
   });
   if (!result.length) throw new Error('Die 3MF-Datei enthält keine Geometrie.');
   return result;
+}
+
+/** STEP: wird im Browser mit OpenCascade (WebAssembly) in Dreiecke umgewandelt, jeder Körper wird ein eigenes Teil */
+let occtPromise: Promise<OcctModule> | null = null;
+export async function parseSTEP(buf: ArrayBuffer): Promise<{ positions: Float32Array; label: string | null }[]> {
+  if (!occtPromise) {
+    occtPromise = Promise.all([import('occt-import-js'), import('occt-import-js/dist/occt-import-js.wasm?url')])
+      .then(([mod, wasm]) => mod.default({ locateFile: () => wasm.default }));
+  }
+  const occt = await occtPromise;
+  const res = occt.ReadStepFile(new Uint8Array(buf), { linearUnit: 'millimeter', linearDeflectionType: 'bounding_box_ratio', linearDeflection: 0.001, angularDeflection: 0.5 });
+  if (!res.success || !res.meshes.length) throw new Error('Die STEP-Datei konnte nicht gelesen werden.');
+  return res.meshes.map((m) => {
+    const p = m.attributes.position.array, idx = m.index.array;
+    const out = new Float32Array(idx.length * 3);
+    for (let i = 0; i < idx.length; i++) { out[i * 3] = p[idx[i] * 3]; out[i * 3 + 1] = p[idx[i] * 3 + 1]; out[i * 3 + 2] = p[idx[i] * 3 + 2]; }
+    return { positions: out, label: m.name && !/^(SOLID|Body|Part)?\s*\d*$/i.test(m.name) ? m.name : null };
+  });
 }
 
 export function measure(pos: Float32Array) {

@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: req.body as HandleUploadBody,
       request: req,
       onBeforeGenerateToken: async (pathname) => {
-        if (!/^anfragen\/[\w.\-]+\.(stl|3mf)$/i.test(pathname)) throw new Error('Nur STL- und 3MF-Dateien erlaubt');
+        if (!/^anfragen\/[\w.\-]+\.(stl|3mf|step|stp)$/i.test(pathname)) throw new Error('Nur STL-, 3MF- und STEP-Dateien erlaubt');
         return { maximumSizeInBytes: 50 * 1024 * 1024, addRandomSuffix: true };
       },
     });
