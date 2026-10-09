@@ -59,7 +59,7 @@ export const VERSCHLEISS_PRO_STUNDE = 0.25;
 export interface Zusatzposition { id: string; name: string; preis: number }
 export const ZUSATZKOSTEN: Zusatzposition[] = [
   { id: 'paket-klein', name: 'Kleines Paket', preis: 0.32 },
-  { id: 'paket-gross', name: 'Großes Paket', preis: 0 },
+  { id: 'paket-gross', name: 'Großes Paket', preis: 0.4 },
   { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0.3 },
   { id: 'versandtasche', name: 'Versandtasche', preis: 0.18 }, // 18 € für 100 Stück
 ];
