@@ -115,7 +115,7 @@ const PinGate: React.FC<{ onOk: () => void }> = ({ onOk }) => {
   const [err, setErr] = useState(false);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === KALKULATION_PIN) { storage.set(PIN_KEY, KALKULATION_PIN); onOk(); }
+    if (pin.trim() === KALKULATION_PIN) { storage.set(PIN_KEY, KALKULATION_PIN); onOk(); }
     else { setErr(true); setPin(''); }
   };
   return (
@@ -126,14 +126,16 @@ const PinGate: React.FC<{ onOk: () => void }> = ({ onOk }) => {
         <p className="mt-1.5 text-fg-muted">Bitte PIN eingeben</p>
         <input
           value={pin}
-          onChange={(e) => { setPin(e.target.value.replace(/\D/g, '')); setErr(false); }}
+          onChange={(e) => { setPin(e.target.value); setErr(false); }}
           type="password"
-          inputMode="numeric"
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           autoFocus
           aria-label="PIN"
           aria-invalid={err || undefined}
-          className={`mt-6 h-16 w-full rounded-2xl border bg-bg/70 text-center text-3xl tracking-[.5em] text-fg outline-none focus:border-cyan ${err ? 'border-red-300' : 'border-white/[.12]'}`}
+          className={`mt-6 h-16 w-full rounded-2xl border bg-bg/70 text-center text-2xl tracking-[.2em] text-fg outline-none focus:border-cyan ${err ? 'border-red-300' : 'border-white/[.12]'}`}
         />
         {err && <p role="alert" className="mt-2 text-sm text-red-300">Falsche PIN</p>}
         <button type="submit" className="btn-primary mt-4 h-14 w-full text-base">Öffnen</button>
