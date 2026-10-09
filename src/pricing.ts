@@ -58,13 +58,14 @@ export const VERSCHLEISS_PRO_STUNDE = 0.25;
  */
 export interface Zusatzposition { id: string; name: string; preis: number }
 export const ZUSATZKOSTEN: Zusatzposition[] = [
-  { id: 'paket-klein', name: 'Kleines Paket', preis: 0 },
+  { id: 'paket-klein', name: 'Kleines Paket', preis: 0.32 },
   { id: 'paket-gross', name: 'Großes Paket', preis: 0 },
-  { id: 'versand-klein', name: 'Kleiner Versand', preis: 0 },
-  { id: 'versand-gross', name: 'Großer Versand', preis: 0 },
   { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0.3 },
   { id: 'versandtasche', name: 'Versandtasche', preis: 0.18 }, // 18 € für 100 Stück
 ];
+
+/** Früher vorhandene Standardpositionen, die nicht mehr angezeigt werden (auch nicht aus dem Gerätespeicher) */
+export const ZUSATZKOSTEN_ENTFERNT = ['versand-klein', 'versand-gross'];
 
 /** Kleinunternehmer nach § 19 UStG: keine Umsatzsteuer */
 export const MWST_HINWEIS = 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.';

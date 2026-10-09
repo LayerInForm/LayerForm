@@ -3,7 +3,7 @@ import { CaretDown, Check, Copy, LockSimple, Minus, PencilSimple, Plus, Trash, X
 import {
   ARBEIT_STUNDENSATZ, AUSSCHUSS, BEARBEITUNGSPAUSCHALE, CAD_STUNDENSATZ, FILAMENT_PER_KG, MASCHINEN_STUNDENSATZ,
   MATERIAL_MARGE_STANDARD, MATERIAL_MARGE_VORLAGEN, MENGENRABATT, MWST_HINWEIS, STROM_PRO_STUNDE, VERSCHLEISS_PRO_STUNDE,
-  ZUSATZKOSTEN, euro, kalkuliere, type FilamentId, type Zusatzposition,
+  ZUSATZKOSTEN, ZUSATZKOSTEN_ENTFERNT, euro, kalkuliere, type FilamentId, type Zusatzposition,
 } from '../../src/pricing';
 import { KALKULATION_PIN } from './config';
 
@@ -164,7 +164,7 @@ function loadExtras(): ExtraStore {
         const d = ZUSATZKOSTEN.find((y) => y.id === x.id);
         return !d || d.name !== x.name || (x.preis > 0 && x.preis !== d.preis);
       }).map((x) => ({ ...x, edited: true }));
-      const removed = ZUSATZKOSTEN.filter((d) => !(raw as Zusatzposition[]).some((x) => x.id === d.id) && d.id !== 'versandtasche').map((d) => d.id);
+      const removed = ZUSATZKOSTEN.filter((d) => !(raw as Zusatzposition[]).some((x) => x.id === d.id) && !['versandtasche', 'verpackung', 'paket-klein'].includes(d.id)).map((d) => d.id);
       return { items, removed };
     }
     return { items: raw.items ?? [], removed: raw.removed ?? [] };
@@ -175,7 +175,9 @@ function mergeExtras(st: ExtraStore): Zusatzposition[] {
     const own = st.items.find((x) => x.id === d.id && x.edited);
     return own ? { id: d.id, name: own.name, preis: own.preis } : d;
   });
-  const custom = st.items.filter((x) => !ZUSATZKOSTEN.some((d) => d.id === x.id)).map(({ id, name, preis }) => ({ id, name, preis }));
+  const custom = st.items
+    .filter((x) => !ZUSATZKOSTEN.some((d) => d.id === x.id) && !ZUSATZKOSTEN_ENTFERNT.includes(x.id))
+    .map(({ id, name, preis }) => ({ id, name, preis }));
   return [...defaults, ...custom];
 }
 
