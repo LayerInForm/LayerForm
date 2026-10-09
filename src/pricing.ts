@@ -19,10 +19,36 @@ export const DRUCKER_WATT = 250;
 /** € pro Druckstunde (0,25 kW × 0,40 €/kWh = 0,10 €) */
 export const STROM_PRO_STUNDE = (DRUCKER_WATT / 1000) * STROM_PREIS_KWH;
 
-/** Verkaufspreis = Selbstkosten × 4 (300 % Aufschlag) */
-export const AUFSCHLAG_FAKTOR = 4;
-/** Mindestpreis pro Auftrag in € */
+/** Druckerverschleiß in € pro Druckstunde */
+export const VERSCHLEISS_PRO_STUNDE = 0.25;
+
+/**
+ * Marge in Prozent auf die Herstellkosten.
+ * 100 % = doppelter Preis, 300 % = vierfacher Preis (Standard), 400 % für Firmenkunden.
+ */
+export const MARGE_STANDARD = 300;
+export const MARGE_VORLAGEN = [
+  { prozent: 100, label: '100 %' },
+  { prozent: 200, label: '200 %' },
+  { prozent: 300, label: '300 %', hinweis: 'Standard' },
+  { prozent: 400, label: '400 %', hinweis: 'Firma' },
+];
+
+/** Mindestpreis für das Produkt (ohne CAD und Zusatzkosten) in € */
 export const MINDESTPREIS = 2;
+
+/**
+ * Zusatzkosten ohne Marge, z. B. Verpackung und Versand.
+ * Preise in €. Im internen Kalkulator lassen sie sich zusätzlich pro Gerät anpassen und ergänzen.
+ */
+export interface Zusatzposition { id: string; name: string; preis: number }
+export const ZUSATZKOSTEN: Zusatzposition[] = [
+  { id: 'paket-klein', name: 'Kleines Paket', preis: 0 },
+  { id: 'paket-gross', name: 'Großes Paket', preis: 0 },
+  { id: 'versand-klein', name: 'Kleiner Versand', preis: 0 },
+  { id: 'versand-gross', name: 'Großer Versand', preis: 0 },
+  { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0 },
+];
 
 /** Kleinunternehmer nach § 19 UStG: keine Umsatzsteuer */
 export const MWST_HINWEIS = 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.';
@@ -33,51 +59,69 @@ export interface MaterialAnteil {
 }
 
 export interface Kalkulation {
-  material: number;      // € Material pro Stück
-  strom: number;         // € Strom pro Stück
-  selbstkosten: number;  // € pro Stück
-  aufschlag: number;     // € pro Stück
-  verkaufProStueck: number; // € pro Stück vor Mindestpreis und Zuschlag
+  material: number;         // € Material pro Stück
+  strom: number;            // € Strom pro Stück
+  verschleiss: number;      // € Druckerverschleiß pro Stück
+  herstellkosten: number;   // € pro Stück
+  margeProzent: number;
+  marge: number;            // € pro Stück
+  verkaufProStueck: number; // € pro Stück vor Mindestpreis
   stueck: number;
-  zwischensumme: number; // Verkauf × Stückzahl
+  zwischensumme: number;    // Verkauf × Stückzahl
   mindestpreisGreift: boolean;
-  zuschlag: number;      // € einmalig pro Auftrag
-  gesamt: number;        // € Endpreis
-  proStueck: number;     // € Endpreis / Stückzahl
+  produkt: number;          // € Produktpreis gesamt (mit Mindestpreis)
+  cad: number;              // € CAD-Konstruktion, ohne Marge
+  zusatz: number;           // € Zusatzkosten gesamt, ohne Marge
+  gesamt: number;           // € Endpreis
 }
 
 const cent = (v: number) => Math.round(v * 100) / 100;
 
 /**
- * Grundformel:
- *   Material     = Gramm / 1000 × Preis pro kg
- *   Strom        = Druckstunden × 0,10 €
- *   Selbstkosten = Material + Strom
- *   Verkauf      = Selbstkosten × 4
- *   Gesamt       = max(Mindestpreis, Verkauf × Stückzahl) + Zuschlag
+ * Formel:
+ *   Material       = Gramm / 1000 × Preis pro kg
+ *   Strom          = Druckstunden × 0,10 €
+ *   Verschleiß     = Druckstunden × 0,25 €
+ *   Herstellkosten = Material + Strom + Verschleiß
+ *   Verkauf        = Herstellkosten × (1 + Marge / 100)
+ *   Produkt        = max(Mindestpreis, Verkauf × Stückzahl)
+ *   Endpreis       = Produkt + CAD + Zusatzkosten
  */
-export function kalkuliere(opts: { materialien: MaterialAnteil[]; stunden: number; stueck?: number; zuschlag?: number }): Kalkulation {
+export function kalkuliere(opts: {
+  materialien: MaterialAnteil[];
+  stunden: number;
+  stueck?: number;
+  margeProzent?: number;
+  cad?: number;
+  zusatz?: number;
+}): Kalkulation {
   const stueck = Math.max(1, Math.floor(opts.stueck ?? 1));
-  const zuschlag = Math.max(0, opts.zuschlag ?? 0);
+  const margeProzent = Math.max(0, opts.margeProzent ?? MARGE_STANDARD);
+  const cad = Math.max(0, opts.cad ?? 0);
+  const zusatz = Math.max(0, opts.zusatz ?? 0);
   const material = opts.materialien.reduce((s, m) => s + (m.gramm / 1000) * m.preisProKg, 0);
   const strom = opts.stunden * STROM_PRO_STUNDE;
-  const selbstkosten = material + strom;
-  const verkaufProStueck = selbstkosten * AUFSCHLAG_FAKTOR;
+  const verschleiss = opts.stunden * VERSCHLEISS_PRO_STUNDE;
+  const herstellkosten = material + strom + verschleiss;
+  const verkaufProStueck = herstellkosten * (1 + margeProzent / 100);
   const zwischensumme = verkaufProStueck * stueck;
   const mindestpreisGreift = zwischensumme < MINDESTPREIS;
-  const gesamt = cent(Math.max(MINDESTPREIS, zwischensumme) + zuschlag);
+  const produkt = Math.max(MINDESTPREIS, zwischensumme);
   return {
     material: cent(material),
     strom: cent(strom),
-    selbstkosten: cent(selbstkosten),
-    aufschlag: cent(verkaufProStueck - selbstkosten),
+    verschleiss: cent(verschleiss),
+    herstellkosten: cent(herstellkosten),
+    margeProzent,
+    marge: cent(verkaufProStueck - herstellkosten),
     verkaufProStueck: cent(verkaufProStueck),
     stueck,
     zwischensumme: cent(zwischensumme),
     mindestpreisGreift,
-    zuschlag: cent(zuschlag),
-    gesamt,
-    proStueck: cent(gesamt / stueck),
+    produkt: cent(produkt),
+    cad: cent(cad),
+    zusatz: cent(zusatz),
+    gesamt: cent(produkt + cad + zusatz),
   };
 }
 
