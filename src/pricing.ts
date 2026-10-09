@@ -63,6 +63,7 @@ export const ZUSATZKOSTEN: Zusatzposition[] = [
   { id: 'versand-klein', name: 'Kleiner Versand', preis: 0 },
   { id: 'versand-gross', name: 'Großer Versand', preis: 0 },
   { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0 },
+  { id: 'versandtasche', name: 'Versandtasche', preis: 0.18 }, // 18 € für 100 Stück
 ];
 
 /** Kleinunternehmer nach § 19 UStG: keine Umsatzsteuer */

@@ -151,6 +151,34 @@ const PinGate: React.FC<{ onOk: () => void }> = ({ onOk }) => {
   );
 };
 
+/* ---------- Zusatzkosten: Standardliste aus src/pricing.ts plus eigene Änderungen ---------- */
+type StoredExtra = Zusatzposition & { edited?: boolean };
+interface ExtraStore { items: StoredExtra[]; removed: string[] }
+function loadExtras(): ExtraStore {
+  try {
+    const raw = JSON.parse(storage.get(EXTRA_KEY) || 'null');
+    if (!raw) return { items: [], removed: [] };
+    if (Array.isArray(raw)) {
+      // altes Format: komplette Liste. Nur echte Änderungen übernehmen, gelöschte Standardpositionen merken.
+      const items = (raw as Zusatzposition[]).filter((x) => {
+        const d = ZUSATZKOSTEN.find((y) => y.id === x.id);
+        return !d || d.name !== x.name || (x.preis > 0 && x.preis !== d.preis);
+      }).map((x) => ({ ...x, edited: true }));
+      const removed = ZUSATZKOSTEN.filter((d) => !(raw as Zusatzposition[]).some((x) => x.id === d.id) && d.id !== 'versandtasche').map((d) => d.id);
+      return { items, removed };
+    }
+    return { items: raw.items ?? [], removed: raw.removed ?? [] };
+  } catch { return { items: [], removed: [] }; }
+}
+function mergeExtras(st: ExtraStore): Zusatzposition[] {
+  const defaults = ZUSATZKOSTEN.filter((d) => !st.removed.includes(d.id)).map((d) => {
+    const own = st.items.find((x) => x.id === d.id && x.edited);
+    return own ? { id: d.id, name: own.name, preis: own.preis } : d;
+  });
+  const custom = st.items.filter((x) => !ZUSATZKOSTEN.some((d) => d.id === x.id)).map(({ id, name, preis }) => ({ id, name, preis }));
+  return [...defaults, ...custom];
+}
+
 /* ---------- Kalkulator ---------- */
 const Stepper: React.FC<{ value: number; onChange: (n: number) => void; label: string; min?: number }> = ({ value, onChange, label, min = 0 }) => (
   <span className="flex h-11 shrink-0 items-center rounded-full border border-white/[.12]">
@@ -169,9 +197,8 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   const [copied, setCopied] = useState(false);
   const [label, setLabel] = useState('');
   const [editExtras, setEditExtras] = useState(false);
-  const [extraList, setExtraList] = useState<Zusatzposition[]>(() => {
-    try { const s = storage.get(EXTRA_KEY); return s ? JSON.parse(s) : ZUSATZKOSTEN; } catch { return ZUSATZKOSTEN; }
-  });
+  const [extraStore, setExtraStore] = useState<ExtraStore>(() => loadExtras());
+  const extraList = useMemo(() => mergeExtras(extraStore), [extraStore]);
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
     try { return JSON.parse(storage.get(HIST_KEY) || '[]'); } catch { return []; }
   });
@@ -246,7 +273,18 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
   };
 
   /* Zusatzkosten verwalten (auf diesem Gerät gespeichert) */
-  const saveExtras = (list: Zusatzposition[]) => { setExtraList(list); storage.set(EXTRA_KEY, JSON.stringify(list)); };
+  const writeExtras = (st: ExtraStore) => { setExtraStore(st); storage.set(EXTRA_KEY, JSON.stringify(st)); };
+  const editExtra = (id: string, patch: Partial<Zusatzposition>) => {
+    const cur = extraList.find((x) => x.id === id)!;
+    const items = extraStore.items.filter((x) => x.id !== id);
+    writeExtras({ ...extraStore, items: [...items, { ...cur, ...patch, edited: true }] });
+  };
+  const deleteExtra = (id: string) => writeExtras({
+    items: extraStore.items.filter((x) => x.id !== id),
+    removed: ZUSATZKOSTEN.some((d) => d.id === id) ? [...new Set([...extraStore.removed, id])] : extraStore.removed,
+  });
+  const addExtra = () => writeExtras({ ...extraStore, items: [...extraStore.items, { id: `z${Date.now()}`, name: 'Neue Position', preis: 0, edited: true }] });
+  const resetExtras = () => writeExtras({ items: [], removed: [] });
   const setExtraQty = (id: string, q: number) => setV((s) => ({ ...s, extras: { ...s.extras, [id]: q } }));
 
   const qty = n.qty > 0 ? Math.floor(n.qty) : 1;
@@ -481,18 +519,18 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
             </ul>
           ) : (
             <div className="mt-3 flex flex-col gap-3">
-              {extraList.map((e, i) => (
+              {extraList.map((e) => (
                 <div key={e.id} className="grid grid-cols-[minmax(0,1fr)_6.5rem_auto] items-center gap-2">
                   <input
                     value={e.name}
-                    onChange={(ev) => saveExtras(extraList.map((x, k) => (k === i ? { ...x, name: ev.target.value } : x)))}
+                    onChange={(ev) => editExtra(e.id, { name: ev.target.value })}
                     aria-label="Bezeichnung"
                     className="h-12 min-w-0 rounded-xl border border-white/[.12] bg-bg/70 px-3 text-base text-fg outline-none focus:border-cyan"
                   />
                   <span className="flex h-12 items-center rounded-xl border border-white/[.12] bg-bg/70 pr-3 focus-within:border-cyan">
                     <input
                       defaultValue={e.preis ? String(e.preis).replace('.', ',') : ''}
-                      onChange={(ev) => { const p = num(ev.target.value); if (!Number.isNaN(p)) saveExtras(extraList.map((x, k) => (k === i ? { ...x, preis: p } : x))); }}
+                      onChange={(ev) => { const p = num(ev.target.value); if (!Number.isNaN(p)) editExtra(e.id, { preis: p }); }}
                       inputMode="decimal"
                       placeholder="0"
                       aria-label={`Preis ${e.name}`}
@@ -500,19 +538,22 @@ const Calculator: React.FC<{ onLock: () => void }> = ({ onLock }) => {
                     />
                     <span className="text-fg-subtle">€</span>
                   </span>
-                  <button type="button" onClick={() => saveExtras(extraList.filter((_, k) => k !== i))} aria-label={`${e.name} löschen`} className="grid h-11 w-11 place-items-center rounded-full text-fg-subtle active:bg-white/10">
+                  <button type="button" onClick={() => deleteExtra(e.id)} aria-label={`${e.name} löschen`} className="grid h-11 w-11 place-items-center rounded-full text-fg-subtle active:bg-white/10">
                     <Trash size={19} />
                   </button>
                 </div>
               ))}
               <button
                 type="button"
-                onClick={() => saveExtras([...extraList, { id: `z${Date.now()}`, name: 'Neue Position', preis: 0 }])}
+                onClick={addExtra}
                 className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 font-semibold text-fg-muted active:bg-white/5"
               >
                 <Plus size={18} /> Position hinzufügen
               </button>
-              <p className="text-xs text-fg-subtle">Änderungen werden auf diesem Gerät gespeichert.</p>
+              <p className="text-xs text-fg-subtle">Änderungen werden auf diesem Gerät gespeichert. Nicht geänderte Positionen übernehmen automatisch neue Standardpreise.</p>
+              <button type="button" onClick={resetExtras} className="self-start text-sm font-semibold text-fg-muted underline underline-offset-4">
+                Auf Standardliste zurücksetzen
+              </button>
             </div>
           )}
         </section>
