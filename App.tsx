@@ -13,11 +13,14 @@ import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 
 // Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
 const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
+// Interner Kalkulator, nur über layer-form.de/#kalkulation erreichbar (nicht verlinkt)
+const InternalCalculator = lazy(() => import('./components/internal/InternalCalculator'));
 
-export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner';
+export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner' | 'kalkulation';
 
-// Direkt verlinkbar: layer-form.de/#preisrechner
-const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner' };
+// Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalkulation (intern)
+const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#kalkulation': 'kalkulation' };
+const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#kalkulation' };
 
 interface OrderSummary {
   product?: string;
@@ -33,9 +36,16 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    const hash = currentView === 'rechner' ? '#preisrechner' : '';
+    const hash = VIEW_HASH[currentView] ?? '';
     if (window.location.hash !== hash) history.replaceState(null, '', window.location.pathname + hash);
   }, [currentView]);
+
+  // Adresse mit #… bei bereits geöffneter Seite eingeben
+  useEffect(() => {
+    const onHash = () => { const v = HASH_VIEW[window.location.hash]; if (v) setCurrentView(v); };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   const handleInquiryWithTopic = (topic?: string) => {
     setLastOrder({ personalization: topic ?? '' });
@@ -55,6 +65,14 @@ const App: React.FC = () => {
       >
         Zum Inhalt springen
       </a>
+      {/* Interner Kalkulator: eigene App-Ansicht ohne Navigation und Footer */}
+      {currentView === 'kalkulation' && (
+        <Suspense fallback={null}>
+          <InternalCalculator />
+        </Suspense>
+      )}
+      {currentView !== 'kalkulation' && (
+        <>
       <motion.div
         style={{ scaleX: progress }}
         className="fixed inset-x-0 top-0 z-progress h-[2px] origin-left bg-cyan"
@@ -106,6 +124,8 @@ const App: React.FC = () => {
       </main>
 
       <Footer setView={setCurrentView} />
+        </>
+      )}
     </div>
   );
 };

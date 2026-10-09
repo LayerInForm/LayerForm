@@ -1,18 +1,9 @@
 /**
- * Kalkulationswerte des Preisrechners.
- * Hier werden alle Preise gepflegt. Der Rechner zeigt nur einen unverbindlichen Richtwert.
- *
- * Formel:  Richtpreis = (Material + Strom) × (1 + markup)
- *          Material = Gramm × Materialpreis pro kg / 1000
- *          Strom    = Druckstunden × printerKw × kwh
- * Danach auf 0,50 € aufgerundet, mindestens "minimum".
+ * Darstellung und Schätzung des Kunden-Preisrechners.
+ * Die Preise selbst (Filament, Strom, Aufschlag, Mindestpreis) kommen aus src/pricing.ts,
+ * damit der Preisrechner und der interne Kalkulator immer gleich rechnen.
  */
-export const PRICING = {
-  kwh: 0.4,        // € pro kWh Strom
-  printerKw: 0.25, // Leistungsaufnahme beim Drucken in kW (250 W)
-  markup: 3.0,     // 300 % Aufschlag auf die Kosten (Kosten × 4)
-  minimum: 2.0,    // € Mindestpreis pro Anfrage
-};
+import { FILAMENT_PER_KG } from '../../src/pricing';
 
 export const MAX_PART = 255; // mm, maximale Teilegröße je Achse und nutzbare Plattenfläche
 export const BED = 256;      // mm, Druckplatte (nur Darstellung)
@@ -33,19 +24,19 @@ export interface Material {
 
 export const MATERIALS: Material[] = [
   {
-    id: 'PETG', name: 'PETG', tag: 'Empfohlen', recommended: true, density: 1.27, perKg: 16, speed: 0.9,
+    id: 'PETG', name: 'PETG', tag: 'Empfohlen', recommended: true, density: 1.27, perKg: FILAMENT_PER_KG.PETG, speed: 0.9,
     pros: ['Reicht für die meisten Teile, drinnen wie draußen', 'UV-beständig und wasserfest', 'Robust, zäh und leicht flexibel', 'Hitzebeständig bis ca. 70 °C'],
   },
   {
-    id: 'PLA', name: 'PLA', tag: 'Empfohlen', recommended: true, density: 1.24, perKg: 15, speed: 1,
+    id: 'PLA', name: 'PLA', tag: 'Empfohlen', recommended: true, density: 1.24, perKg: FILAMENT_PER_KG.PLA, speed: 1,
     pros: ['Ideal für Deko, Figuren und Prototypen', 'Sehr detailgenau, viele Farben', 'Günstigste Wahl für Innenräume', 'Nicht für Hitze über ca. 50 °C'],
   },
   {
-    id: 'ABS', name: 'ABS', tag: 'Hitzefest', density: 1.04, perKg: 18, speed: 0.9,
+    id: 'ABS', name: 'ABS', tag: 'Hitzefest', density: 1.04, perKg: FILAMENT_PER_KG.ABS, speed: 0.9,
     pros: ['Gehäuse, Teile im Auto-Innenraum', 'Hitzebeständig bis ca. 90 °C', 'Gut nachbearbeitbar'],
   },
   {
-    id: 'ASA', name: 'ASA', tag: 'Outdoor', density: 1.07, perKg: 26, speed: 0.9,
+    id: 'ASA', name: 'ASA', tag: 'Outdoor', density: 1.07, perKg: FILAMENT_PER_KG.ASA, speed: 0.9,
     pros: ['Garten, Fassade, Auto außen', 'UV- und wetterbeständig', 'Hitzebeständig wie ABS'],
   },
   {

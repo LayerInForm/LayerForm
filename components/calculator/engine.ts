@@ -1,4 +1,5 @@
-import { GAP, MAX_PART, PRICING, type Material, type Quality } from './pricing';
+import { GAP, MAX_PART, type Material, type Quality } from './pricing';
+import { kalkuliere } from '../../src/pricing';
 import type { OcctModule } from 'occt-import-js';
 
 export interface PartData {
@@ -174,9 +175,7 @@ export function estimate(entries: Entry[], parts: PartData[], plateCount: number
     hours += 0.1; // Aufheizen und Vorbereitung je Platte
     inst.forEach((p) => { const c = partCost(p, m, q, infill); grams += c.grams; hours += c.hours; });
   }
-  const material = grams * (m.perKg / 1000);
-  const power = hours * PRICING.printerKw * PRICING.kwh;
-  let total = (material + power) * (1 + PRICING.markup);
-  total = Math.ceil(total * 2) / 2; // auf 0,50 € aufrunden
-  return Math.max(PRICING.minimum, total);
+  // gemeinsame Formel aus src/pricing.ts, für den Richtwert auf 0,50 € aufgerundet
+  const { gesamt } = kalkuliere({ materialien: [{ gramm: grams, preisProKg: m.perKg }], stunden: hours });
+  return Math.ceil(gesamt * 2) / 2;
 }
