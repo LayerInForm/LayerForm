@@ -13,15 +13,15 @@ import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 
 // Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
 const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
-// Interner Kalkulator, nur über layer-form.de/#kalk erreichbar (nicht verlinkt)
-const InternalCalculator = lazy(() => import('./components/internal/InternalCalculator'));
+// Interne Umgebung: layer-form.de/#intern leitet zu „LayerForm intern“ weiter (nicht verlinkt)
+const InternRedirect = lazy(() => import('./components/internal/InternRedirect'));
 
 export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner' | 'kalkulation';
 
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
-// #kalkulation bleibt als alte Adresse gültig und wird auf #kalk umgestellt
-const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
-const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#kalk' };
+// #intern (und die alten Adressen #kalk, #kalkulation) leiten zu „LayerForm intern“ in claude.ai weiter
+const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#intern': 'kalkulation', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
+const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#intern' };
 
 interface OrderSummary {
   product?: string;
@@ -69,7 +69,7 @@ const App: React.FC = () => {
       {/* Interner Kalkulator: eigene App-Ansicht ohne Navigation und Footer */}
       {currentView === 'kalkulation' && (
         <Suspense fallback={null}>
-          <InternalCalculator />
+          <InternRedirect />
         </Suspense>
       )}
       {currentView !== 'kalkulation' && (
