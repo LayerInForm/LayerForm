@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
-/** Interne Umgebung „LayerForm intern“ (Kunden + Kalkulator) in claude.ai, Passwort wird dort abgefragt */
-export const INTERN_URL = 'https://claude.ai/artifact/JWYdqf83h6Qsye1q5ox7BN';
+/** Alte Adressen #intern, #kalk und #kalkulation führen zu layer-form.de/intern */
+export const INTERN_URL = '/intern';
 
 export default function InternRedirect() {
   useEffect(() => {

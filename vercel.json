@@ -1,6 +1,23 @@
 {
+  "rewrites": [
+    { "source": "/intern", "destination": "/intern.html" }
+  ],
   "redirects": [
-    { "source": "/intern", "destination": "https://claude.ai/artifact/JWYdqf83h6Qsye1q5ox7BN", "permanent": false },
-    { "source": "/kalk", "destination": "https://claude.ai/artifact/JWYdqf83h6Qsye1q5ox7BN", "permanent": false }
+    { "source": "/kalk", "destination": "/intern", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/intern(.html)?",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "same-origin" }
+      ]
+    },
+    {
+      "source": "/api/intern/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
   ]
 }

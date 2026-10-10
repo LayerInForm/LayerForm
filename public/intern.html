@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>LayerForm intern</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LayerForm intern">
+<meta name="theme-color" content="#040B1D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040B1D; --surface:#0A1731; --surface-2:#0F2044; --deep:#08246F;
+  --fg:#E8F1F7; --muted:#9AABC2; --subtle:#72839C; --line:rgba(232,241,247,.09);
+  --cyan:#00E5FF; --cyan-soft:#8CF1FF; --ink:#001C47; --warn:#FFB4A9;
+  --ease:cubic-bezier(.23,1,.32,1);
+  color-scheme:dark;
+}
+:root:not([data-theme="light"]){color-scheme:dark}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{background:var(--bg);color:var(--fg);font-family:'Outfit',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45;min-height:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1680px;margin:0 auto;padding:16px 16px 48px}
+svg.i{width:1.15em;height:1.15em;flex-shrink:0;fill:currentColor}
+
+/* Kopf */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:1.1rem;min-width:0}
+.brand>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:520px){.brand .full{display:none}}
+@media(max-width:899px){.col.is-empty{display:none}}
+@media(max-width:360px){.brand{font-size:1rem}.sync{padding:0 13px}.cube{width:24px;height:24px}}
+.brand .l{color:var(--cyan)}
+.cube{width:28px;height:28px}
+.sync{flex-shrink:0;display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;border:0;background:var(--cyan);color:var(--ink);font-weight:600;transition:background-color .2s,transform .16s var(--ease)}
+.sync:active{transform:scale(.97)}
+.sync[disabled]{opacity:.55;cursor:default}
+@media(hover:hover) and (pointer:fine){.sync:not([disabled]):hover{background:var(--cyan-soft)}}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.status-line{min-height:1.4em;color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.status-line.err{color:var(--warn)}
+.status-line button{background:none;border:0;color:var(--cyan);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:3px}
+
+/* Kennzahlen */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.stat{background:var(--surface);border-radius:16px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--line)}
+.stat p{font-size:.78rem;color:var(--subtle)}
+.stat b{display:block;font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+
+/* Werkzeugleiste */
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.btn-ghost{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:999px;border:1px solid rgba(232,241,247,.16);background:transparent;font-weight:600;font-size:.92rem;transition:border-color .2s,transform .16s var(--ease)}
+.btn-ghost:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){.btn-ghost:hover{border-color:rgba(232,241,247,.4)}}
+.search{flex:1 1 200px;min-width:0;height:42px;border-radius:999px;border:1px solid rgba(232,241,247,.12);background:var(--surface);padding:0 16px;color:var(--fg);outline:none}
+.search:focus{border-color:var(--cyan)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted);height:42px}
+.toggle input{width:18px;height:18px;accent-color:#00E5FF}
+
+/* Spalten */
+.board{display:flex;flex-direction:column;gap:12px}
+@media(min-width:900px){.board{flex-direction:row;overflow-x:auto;align-items:flex-start;padding-bottom:8px;scroll-snap-type:x proximity}}
+.col{background:rgba(10,23,49,.55);border-radius:20px;padding:10px;box-shadow:inset 0 0 0 1px var(--line)}
+@media(min-width:900px){.col{flex:1 0 176px;max-width:300px;scroll-snap-align:start}}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 8px;font-weight:600;font-size:.95rem;background:none;border:0;width:100%;text-align:left}
+.col-head .n{min-width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:.8rem;background:rgba(232,241,247,.08);color:var(--muted)}
+.col-head .dot{width:8px;height:8px;border-radius:50%;margin-right:8px;display:inline-block}
+.cards{display:flex;flex-direction:column;gap:8px}
+.col.collapsed .cards{display:none}
+@media(min-width:900px){.col.collapsed .cards{display:flex}}
+.empty{font-size:.85rem;color:var(--subtle);padding:6px}
+
+.card{background:var(--surface);border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow .2s,opacity .2s;overflow:hidden}
+.card.dragging{opacity:.4}
+.card-main{display:block;text-align:left;width:100%;background:none;border:0;padding:12px 12px 10px;transition:transform .16s var(--ease)}
+.card-main:active{transform:scale(.985)}
+@media(hover:hover) and (pointer:fine){.card{cursor:grab}}
+.next{display:flex;align-items:center;justify-content:flex-end;gap:6px;width:100%;min-height:40px;border:0;border-top:1px solid var(--line);background:none;color:var(--cyan);font-size:.84rem;font-weight:600;padding:8px 12px}
+.next:active{background:rgba(0,229,255,.08)}
+.col.drop-target{box-shadow:inset 0 0 0 2px var(--cyan)}
+@media(hover:hover) and (pointer:fine){.card:hover{box-shadow:inset 0 0 0 1px rgba(0,229,255,.35)}}
+.card .row1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .what{color:var(--muted);font-size:.88rem;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .meta{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:.78rem;color:var(--subtle);flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:rgba(232,241,247,.07);color:var(--muted)}
+.tag.new{background:rgba(0,229,255,.14);color:var(--cyan)}
+
+/* Dialog */
+dialog{border:0;padding:0;background:var(--surface-2);color:var(--fg);width:min(560px,calc(100% - 16px));max-height:calc(100dvh - 24px);border-radius:24px;box-shadow:0 40px 80px -30px rgba(0,0,0,.75)}
+dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
+.dlg{padding:20px;display:flex;flex-direction:column;gap:12px;overflow:auto;max-height:calc(100dvh - 24px)}
+.dlg h2{font-size:1.25rem;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.x{width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--muted);display:grid;place-items:center}
+.x:active{background:rgba(232,241,247,.1)}
+.fld{display:flex;flex-direction:column;gap:5px;font-size:.85rem;font-weight:600;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{width:100%;background:rgba(4,11,29,.7);border:1px solid rgba(232,241,247,.12);border-radius:12px;padding:11px 12px;font-size:16px;font-weight:400;color:var(--fg);outline:none}
+.fld textarea{resize:vertical;min-height:84px}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--cyan)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:4px;flex-wrap:wrap}
+.btn{height:46px;padding:0 20px;border-radius:999px;border:0;background:var(--cyan);color:var(--ink);font-weight:600;transition:transform .16s var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.5}
+.danger{background:none;border:0;color:var(--warn);font-weight:600;padding:8px 0}
+.hint{font-size:.8rem;color:var(--subtle);font-weight:400}
+.log{font-size:.82rem;color:var(--subtle);border-top:1px solid var(--line);padding-top:10px;white-space:pre-wrap}
+.link{color:var(--cyan);font-weight:600;font-size:.88rem;text-decoration:none}
+.drop{border:1px dashed rgba(232,241,247,.25);border-radius:14px;padding:14px;text-align:center;color:var(--muted);font-size:.9rem}
+.drop.over{border-color:var(--cyan);background:rgba(0,229,255,.06)}
+.todo{background:linear-gradient(140deg,var(--deep),var(--surface) 70%);border-radius:20px;padding:14px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.todo h2{font-size:1rem;font-weight:600;display:flex;justify-content:space-between;align-items:center;margin:2px 4px 8px}
+.todo h2 span{font-size:.8rem;color:var(--muted);font-weight:500}
+.todo ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px}
+.task{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;border-radius:12px;background:rgba(4,11,29,.45);padding:10px 12px;min-height:48px}
+.task:active{transform:scale(.99)}
+.task .lbl{flex:1;min-width:0}
+.task .lbl b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600;font-size:.95rem}
+@media(max-width:480px){.task .badge{display:none}}
+.task .lbl small{display:block;color:var(--muted);font-size:.82rem}
+.task .badge{flex-shrink:0;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(0,229,255,.14);color:var(--cyan)}
+.task .badge.late{background:rgba(255,180,169,.14);color:var(--warn)}
+.todo .more{background:none;border:0;color:var(--cyan);font-weight:600;font-size:.88rem;padding:8px 4px 2px}
+.inbox{background:var(--surface)}
+.lead{display:flex;flex-direction:column;gap:8px;background:rgba(4,11,29,.45);border-radius:12px;padding:10px 12px}
+.lead .lbl b{display:block;font-weight:600;font-size:.95rem}
+.lead .lbl small{color:var(--muted);font-size:.82rem}
+.lead .lbl p{color:var(--subtle);font-size:.85rem;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lead-act{display:flex;gap:6px;flex-wrap:wrap}
+.mini{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(232,241,247,.16);background:none;font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;text-decoration:none;color:var(--fg)}
+.mini.primary{background:var(--cyan);border-color:var(--cyan);color:var(--ink)}
+.tag.late{background:rgba(255,180,169,.14);color:var(--warn)}
+.notice{background:var(--surface);border-radius:16px;padding:16px;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Sperrbildschirm */
+.lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px}
+.lock form{width:100%;max-width:320px;text-align:center}
+.lock h1{font-size:1.5rem;font-weight:600;margin-top:16px}
+.lock p{color:var(--muted);margin-top:6px}
+.lock input{margin-top:22px;width:100%;height:58px;border-radius:16px;border:1px solid rgba(232,241,247,.14);background:rgba(4,11,29,.7);text-align:center;font-size:1.3rem;letter-spacing:.15em;color:var(--fg);outline:none}
+.lock input:focus{border-color:var(--cyan)}
+.lock input.bad{border-color:var(--warn)}
+.lock .btn{width:100%;margin-top:12px;height:54px}
+.lock .err{color:var(--warn);font-size:.9rem;min-height:1.3em;margin-top:8px}
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:999px;padding:4px;box-shadow:inset 0 0 0 1px var(--line)}
+.tabs button{border:0;background:none;height:38px;padding:0 16px;border-radius:999px;font-weight:600;font-size:.92rem;color:var(--muted);transition:background-color .2s,color .2s}
+.tabs button[aria-selected="true"]{background:var(--cyan);color:var(--ink)}
+.top-right{display:flex;align-items:center;gap:8px}
+.icon-round{width:42px;height:42px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center}
+.icon-round:active{background:rgba(232,241,247,.1)}
+.top{flex-wrap:wrap}
+@media(max-width:560px){.top{gap:10px}.brand{order:1}.top-right{order:2}.tabs{order:3;width:100%}.tabs button{flex:1}.sync span{display:none}.sync{padding:0 13px}}
+/* Kalkulator */
+.kalk{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.res{position:sticky;top:0;z-index:5;background:rgba(4,11,29,.9);backdrop-filter:blur(16px);margin:0 -16px;padding:8px 16px 10px}
+.res-card{background:linear-gradient(140deg,var(--deep),var(--surface) 70%);border-radius:22px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.res-row{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.res-row>div{min-width:0}
+.res-row small{display:block;color:var(--muted);font-size:.85rem}
+.price{font-size:clamp(2rem,9vw,2.8rem);font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.per{color:var(--muted);font-size:.88rem;margin-top:4px;font-variant-numeric:tabular-nums}
+.copy{height:44px;padding:0 14px;border-radius:999px;border:0;background:var(--cyan);color:var(--ink);font-weight:600;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.copy[disabled],.ghost2[disabled]{opacity:.4}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px}
+.tile{background:rgba(232,241,247,.05);border-radius:12px;padding:7px 9px;min-width:0}
+.tile p{font-size:.7rem;color:var(--subtle);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile b{font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums}
+.tile.win b{color:var(--cyan)}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.ghost2{height:42px;border-radius:999px;border:1px solid rgba(232,241,247,.16);background:none;font-weight:600;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.ghost2:active{background:rgba(232,241,247,.08)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;color:var(--muted);font-weight:600;font-size:.88rem;margin-top:10px;padding:4px 0}
+.bd{margin-top:6px;border-top:1px solid var(--line);padding-top:6px;font-size:.92rem;max-height:46vh;overflow:auto}
+.bd .r{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:var(--muted)}
+.bd .r.s{font-weight:600;color:var(--fg)}
+.bd .r.sub{padding:1px 0 1px 12px;font-size:.8rem;color:var(--subtle)}
+.bd .r span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:.8rem;color:var(--subtle)}
+.cyan-note{font-size:.85rem;color:var(--cyan);margin-top:8px}
+.assign{display:flex;gap:6px;margin-top:8px}
+.assign select{flex:1;min-width:0;height:42px;border-radius:999px;border:1px solid rgba(232,241,247,.16);background:var(--surface-2);color:var(--fg);padding:0 12px;font-size:.88rem}
+.plate{display:flex;flex-direction:column;gap:14px}
+.plate.boxed{border-radius:20px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)}
+.plate-h{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.mats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.mats button{height:52px;border-radius:14px;border:1px solid rgba(232,241,247,.12);background:none;font-weight:600;font-size:.92rem;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.mats button small{font-size:.66rem;font-weight:500;color:var(--subtle)}
+.mats button[aria-checked="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--ink)}
+.mats button[aria-checked="true"] small{color:rgba(0,28,71,.7)}
+.lbl{font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block}
+.inp{display:flex;min-width:0;align-items:center;height:54px;border-radius:16px;border:1px solid rgba(232,241,247,.12);background:rgba(4,11,29,.7);padding-right:14px}
+.inp:focus-within{border-color:var(--cyan)}
+.inp.bad{border-color:var(--warn)}
+.inp input{flex:1;width:100%;min-width:0;height:100%;background:none;border:0;outline:none;padding:0 14px;font-size:1.2rem;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+.inp input::placeholder{color:var(--subtle);font-weight:400}
+.inp span{color:var(--subtle)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.grid2>div{min-width:0}
+.dash{height:48px;border-radius:16px;border:1px dashed rgba(232,241,247,.22);background:none;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+.dash.cy{border-color:rgba(0,229,255,.45);color:var(--cyan);height:52px}
+.sub-box{border-radius:16px;background:rgba(232,241,247,.03);padding:12px;display:flex;flex-direction:column;gap:12px}
+.step{display:flex;align-items:center;justify-content:space-between;height:48px;border-radius:999px;border:1px solid rgba(232,241,247,.12)}
+.step button{width:46px;height:100%;border:0;background:none;color:var(--muted);font-size:1.2rem;border-radius:999px}
+.step button:active{background:rgba(232,241,247,.1)}
+.step b{font-variant-numeric:tabular-nums}
+.box{border-radius:20px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)}
+.box-h{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;text-align:left;padding:0}
+.box-h b{font-weight:600}
+.box-h small{display:block;font-size:.82rem;color:var(--subtle)}
+.box-h small.chg{color:var(--cyan)}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.chips button{height:46px;border-radius:14px;border:1px solid rgba(232,241,247,.12);background:none;font-weight:600}
+.chips button[aria-checked="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--ink)}
+.ex{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.ex:first-child{border-top:0}
+.ex .nm{flex:1;min-width:0}
+.ex .nm b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex .nm small{color:var(--subtle);font-size:.82rem}
+.ex .nm small.miss{color:var(--warn)}
+.ex-edit{display:grid;grid-template-columns:minmax(0,1fr) 6.2rem auto;gap:6px;align-items:center}
+.ex-edit input{height:44px;border-radius:12px;border:1px solid rgba(232,241,247,.12);background:rgba(4,11,29,.7);color:var(--fg);padding:0 10px;font-size:16px;outline:none;min-width:0}
+.ex-edit input:focus{border-color:var(--cyan)}
+.hist li{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line)}
+.hist li:first-child{border-top:0}
+.hist .open{flex:1;min-width:0;text-align:left;background:none;border:0;padding:10px 0}
+.hist .open b{display:flex;justify-content:space-between;gap:10px}
+.hist .open b span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .open small{display:block;color:var(--subtle);font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist{list-style:none;padding:0;margin-top:8px}
+.save-row{display:flex;gap:6px;margin-top:10px}
+.save-row input{flex:1;min-width:0;height:46px;border-radius:999px;border:1px solid rgba(232,241,247,.12);background:rgba(4,11,29,.7);color:var(--fg);padding:0 16px;font-size:16px;outline:none}
+.save-row input:focus{border-color:var(--cyan)}
+.linkbtn{background:none;border:0;color:var(--muted);font-weight:600;font-size:.88rem;text-decoration:underline;text-underline-offset:4px;align-self:flex-start;padding:4px 0}
+</style>
+</head>
+<body>
+<div class="lock" id="lock">
+  <form id="lockForm" autocomplete="off">
+    <svg class="cube" style="width:56px;height:56px" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 28 9.5v13L16 29 4 22.5v-13z" fill="#0b3a8f"/><path d="M16 3 28 9.5 16 16 4 9.5z" fill="#00E5FF"/><path d="M16 16v13L4 22.5v-13z" fill="#1366c9"/></svg>
+    <h1>LayerForm intern</h1>
+    <p>Bitte Passwort eingeben</p>
+    <input type="password" id="lockPw" aria-label="Passwort" autocapitalize="none" autocorrect="off" spellcheck="false">
+    <p class="err" id="lockErr" role="alert"></p>
+    <button class="btn" type="submit">Öffnen</button>
+  </form>
+</div>
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg class="cube" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 28 9.5v13L16 29 4 22.5v-13z" fill="#0b3a8f"/><path d="M16 3 28 9.5 16 16 4 9.5z" fill="#00E5FF"/><path d="M16 16v13L4 22.5v-13z" fill="#1366c9"/></svg>
+      <span><span class="l">Layer</span>Form</span>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Bereiche">
+      <button role="tab" id="tabBtnKunden" aria-selected="true">Kunden</button>
+      <button role="tab" id="tabBtnKalk" aria-selected="false">Kalkulator</button>
+    </div>
+    <div class="top-right">
+    <button class="sync" id="syncBtn" disabled>
+      <svg class="i" id="syncIcon" viewBox="0 0 256 256"><path d="M224 48v48a8 8 0 0 1-8 8h-48a8 8 0 0 1 0-16h28.69l-14.63-14.63A80 80 0 0 0 52.86 77.3a8 8 0 1 1-14.68-6.32A96 96 0 0 1 193.38 62L208 76.69V48a8 8 0 0 1 16 0Zm-6.18 137.07a8 8 0 0 0-10.5 4.21A80 80 0 0 1 73.94 182.63L59.31 168H88a8 8 0 0 0 0-16H40a8 8 0 0 0-8 8v48a8 8 0 0 0 16 0v-28.69L62.62 194A96 96 0 0 0 222 195.58a8 8 0 0 0-4.18-10.51Z"/></svg>
+      <span id="syncLabel">Gmail abgleichen</span>
+    </button>
+    <button class="icon-round" id="lockBtn" aria-label="Sperren"><svg class="i" viewBox="0 0 256 256"><path d="M208 80h-32V56a48 48 0 0 0-96 0v24H48a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16ZM96 56a32 32 0 0 1 64 0v24H96Zm112 152H48V96h160v112Z"/></svg></button>
+    </div>
+  </header>
+
+  <div id="tabKunden">
+
+  <p class="status-line" id="statusLine" aria-live="polite">Wird geladen …</p>
+
+  <section class="todo" id="todo" aria-label="Heute zu tun" hidden></section>
+  <section class="todo inbox" id="inbox" aria-label="Mögliche Leads" hidden></section>
+
+  <div class="stats" aria-label="Kennzahlen">
+    <div class="stat"><p>Aktive Kunden</p><b id="stActive">–</b></div>
+    <div class="stat"><p>Offene Rechnungen</p><b id="stOpen">–</b></div>
+    <div class="stat"><p>In Arbeit</p><b id="stWork">–</b></div>
+  </div>
+
+  <div class="tools">
+    <input class="search" id="search" type="search" placeholder="Kunde suchen …" aria-label="Kunde suchen">
+    <button class="btn-ghost" id="addBtn"><svg class="i" viewBox="0 0 256 256"><path d="M224 128a8 8 0 0 1-8 8h-80v80a8 8 0 0 1-16 0v-80H40a8 8 0 0 1 0-16h80V40a8 8 0 0 1 16 0v80h80a8 8 0 0 1 8 8Z"/></svg>Kunde</button>
+    <button class="btn-ghost" id="waBtn" hidden><svg class="i" viewBox="0 0 256 256"><path d="m187.58 144.84-32-16a8 8 0 0 0-8 .5l-14.69 9.8a40.55 40.55 0 0 1-16-16l9.8-14.69a8 8 0 0 0 .5-8l-16-32A8 8 0 0 0 104 64a40 40 0 0 0-40 40 88.1 88.1 0 0 0 88 88 40 40 0 0 0 40-40 8 8 0 0 0-4.42-7.16ZM152 176a72.08 72.08 0 0 1-72-72 24 24 0 0 1 19.29-23.54l11.48 23L101 118a8 8 0 0 0-.73 7.51 56.47 56.47 0 0 0 30.15 30.15A8 8 0 0 0 138 155l14.62-9.74 23 11.48A24 24 0 0 1 152 176ZM128 24a104 104 0 0 0-91.82 152.88l-11.35 34.05a16 16 0 0 0 20.24 20.24l34.05-11.35A104 104 0 1 0 128 24Zm0 192a87.87 87.87 0 0 1-44.06-11.81 8 8 0 0 0-6.54-.67L40 216l12.47-37.4a8 8 0 0 0-.66-6.54A88 88 0 1 1 128 216Z"/></svg>WhatsApp-Chat</button>
+    <label class="toggle"><input type="checkbox" id="showDone"> Abgeschlossene</label>
+  </div>
+
+  <div class="board" id="board"></div>
+  <p style="margin-top:28px;text-align:center"><label class="linkbtn" style="cursor:pointer">Daten importieren (JSON)<input type="file" id="importFile" accept=".json,application/json" hidden></label></p>
+  </div>
+
+  <div id="tabKalk" hidden><div class="kalk" id="kalk"></div></div>
+</div>
+
+<!-- Kunde bearbeiten -->
+<dialog id="editDlg" aria-labelledby="editTitle">
+  <form class="dlg" id="editForm" method="dialog">
+    <h2><span id="editTitle">Kunde</span><button type="button" class="x" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 256 256"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button></h2>
+    <label class="fld">Status<select name="status" id="statusSel"></select></label>
+    <label class="fld">Name<input name="name" required autocomplete="off"></label>
+    <div class="two">
+      <label class="fld">E-Mail<input name="email" type="email" autocomplete="off"></label>
+      <label class="fld">Telefon<input name="telefon" inputmode="tel" autocomplete="off"></label>
+    </div>
+    <div class="two">
+      <label class="fld">Kanal<select name="kanal"><option>E-Mail</option><option>WhatsApp</option><option>Preisrechner</option><option>Kleinanzeigen</option><option>Persönlich</option><option>Sonstiges</option></select></label>
+      <label class="fld">Betrag €<input name="betrag" inputmode="decimal" autocomplete="off"></label>
+    </div>
+    <label class="fld">Worum geht es<input name="anliegen" autocomplete="off"></label>
+    <label class="fld">Rechnungsnummer<input name="rechnungsnr" autocomplete="off"></label>
+    <div class="two">
+      <label class="fld">Nächster Schritt<input name="naechster" autocomplete="off" placeholder="z. B. Datei anfordern"></label>
+      <label class="fld">Wiedervorlage<input name="wiedervorlage" type="date"></label>
+    </div>
+    <label class="fld">Notiz<textarea name="notiz"></textarea></label>
+    <a class="link" id="mailLink" target="_blank" rel="noopener" hidden>In Gmail öffnen ↗</a>
+    <p class="log" id="verlauf" hidden></p>
+    <div class="actions">
+      <button type="button" class="danger" id="delBtn">Löschen</button>
+      <button type="submit" class="btn" id="saveBtn">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- WhatsApp-Chat einlesen -->
+<dialog id="waDlg" aria-labelledby="waTitle">
+  <div class="dlg">
+    <h2><span id="waTitle">WhatsApp-Chat einlesen</span><button type="button" class="x" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 256 256"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button></h2>
+    <p class="hint">In WhatsApp den Chat öffnen, oben auf den Namen tippen, „Chat exportieren“ → „Ohne Medien“. Die Datei hier ablegen oder den Chatverlauf unten einfügen.</p>
+    <label class="drop" id="waDrop">Datei (.txt) hier ablegen oder <u>auswählen</u><input type="file" id="waFile" accept=".txt,text/plain" hidden></label>
+    <label class="fld">Chatverlauf<textarea id="waText" rows="7" placeholder="Nachrichten hier einfügen …"></textarea></label>
+    <p class="hint" id="waMsg" aria-live="polite"></p>
+    <p class="hint">Die Auswertung nutzt die KI und verbraucht dabei etwas von deinem Claude-Kontingent. Alternativ legst du den Kunden über „+ Kunde“ von Hand an.</p>
+    <div class="actions"><span></span><button class="btn" id="waGo">Mit KI auswerten</button></div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+/* ---------- Grunddaten ---------- */
+const STATUS = [
+  { id: 'neu',          label: 'Neue Anfrage',       color: '#00E5FF' },
+  { id: 'klaerung',     label: 'In Klärung',         color: '#8CF1FF' },
+  { id: 'angebot',      label: 'Angebot gesendet',   color: '#7FA7FF' },
+  { id: 'zugesagt',     label: 'Zugesagt',           color: '#9B8CFF' },
+  { id: 'rechnung',     label: 'Rechnung offen',     color: '#FFD27A' },
+  { id: 'bezahlt',      label: 'Bezahlt · im Druck', color: '#7CF0B4' },
+  { id: 'versendet',    label: 'Versendet',          color: '#5FD39A' },
+  { id: 'abgeschlossen',label: 'Abgeschlossen',      color: '#72839C' },
+  { id: 'abgesagt',     label: 'Abgesagt',           color: '#FFB4A9' },
+];
+const ORDER = Object.fromEntries(STATUS.map((s, i) => [s.id, i]));
+const DONE = new Set(['abgeschlossen', 'abgesagt']);
+const OWN = ['benjamin.ridel@layer-form.de', 'info@layer-form.de', 'auftrag@layer-form.de', 'rechner@layer-form.de'];
+const GMAIL = 'Gmail';
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const euro = (v) => (v == null || v === '' || isNaN(v)) ? '' : Number(v).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+const ago = (iso) => {
+  if (!iso) return '';
+  const d = (Date.now() - new Date(iso).getTime()) / 86400000;
+  if (d < 1) return 'heute';
+  if (d < 2) return 'gestern';
+  if (d < 14) return `vor ${Math.floor(d)} Tagen`;
+  return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+};
+const norm = (s) => String(s || '').trim().toLowerCase();
+const parseNum = (s) => { const t = String(s ?? '').trim().replace(/\s|€/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'); const v = parseFloat(t); return isFinite(v) ? v : null; };
+
+let db = null, mcp = null, sample = null;
+let TOKEN = '';                                   // nur im Speicher: bei jedem Öffnen neue Anmeldung
+
+/* ---------- Verbindung zu den eigenen Server-Funktionen (Vercel) ---------- */
+async function api(path, body) {
+  const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN }, body: JSON.stringify(body || {}) });
+  let data = null; try { data = await res.json(); } catch {}
+  if (!res.ok) { const err = new Error(data?.error || 'Fehler ' + res.status); err.code = data?.code || (res.status === 401 ? 'unauthorized' : 'server_unavailable'); err.retryable = res.status >= 500; throw err; }
+  return data;
+}
+const snap = (path, data) => ({ id: path.split('/').pop(), exists: data != null, data: () => (data == null ? undefined : JSON.parse(JSON.stringify(data))) });
+const listeners = new Map(); // Sammlung → Rückruffunktionen
+async function fireCollection(col) {
+  for (const cb of listeners.get(col) || []) { try { cb(await colGet(col)); } catch {} }
+}
+async function colGet(col, orderBy) {
+  const r = await api('/api/intern/db', { op: 'list', path: col });
+  const docs = (r.docs || []).map((d) => snap(col + '/' + d.id, d.data));
+  if (orderBy) docs.sort((a, b) => { const x = a.data()[orderBy.f], y = b.data()[orderBy.f]; return (orderBy.dir === 'desc' ? -1 : 1) * ((x > y) - (x < y)); });
+  return { docs, size: docs.length, empty: !docs.length };
+}
+function makeDb() {
+  const parent = (path) => path.split('/').slice(0, -1).join('/');
+  return {
+    doc: (path) => ({
+      id: path.split('/').pop(), path,
+      get: async () => snap(path, (await api('/api/intern/db', { op: 'get', path })).data),
+      set: async (data) => { await api('/api/intern/db', { op: 'set', path, data }); fireCollection(parent(path)); },
+      update: async (data) => { await api('/api/intern/db', { op: 'update', path, data }); fireCollection(parent(path)); },
+      delete: async () => { await api('/api/intern/db', { op: 'delete', path }); fireCollection(parent(path)); },
+    }),
+    collection: (col) => ({
+      get: () => colGet(col),
+      orderBy: (f, dir) => ({ get: () => colGet(col, { f, dir }) }),
+      onSnapshot: (cb, onErr) => {
+        if (!listeners.has(col)) listeners.set(col, []);
+        listeners.get(col).push(cb);
+        colGet(col).then(cb, onErr);
+        setInterval(() => { if (!document.hidden) colGet(col).then(cb).catch(() => {}); }, 60000);
+        return () => {};
+      },
+    }),
+  };
+}
+const gmailApi = { callTool: async (_server, tool, input) => ({ payload: await api('/api/intern/gmail', { tool, input }) }) };
+let customers = [];     // [{id, ...data}]
+let meta = { processed: {}, lastSync: null };
+let editing = null;
+let dragId = null;
+async function moveTo(id, status) {
+  const c = customers.find((x) => x.id === id); if (!c || c.status === status) return;
+  const label = STATUS[ORDER[status]].label;
+  try { await save(id, { status, statusSeit: new Date().toISOString(), statusManuell: true, neu: false, verlauf: [...(c.verlauf || []), `${new Date().toLocaleDateString('de-DE')}: von Hand auf „${label}“ gesetzt`].slice(-20) }); }
+  catch (err) { setLine(dbMessage(err), true); }
+}
+
+/* ---------- Statuszeile ---------- */
+function setLine(text, isErr = false, action = null) {
+  const el = $('statusLine');
+  el.className = 'status-line' + (isErr ? ' err' : '');
+  el.textContent = text;
+  if (action) {
+    const b = document.createElement('button'); b.textContent = action.label; b.onclick = action.fn;
+    el.append(' ', b);
+  }
+}
+
+/* ---------- Heute zu tun ---------- */
+const DAY = 86400000;
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const daysSince = (iso) => iso ? Math.floor((Date.now() - new Date(iso).getTime()) / DAY) : 0;
+const PRIO = { wv: 0, neu: 1, zugesagt: 2, bezahlt: 3, rechnung: 4, angebot: 5, klaerung: 6, versendet: 7 };
+function taskFor(c) {
+  if (DONE.has(c.status)) return null;
+  const wv = c.wiedervorlage;
+  if (wv && wv <= todayStr()) return { c, prio: PRIO.wv, text: c.naechster || 'Wiedervorlage', sub: wv < todayStr() ? `fällig seit ${new Date(wv).toLocaleDateString('de-DE')}` : 'heute fällig', late: wv < todayStr() };
+  if (wv && wv > todayStr()) return null; // bewusst zurückgestellt
+  const d = daysSince(c.statusSeit || c.letzteAktivitaet);
+  const t = (text, sub, late = false) => ({ c, prio: PRIO[c.status] ?? 9, text: c.naechster || text, sub, late });
+  switch (c.status) {
+    case 'neu': return t('Anfrage beantworten', d ? `wartet seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute eingegangen', d >= 1);
+    case 'klaerung': return d >= 3 ? t('Nachfragen', `keine Bewegung seit ${d} Tagen`, d >= 7) : null;
+    case 'angebot': return d >= 3 ? t('Beim Angebot nachhaken', `Angebot seit ${d} Tagen offen`, d >= 7) : null;
+    case 'zugesagt': return t('Rechnung schreiben', 'Kunde hat zugesagt', d >= 2);
+    case 'rechnung': return d >= 7 ? t('Zahlung prüfen oder erinnern', `Rechnung seit ${d} Tagen offen`, d >= 14) : null;
+    case 'bezahlt': return t('Drucken und versenden', d ? `bezahlt seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute bezahlt', d >= 4);
+    case 'versendet': return d >= 5 ? t('Erhalt bestätigen, um Bewertung bitten', `versendet vor ${d} Tagen`) : null;
+  }
+  return null;
+}
+let showAllTasks = false;
+function renderTodo() {
+  const tasks = customers.map(taskFor).filter(Boolean).sort((a, b) => (b.late - a.late) || (a.prio - b.prio));
+  const box = $('todo');
+  box.hidden = !tasks.length;
+  if (!tasks.length) return;
+  const shown = showAllTasks ? tasks : tasks.slice(0, 5);
+  box.innerHTML = `<h2>Heute zu tun <span>${tasks.length} ${tasks.length === 1 ? 'Aufgabe' : 'Aufgaben'}</span></h2><ul></ul>`;
+  const ul = box.querySelector('ul');
+  for (const k of shown) {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.className = 'task';
+    b.innerHTML = `<span class="lbl"><b>${esc(k.text)}</b><small>${esc(k.c.name || k.c.email || 'Kunde')} · ${esc(k.sub)}</small></span><span class="badge${k.late ? ' late' : ''}">${esc(STATUS[ORDER[k.c.status]].label)}</span>`;
+    b.onclick = () => openEdit(k.c);
+    li.append(b); ul.append(li);
+  }
+  if (tasks.length > 5) {
+    const m = document.createElement('button'); m.className = 'more';
+    m.textContent = showAllTasks ? 'Weniger anzeigen' : `Alle ${tasks.length} anzeigen`;
+    m.onclick = () => { showAllTasks = !showAllTasks; renderTodo(); };
+    box.append(m);
+  }
+}
+
+/* ---------- Darstellung ---------- */
+const collapsed = new Set(['abgeschlossen', 'abgesagt']);
+function render() {
+  const q = norm($('search').value);
+  const showDone = $('showDone').checked;
+  const list = customers.filter((c) => !q || [c.name, c.email, c.telefon, c.anliegen, c.rechnungsnr].some((f) => norm(f).includes(q)));
+  const active = customers.filter((c) => !DONE.has(c.status));
+  $('stActive').textContent = active.length;
+  const open = customers.filter((c) => c.status === 'rechnung');
+  const openSum = open.reduce((s, c) => s + (Number(c.betrag) || 0), 0);
+  $('stOpen').textContent = open.length ? (openSum ? euro(openSum) : open.length) : '0';
+  $('stWork').textContent = customers.filter((c) => c.status === 'bezahlt').length;
+
+  renderTodo();
+  const board = $('board'); board.innerHTML = '';
+  for (const s of STATUS) {
+    if (DONE.has(s.id) && !showDone) continue;
+    const items = list.filter((c) => c.status === s.id).sort((a, b) => String(b.letzteAktivitaet || '').localeCompare(String(a.letzteAktivitaet || '')));
+    if (!items.length && q) continue;
+    const col = document.createElement('section');
+    col.className = 'col' + (collapsed.has(s.id) && !q ? ' collapsed' : '') + (items.length ? '' : ' is-empty');
+    col.setAttribute('aria-label', s.label);
+    col.innerHTML = `<button class="col-head" aria-expanded="${!col.classList.contains('collapsed')}"><span><span class="dot" style="background:${s.color}"></span>${esc(s.label)}</span><span class="n">${items.length}</span></button><div class="cards"></div>`;
+    col.querySelector('.col-head').onclick = () => {
+      if (collapsed.has(s.id)) collapsed.delete(s.id); else collapsed.add(s.id);
+      render();
+    };
+    const box = col.querySelector('.cards');
+    // Karten per Ziehen in eine andere Spalte verschieben (PC)
+    col.addEventListener('dragover', (e) => { if (dragId) { e.preventDefault(); col.classList.add('drop-target'); } });
+    col.addEventListener('dragleave', (e) => { if (!col.contains(e.relatedTarget)) col.classList.remove('drop-target'); });
+    col.addEventListener('drop', (e) => { e.preventDefault(); col.classList.remove('drop-target'); if (dragId) moveTo(dragId, s.id); dragId = null; });
+    if (!items.length) box.innerHTML = '<p class="empty">Keine Kunden</p>';
+    const idx = ORDER[s.id];
+    const next = !DONE.has(s.id) && STATUS[idx + 1] && !DONE.has(STATUS[idx + 1].id) ? STATUS[idx + 1] : (s.id === 'versendet' ? STATUS[ORDER.abgeschlossen] : null);
+    for (const c of items) {
+      const card = document.createElement('div');
+      card.className = 'card'; card.draggable = true;
+      card.addEventListener('dragstart', (e) => { dragId = c.id; card.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.id); });
+      card.addEventListener('dragend', () => { dragId = null; card.classList.remove('dragging'); document.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target')); });
+      const b = document.createElement('button');
+      b.className = 'card-main';
+      b.innerHTML = `<div class="row1"><span class="nm">${esc(c.name || c.email || c.telefon || 'Unbekannt')}</span><span class="amt">${esc(euro(c.betrag))}</span></div>
+        ${c.anliegen ? `<div class="what">${esc(c.anliegen)}</div>` : ''}
+        <div class="meta">${c.neu ? '<span class="tag new">neu</span>' : ''}${c.wiedervorlage ? `<span class="tag${c.wiedervorlage <= todayStr() ? ' late' : ''}">${esc(new Date(c.wiedervorlage).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }))}${c.naechster ? ' · ' + esc(c.naechster) : ''}</span>` : ''}<span class="tag">${esc(c.kanal || 'E-Mail')}</span>${c.rechnungsnr ? `<span class="tag">${esc(c.rechnungsnr)}</span>` : ''}<span>${esc(ago(c.letzteAktivitaet))}</span></div>`;
+      b.onclick = () => openEdit(c);
+      card.append(b);
+      if (next) {
+        const nb = document.createElement('button');
+        nb.className = 'next';
+        nb.innerHTML = `${esc(next.label)} <svg class="i" viewBox="0 0 256 256"><path d="m221.66 133.66-72 72a8 8 0 0 1-11.32-11.32L196.69 136H40a8 8 0 0 1 0-16h156.69l-58.35-58.34a8 8 0 0 1 11.32-11.32l72 72a8 8 0 0 1 0 11.32Z"/></svg>`;
+        nb.setAttribute('aria-label', `${c.name || 'Kunde'} verschieben nach ${next.label}`);
+        nb.onclick = () => moveTo(c.id, next.id);
+        card.append(nb);
+      }
+      box.append(card);
+    }
+    board.append(col);
+  }
+  if (!customers.length) {
+    board.innerHTML = '<div class="notice">Noch keine Kunden erfasst. Die Übersicht gleicht beim Öffnen automatisch die letzten 60 Tage deines Postfachs ab. Kunden aus WhatsApp fügst du über „WhatsApp-Chat“ hinzu.</div>';
+  }
+}
+$('search').oninput = render;
+$('showDone').onchange = render;
+
+/* ---------- Bearbeiten ---------- */
+$('statusSel').innerHTML = STATUS.map((s) => `<option value="${s.id}">${esc(s.label)}</option>`).join('');
+document.querySelectorAll('[data-close]').forEach((b) => b.onclick = () => b.closest('dialog').close());
+
+function openEdit(c) {
+  editing = c || null;
+  const f = $('editForm');
+  $('editTitle').textContent = c ? (c.name || 'Kunde') : 'Neuer Kunde';
+  f.status.value = c?.status || 'neu';
+  f.name.value = c?.name || ''; f.email.value = c?.email || ''; f.telefon.value = c?.telefon || '';
+  f.kanal.value = c?.kanal || 'E-Mail'; f.betrag.value = c?.betrag != null ? String(c.betrag).replace('.', ',') : '';
+  f.anliegen.value = c?.anliegen || ''; f.rechnungsnr.value = c?.rechnungsnr || ''; f.notiz.value = c?.notiz || '';
+  f.naechster.value = c?.naechster || ''; f.wiedervorlage.value = c?.wiedervorlage || '';
+  const ml = $('mailLink'); ml.hidden = !c?.gmailUrl; if (c?.gmailUrl) ml.href = c.gmailUrl;
+  const vl = $('verlauf'); vl.hidden = !c?.verlauf?.length; vl.textContent = (c?.verlauf || []).slice(-6).join('\n');
+  $('delBtn').hidden = !c;
+  $('editDlg').showModal();
+  if (c?.neu) save(c.id, { neu: false }).catch(() => {});
+}
+$('addBtn').onclick = () => openEdit(null);
+$('editForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const data = {
+    status: f.status.value, name: f.name.value.trim(), email: f.email.value.trim(), telefon: f.telefon.value.trim(),
+    kanal: f.kanal.value, betrag: parseNum(f.betrag.value), anliegen: f.anliegen.value.trim(),
+    rechnungsnr: f.rechnungsnr.value.trim(), notiz: f.notiz.value.trim(),
+    naechster: f.naechster.value.trim(), wiedervorlage: f.wiedervorlage.value || '',
+  };
+  if (!data.name && !data.email && !data.telefon) { f.name.focus(); return; }
+  $('saveBtn').disabled = true;
+  try {
+    if (editing) {
+      if (data.status !== editing.status) { data.statusManuell = true; data.statusSeit = new Date().toISOString(); }
+      await save(editing.id, { ...data, letzteAktivitaet: editing.letzteAktivitaet || new Date().toISOString() });
+    } else {
+      await create({ ...data, letzteAktivitaet: new Date().toISOString(), verlauf: [`${new Date().toLocaleDateString('de-DE')}: von Hand angelegt`] });
+    }
+    $('editDlg').close();
+  } catch (err) { setLine(dbMessage(err), true); }
+  finally { $('saveBtn').disabled = false; }
+};
+$('delBtn').onclick = async () => {
+  if (!editing || !confirm(`${editing.name || 'Diesen Kunden'} wirklich löschen?`)) return;
+  try { await db.doc('kunden/' + editing.id).delete(); $('editDlg').close(); } catch (err) { setLine(dbMessage(err), true); }
+};
+
+/* ---------- Datenbank ---------- */
+const dbMessage = (e) => e?.code === 'permission_denied' || e?.code === 'not_granted'
+  ? 'Keine Schreibrechte für diese Übersicht.' : 'Speichern fehlgeschlagen. Bitte noch einmal versuchen.';
+async function save(id, data) { await db.doc('kunden/' + id).update(data); }
+async function create(data) {
+  const id = 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  await db.doc('kunden/' + id).set(data);
+  return id;
+}
+
+/* ---------- Kunden zusammenführen ---------- */
+function findCustomer(u) {
+  if (u.kundeId) { const c = customers.find((x) => x.id === u.kundeId); if (c) return c; }
+  if (u.email) { const c = customers.find((x) => norm(x.email) === norm(u.email)); if (c) return c; }
+  if (u.telefon) {
+    const t = String(u.telefon).replace(/\D/g, '').slice(-9);
+    const c = customers.find((x) => x.telefon && String(x.telefon).replace(/\D/g, '').slice(-9) === t);
+    if (c) return c;
+  }
+  if (u.name) { const c = customers.find((x) => norm(x.name) === norm(u.name)); if (c) return c; }
+  return null;
+}
+async function applyUpdate(u, sourceNote) {
+  if (!u || !STATUS.some((s) => s.id === u.status)) return 'skip';
+  const now = new Date().toLocaleDateString('de-DE');
+  const ex = findCustomer(u);
+  const line = `${now}: ${sourceNote}${u.zusammenfassung ? ' – ' + u.zusammenfassung : ''}`;
+  if (!ex) {
+    await create({
+      name: u.name || '', email: u.email || '', telefon: u.telefon || '', kanal: u.kanal || 'E-Mail',
+      anliegen: u.anliegen || '', status: u.status, statusSeit: u.datum || new Date().toISOString(), betrag: typeof u.betrag === 'number' ? u.betrag : null,
+      rechnungsnr: u.rechnungsnr || '', notiz: '', letzteAktivitaet: u.datum || new Date().toISOString(),
+      gmailUrl: u.gmailUrl || '', verlauf: [line], neu: true,
+    });
+    return 'neu';
+  }
+  const patch = { verlauf: [...(ex.verlauf || []), line].slice(-20) };
+  // Status nur nach vorne bewegen (oder auf „Abgesagt“), nie automatisch zurück
+  const forward = u.status === 'abgesagt' || (ORDER[u.status] ?? -1) > (ORDER[ex.status] ?? -1);
+  if (forward && !DONE.has(ex.status)) { patch.status = u.status; patch.statusSeit = u.datum || new Date().toISOString(); patch.neu = true; }
+  for (const k of ['name', 'email', 'telefon', 'anliegen', 'rechnungsnr']) if (!ex[k] && u[k]) patch[k] = u[k];
+  if (typeof u.betrag === 'number' && u.betrag > 0 && (!ex.betragAusRechnung || u.status === 'rechnung')) {
+    patch.betrag = u.betrag;
+    if (u.status === 'rechnung' || u.rechnungsnr) patch.betragAusRechnung = true;
+  }
+  if (u.gmailUrl) patch.gmailUrl = u.gmailUrl;
+  if (u.datum && String(u.datum) > String(ex.letzteAktivitaet || '')) patch.letzteAktivitaet = u.datum;
+  await save(ex.id, patch);
+  return patch.status ? 'status' : 'aktualisiert';
+}
+
+/* ---------- KI-Auswertung ---------- */
+const RULES = `Du pflegst die Kundenübersicht von LayerForm (3D-Druck und CAD-Konstruktion, Inhaber Benjamin Ridel, Kleinunternehmer).
+Eigene Adressen: ${OWN.join(', ')}. Nachrichten von diesen Adressen hat Benjamin geschrieben.
+Statuswerte in Reihenfolge:
+- neu: Kunde fragt erstmals an (auch E-Mails „Neue Anfrage über den Preisrechner“ / „Druckanfrage von …“; dann ist der Kunde die Person in der Anfrage, Kanal „Preisrechner“).
+- klaerung: Rückfragen laufen, noch kein Preis genannt.
+- angebot: Benjamin hat einen Preis oder ein Angebot geschickt.
+- zugesagt: Kunde hat das Angebot angenommen.
+- rechnung: Rechnung wurde verschickt (z. B. „Rechnung RE2026-… von LayerForm“ aus Lexware an den Kunden), Zahlung offen. Rechnungsnummer übernehmen. Der Rechnungsbetrag aus dieser Mail (z. B. „Betrag“, „Gesamtbetrag“, „Rechnungsbetrag“, „… €“) ist der verbindliche Preis: immer als betrag übernehmen.
+- Angebote aus Lexware (z. B. „Angebot AG… von LayerForm“) bedeuten Status angebot; ein darin genannter Betrag ist der Angebotspreis.
+- bezahlt: Zahlung des Kunden ist eindeutig eingegangen bzw. bestätigt; Druck läuft.
+- versendet: Ware verschickt oder übergeben (Versandbestätigung, Sendungsnummer, Abholung).
+- abgeschlossen: Auftrag erledigt, z. B. Kunde bestätigt Erhalt.
+- abgesagt: Kunde lehnt ab oder bricht ab.
+Ignoriere alles, was kein Kunde von LayerForm ist: Banken, PayPal, Shops und Lieferanten (auch Filamentkäufe), Newsletter, Software-Dienste (Resend, Vercel, Google, Lexware-Systemmails ohne Kunde), Sicherheits- und Kontomeldungen, private Mails.
+Antworte NUR mit JSON: {"updates":[{"kundeId":string|null,"name":string,"email":string,"telefon":string,"kanal":"E-Mail"|"Preisrechner"|"WhatsApp"|"Kleinanzeigen"|"Sonstiges","anliegen":string (max. 60 Zeichen, worum es geht),"status":string,"betrag":number|null (Euro, falls genannt),"rechnungsnr":string,"datum":string (ISO der letzten relevanten Nachricht),"zusammenfassung":string (max. 80 Zeichen, was zuletzt passiert ist),"ref":string}]}
+Ein Eintrag pro Kunde und Vorgang. Ist ein Kunde schon in der Liste „Bekannte Kunden“, setze dessen kundeId. Erfinde nichts; unbekannte Felder als leeren Text bzw. null.`;
+
+function knownList() {
+  return customers.slice(0, 150).map((c) => ({ kundeId: c.id, name: c.name, email: c.email, telefon: c.telefon, status: c.status }));
+}
+
+/* ---------- Gmail ---------- */
+function mcpProblem(e) {
+  switch (e?.code) {
+    case 'google_not_connected': return { text: 'Gmail ist noch nicht verbunden.', action: { label: 'Gmail verbinden', fn: () => { location.href = '/api/intern/google-auth?t=' + encodeURIComponent(TOKEN); } } };
+    case 'unauthorized': return { text: 'Die Sitzung ist abgelaufen.', action: { label: 'Neu anmelden', fn: () => location.reload() } };
+    case 'not_configured': return { text: 'Die Gmail-Anbindung ist auf dem Server noch nicht eingerichtet (Google-Zugangsdaten fehlen).' };
+    case 'needs_reauth': return { text: 'Die Gmail-Verbindung ist abgelaufen.', action: { label: 'Gmail neu verbinden', fn: () => { location.href = '/api/intern/google-auth?t=' + encodeURIComponent(TOKEN); } } };
+    case 'blocked_by_policy': case 'approval_required': return { text: 'Gmail ist für diese Seite durch eine Richtlinie gesperrt.' };
+    case 'rate_limited': return { text: 'Gmail meldet zu viele Anfragen. Bitte in einer Minute noch einmal versuchen.' };
+    case 'tool_error': return { text: 'Gmail meldet einen Fehler: ' + (e.message || 'unbekannt') };
+    default: return { text: 'Gmail ist gerade nicht erreichbar. Bitte gleich noch einmal versuchen.' };
+  }
+}
+const payloadOf = (r) => {
+  if (r?.payload !== undefined) return r.payload;
+  const t = r?.content?.find?.((b) => b.type === 'text')?.text;
+  try { return t ? JSON.parse(t) : null; } catch { return null; }
+};
+async function gmail(tool, input) {
+  try { return payloadOf(await mcp.callTool(GMAIL, tool, input)); }
+  catch (e) {
+    if (e?.retryable) {
+      await new Promise((r) => setTimeout(r, Math.min(e.retryAfterMs || 1500, 8000) + Math.random() * 700));
+      return payloadOf(await mcp.callTool(GMAIL, tool, input));
+    }
+    throw e;
+  }
+}
+const strip = (t) => String(t || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/[ \t\u034f\ufeff]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+
+let syncing = false;
+/* Abgleich ohne KI: feste Regeln für Lexware- und Preisrechner-Mails, alles andere landet unter „Mögliche Leads“ */
+const ownRe = new RegExp(OWN.map((a) => a.replace(/[.]/g, '\\.')).join('|'), 'i');
+const isOwn = (addr) => ownRe.test(addr || '');
+const emailIn = (t) => (String(t || '').match(/[\w.+-]+@[\w-]+\.[\w.-]+/g) || []).find((a) => !isOwn(a)) || '';
+async function syncGmail() {
+  if (syncing || !mcp || !db) return;
+  syncing = true; $('syncBtn').disabled = true; $('syncIcon').classList.add('spin');
+  let made = 0, moved = 0, leads = 0;
+  try {
+    const since = meta.lastSync ? Math.max(2, Math.ceil((Date.now() - new Date(meta.lastSync)) / 86400000) + 1) : 60;
+    const query = `newer_than:${since}d -category:promotions -category:social -in:spam -in:trash`;
+    setLine('Postfach wird abgeglichen …');
+    let threads = [], token;
+    for (let page = 0; page < 4; page++) {
+      const res = await gmail('search_threads', { query, pageSize: 50, ...(token ? { pageToken: token } : {}) });
+      threads.push(...(res?.threads || []));
+      token = res?.nextPageToken; if (!token) break;
+    }
+    // Gmail-Label „Lead“ (wird von Google Workspace Studio gesetzt)
+    let leadId = null;
+    try { const l = await gmail('list_labels', {}); leadId = (l?.labels || []).find((x) => norm(x.name) === 'lead')?.labelId || null; } catch (e) { if (['needs_reauth', 'server_not_connected', 'not_granted', 'blocked_by_policy'].includes(e?.code)) throw e; }
+    const fresh = threads.filter((t) => { const last = (t.messages || []).slice(-1)[0]; return last && meta.processed[t.id] !== last.id; });
+    const noise = /(noreply|no-reply|notifications?@|service@paypal|@paypal|@n26|@ionos|newsletter|mailer-daemon|@google\.com|@vercel|@resend|@github|@link\.com|@lexware|@stripe|@amazon|@ebay|@dhl|@dpd|@hermes|@bambulab)/i;
+
+    for (const t of fresh.slice(0, 60)) {
+      const msgs = t.messages || [];
+      const last = msgs[msgs.length - 1];
+      const url = t.viewUrl || '';
+      const date = last?.date || new Date().toISOString();
+      const lexRe = msgs.find((m) => isOwn(m.sender) && /Rechnung\s+(RE[\w-]+)\s+von\s+LayerForm/i.test(m.subject || ''));
+      const lexAn = msgs.find((m) => isOwn(m.sender) && /Angebot\s+(A[\w-]+)\s+von\s+LayerForm/i.test(m.subject || ''));
+      const rechner = msgs.find((m) => /Druckanfrage von|Anfrage über den Preisrechner/i.test(m.subject || ''));
+      let r = null;
+      if (lexRe) {
+        const nr = lexRe.subject.match(/(RE[\w-]+)/i)[1];
+        const betrag = parseNum(((lexRe.snippet || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2})\s*€/) || [])[1]);
+        r = await applyUpdate({ email: (lexRe.toRecipients || [])[0] || '', status: 'rechnung', rechnungsnr: nr, betrag: betrag ?? undefined, datum: lexRe.date, kanal: 'E-Mail', zusammenfassung: `Rechnung ${nr} verschickt`, gmailUrl: url }, 'Lexware');
+      } else if (lexAn) {
+        const nr = lexAn.subject.match(/(A[\w-]+)/i)[1];
+        const betrag = parseNum(((lexAn.snippet || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2})\s*€/) || [])[1]);
+        r = await applyUpdate({ email: (lexAn.toRecipients || [])[0] || '', status: 'angebot', betrag: betrag ?? undefined, datum: lexAn.date, kanal: 'E-Mail', zusammenfassung: `Angebot ${nr} verschickt`, gmailUrl: url }, 'Lexware');
+      } else if (rechner) {
+        // Preisrechner-Mail hat ein festes Format, Inhalt ohne KI auslesen
+        let body = rechner.snippet || '';
+        try { const full = await gmail('get_thread', { threadId: t.id, messageFormat: 'PLAIN_TEXT' }); body = (full?.messages || []).map((m) => m.plaintextBody || '').join('\n') || body; } catch (e) { if (['needs_reauth', 'server_not_connected', 'not_granted', 'blocked_by_policy'].includes(e?.code)) throw e; }
+        const name = ((rechner.subject || '').match(/Druckanfrage von (.+?)(?:\s*\(|$)/) || [])[1] || '';
+        const mat = (body.match(/Material:\s*([^\n]+)/) || [])[1] || '';
+        const teile = (body.match(/Platte \d+:\s*([^\n]+)/g) || []).map((x) => x.replace(/Platte \d+:\s*/, '')).join(', ');
+        const est = parseNum(((body.match(/Richtpreis[^:\n]*:\s*([\d.,]+)\s*€/) || [])[1]));
+        r = await applyUpdate({ name, email: emailIn(body.split(/KOMMENTAR/)[0]), status: 'neu', kanal: 'Preisrechner', anliegen: [mat, teile].filter(Boolean).join(' · ').slice(0, 60), betrag: est ?? undefined, datum: rechner.date, zusammenfassung: 'Anfrage über den Preisrechner', gmailUrl: url }, 'Preisrechner');
+      } else {
+        // bekannter Kunde? Dann nur Verlauf und Datum aktualisieren, sonst als möglicher Lead vormerken
+        const ext = msgs.flatMap((m) => [m.sender, ...(m.toRecipients || [])]).find((a) => a && !isOwn(a) && !noise.test(a));
+        if (ext) {
+          const known = customers.find((c) => norm(c.email) === norm(ext));
+          if (known) {
+            const line = `${new Date(date).toLocaleDateString('de-DE')}: E-Mail „${(last.subject || '').slice(0, 60)}“`;
+            await save(known.id, { letzteAktivitaet: date > (known.letzteAktivitaet || '') ? date : known.letzteAktivitaet, gmailUrl: url, verlauf: [...(known.verlauf || []), line].slice(-20) });
+          } else if (leadId && msgs.some((m) => (m.labelIds || []).includes(leadId))) {
+            // von Gemini als Lead markiert: direkt als neue Anfrage anlegen
+            r = await applyUpdate({ email: ext, status: 'neu', kanal: 'E-Mail', anliegen: (last.subject || '').slice(0, 60), datum: date, zusammenfassung: 'als Lead markiert', gmailUrl: url }, 'Gmail');
+          } else if (msgs.some((m) => !isOwn(m.sender) && !noise.test(m.sender || ''))) {
+            await db.doc('posteingang/' + t.id).set({ email: ext, betreff: last.subject || '', text: strip(last.snippet).slice(0, 220), datum: date, url });
+            leads++;
+          }
+        }
+      }
+      if (r === 'neu') made++; else if (r === 'status') moved++;
+      meta.processed[t.id] = last.id;
+    }
+    fresh.forEach((t) => { meta.processed[t.id] = (t.messages || []).slice(-1)[0]?.id; });
+    await finishSync();
+    await reloadCustomers(); await loadInbox();
+    const parts = [made && `${made} neue Kunden`, moved && `${moved} Statusänderungen`, leads && `${leads} mögliche Leads zum Prüfen`].filter(Boolean);
+    setLine(parts.length ? `Abgeglichen: ${parts.join(', ')}.` : `Abgeglichen, nichts Neues. ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr`);
+  } catch (e) {
+    if (e && typeof e.code === 'string') { const p = mcpProblem(e); setLine(p.text, true, p.action); }
+    else setLine('Der Abgleich ist fehlgeschlagen. Bitte noch einmal versuchen.', true, { label: 'Erneut', fn: syncGmail });
+  } finally {
+    syncing = false; $('syncBtn').disabled = !mcp || !db; $('syncIcon').classList.remove('spin');
+  }
+}
+
+/* ---------- Mögliche Leads (ohne KI) ---------- */
+let inbox = [];
+async function loadInbox() {
+  try { const snap = await db.collection('posteingang').get(); inbox = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.datum).localeCompare(String(a.datum))); }
+  catch { inbox = []; }
+  renderInbox();
+}
+function renderInbox() {
+  const box = $('inbox');
+  box.hidden = !inbox.length;
+  if (!inbox.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<h2>Mögliche Leads <span>${inbox.length} zum Prüfen</span></h2><ul></ul>`;
+  const ul = box.querySelector('ul');
+  for (const m of inbox.slice(0, 15)) {
+    const li = document.createElement('li'); li.className = 'lead';
+    li.innerHTML = `<div class="lbl"><b>${esc(m.betreff || '(ohne Betreff)')}</b><small>${esc(m.email)} · ${esc(ago(m.datum))}</small>${m.text ? `<p>${esc(m.text)}</p>` : ''}</div>
+      <div class="lead-act"><button class="mini primary">Als Kunde</button><button class="mini">Ignorieren</button>${m.url ? `<a class="mini" href="${esc(m.url)}" target="_blank" rel="noopener">Öffnen</a>` : ''}</div>`;
+    const [add, skip] = li.querySelectorAll('button');
+    add.onclick = async () => {
+      await create({ name: '', email: m.email, telefon: '', kanal: 'E-Mail', anliegen: (m.betreff || '').slice(0, 60), status: 'neu', statusSeit: m.datum, betrag: null, rechnungsnr: '', notiz: '', letzteAktivitaet: m.datum, gmailUrl: m.url || '', verlauf: [`${new Date().toLocaleDateString('de-DE')}: aus E-Mail übernommen`], neu: true });
+      await db.doc('posteingang/' + m.id).delete(); await loadInbox(); await reloadCustomers();
+    };
+    skip.onclick = async () => { await db.doc('posteingang/' + m.id).delete(); await loadInbox(); };
+    ul.append(li);
+  }
+}
+
+async function finishSync() {
+  // nur die letzten 600 Unterhaltungen merken
+  const keys = Object.keys(meta.processed); if (keys.length > 600) keys.slice(0, keys.length - 600).forEach((k) => delete meta.processed[k]);
+  meta.lastSync = new Date().toISOString();
+  await db.doc('meta/sync').set({ processed: meta.processed, lastSync: meta.lastSync });
+}
+$('syncBtn').onclick = syncGmail;
+
+/* ---------- WhatsApp ---------- */
+$('waBtn').onclick = () => { $('waMsg').textContent = ''; $('waDlg').showModal(); };
+const waDrop = $('waDrop');
+['dragenter', 'dragover'].forEach((t) => waDrop.addEventListener(t, (e) => { e.preventDefault(); waDrop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((t) => waDrop.addEventListener(t, (e) => { e.preventDefault(); waDrop.classList.remove('over'); }));
+waDrop.addEventListener('drop', (e) => readWa(e.dataTransfer.files[0]));
+$('waFile').onchange = (e) => readWa(e.target.files[0]);
+async function readWa(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { $('waMsg').textContent = 'Die Datei ist zu groß. Bitte ohne Medien exportieren.'; return; }
+  $('waText').value = await file.text();
+  $('waMsg').textContent = `${file.name} geladen.`;
+}
+$('waGo').onclick = async () => {
+  const raw = $('waText').value.trim();
+  if (!raw) { $('waMsg').textContent = 'Bitte zuerst einen Chat einfügen.'; return; }
+  if (!sample || !db) { $('waMsg').textContent = 'Die Auswertung ist in dieser Ansicht nicht verfügbar.'; return; }
+  $('waGo').disabled = true; $('waMsg').textContent = 'Chat wird ausgewertet …';
+  try {
+    const chat = raw.length > 14000 ? raw.slice(-14000) : raw; // die neuesten Nachrichten zählen
+    const input = `${RULES}\nDies ist ein exportierter WhatsApp-Chat zwischen Benjamin (LayerForm) bzw. seinem KI-Agenten und genau einem Kunden. Kanal ist „WhatsApp“. Telefonnummer übernehmen, falls im Export sichtbar. ref = "whatsapp".\n\nBekannte Kunden:\n${JSON.stringify(knownList())}\n\nChat:\n${chat}`;
+    const out = await sample.json(input, { modelTier: 'default' });
+    const u = (out?.updates || [])[0];
+    if (!u) { $('waMsg').textContent = 'In diesem Chat wurde kein Kundenvorgang erkannt.'; return; }
+    const r = await applyUpdate({ ...u, kanal: 'WhatsApp' }, 'WhatsApp');
+    await reloadCustomers();
+    $('waMsg').textContent = r === 'neu' ? `${u.name || 'Kunde'} wurde angelegt.` : `${u.name || 'Kunde'} wurde aktualisiert.`;
+    $('waText').value = '';
+  } catch (e) {
+    $('waMsg').textContent = e?.code === 'not_granted' ? 'Die KI-Auswertung wurde nicht erlaubt.' : e?.code === 'rate_limited' ? 'Gerade ausgelastet, bitte gleich noch einmal.' : 'Die Auswertung ist fehlgeschlagen. Bitte noch einmal versuchen.';
+  } finally { $('waGo').disabled = false; }
+};
+
+/* ---------- Start ---------- */
+async function reloadCustomers() {
+  const snap = await db.collection('kunden').get();
+  customers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  render();
+}
+/* ===================== Kalkulator (Werte wie src/pricing.ts der Website) ===================== */
+const P = {
+  filament: { PLA: 15, PETG: 16, ABS: 18, ASA: 26 }, // € pro 1000 g, TPU manuell
+  ausschuss: 0.1, margeStd: 100, margeVorlagen: [50, 100, 150, 200],
+  satz: 2.0, pauschale: 3.0, arbeit: 30, cad: 45,
+  rabatt: [{ ab: 10, p: 10 }, { ab: 50, p: 20 }],
+  strom: 0.10, verschleiss: 0.25,
+  zusatz: [
+    { id: 'paket-klein', name: 'Kleines Paket', preis: 0.32 },
+    { id: 'paket-gross', name: 'Großes Paket', preis: 0.4 },
+    { id: 'verpackung', name: 'Verpackungsmaterial', preis: 0.3 },
+    { id: 'versandtasche', name: 'Versandtasche', preis: 0.18 },
+  ],
+  mwst: 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.',
+};
+const MATS = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU'];
+const num = (x) => { let t = String(x ?? '').trim().replace(/\s/g, ''); if (!t) return 0; if (t.includes(',') && t.includes('.')) t = t.replace(/\./g, ''); const v = parseFloat(t.replace(',', '.')); return isFinite(v) && v >= 0 ? v : NaN; };
+const cent = (v) => Math.round(v * 100) / 100;
+const fmtN = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
+const newPlate = (mat = 'PLA') => ({ mat1: mat, tpu1: '', g1: '', h: '', m: '', multi: false, mat2: 'PETG', tpu2: '', g2: '', purge: '', teile: 1, mal: 1 });
+const emptyCalc = () => ({ plates: [newPlate()], nach: '', cad: '', mm: String(P.margeStd), satz: '2', pausch: '3', extras: {} });
+let calc = emptyCalc();
+let extraStore = { items: null };      // eigene Zusatzpositionen (in der Datenbank, auf allen Geräten gleich)
+let kalkHist = [];
+const ui = { details: false, rates: false, editEx: false, label: '' };
+const extraList = () => extraStore.items || P.zusatz;
+const kgOf = (m, tpu) => (m === 'TPU' ? num(tpu) : P.filament[m]);
+
+function compute() {
+  const bad = (x) => Number.isNaN(x);
+  const n = { nach: num(calc.nach), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch) };
+  if (Object.values(n).some(bad)) return null;
+  let einkauf = 0, stunden = 0, gramm = 0, teile = 0;
+  for (const p of calc.plates) {
+    const g1 = num(p.g1), h = num(p.h), m = num(p.m), g2 = num(p.g2), pu = num(p.purge);
+    if ([g1, h, m, g2, pu].some(bad) || !(g1 > 0) || !(h * 60 + m > 0)) return null;
+    const k1 = kgOf(p.mat1, p.tpu1); if (!(k1 > 0)) return null;
+    const mal = Math.max(1, p.mal), parts = Math.max(1, p.teile);
+    einkauf += g1 / 1000 * k1 * mal; gramm += g1 * mal;
+    if (p.multi) {
+      const k2 = kgOf(p.mat2, p.tpu2); if (!(k2 > 0)) return null;
+      einkauf += (g2 / 1000 * k2 + pu / 1000 * (k1 + k2) / 2) * mal; gramm += (g2 + pu) * mal;
+    }
+    stunden += (h + m / 60) * mal; teile += parts * mal;
+  }
+  const mitAusschuss = einkauf * (1 + P.ausschuss);
+  const material = mitAusschuss * (1 + n.mm / 100);
+  const maschine = stunden * n.satz;
+  const produkt = material + maschine;
+  const rabattP = P.rabatt.filter((r) => teile >= r.ab).reduce((a, r) => Math.max(a, r.p), 0);
+  const rabatt = produkt * rabattP / 100;
+  const nacharbeit = n.nach / 60 * P.arbeit * teile;
+  const cadK = n.cad / 60 * P.cad;
+  const chosen = extraList().filter((e) => (calc.extras[e.id] || 0) > 0);
+  const zusatz = chosen.reduce((a, e) => a + e.preis * calc.extras[e.id], 0);
+  const gesamt = cent(produkt - rabatt + n.pausch + nacharbeit + cadK + zusatz);
+  const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
+  return {
+    einkauf: cent(einkauf), mitAusschuss: cent(mitAusschuss), material: cent(material), stunden, satz: n.satz, maschine: cent(maschine),
+    produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach,
+    cad: cent(cadK), zusatz: cent(zusatz), chosen, gesamt, teile, gramm, proStueck: cent(gesamt / teile), mm: n.mm,
+    kosten: { material: cent(mitAusschuss), strom: cent(stunden * P.strom), verschleiss: cent(stunden * P.verschleiss), zusatz: cent(zusatz), summe: cent(kosten) },
+    gewinn: cent(gesamt - kosten),
+  };
+}
+
+function offerText(r) {
+  const mats = [...new Set(calc.plates.flatMap((p) => (p.multi ? [p.mat1, p.mat2] : [p.mat1])))];
+  const matTxt = mats.length > 1 ? `${mats.slice(0, -1).join(', ')} und ${mats[mats.length - 1]}` : mats[0];
+  const L = ['Hallo,', '', 'vielen Dank für Ihre Anfrage. Gerne fertige ich Ihr Teil im 3D-Druck:', '', `Material: ${matTxt}`, `Stückzahl: ${r.teile}`];
+  if (r.cad > 0) L.push('inklusive CAD-Konstruktion');
+  if (r.nacharbeit > 0) L.push('inklusive Nacharbeit');
+  if (r.chosen.length) L.push('inklusive Verpackung');
+  L.push('', r.teile > 1 ? `Preis: ${euro(r.gesamt)} (${euro(r.proStueck)} pro Stück)` : `Preis: ${euro(r.gesamt)}`);
+  if (r.rabattP > 0) L.push(`Mengenrabatt von ${r.rabattP} % ist bereits abgezogen.`);
+  L.push(P.mwst, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid. Ich erstelle Ihnen dann die Rechnung und starte den Druck, sobald die Zahlung eingegangen ist.', '',
+    'Für die Rechnung benötige ich Ihren Vor- und Nachnamen, Ihre Adresse und Ihre E-Mail-Adresse. Falls Sie mir diese Daten noch nicht geschickt haben, senden Sie sie mir gerne direkt mit Ihrer Zusage:',
+    '- Vor- und Nachname', '- Adresse', '- E-Mail-Adresse', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
+  return L.join('\n');
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch { const ta = document.createElement('textarea'); ta.value = t; document.body.append(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch {} ta.remove(); return ok; }
+}
+function flash(btn, txt) { const old = btn.innerHTML; btn.textContent = txt; setTimeout(() => { btn.innerHTML = old; }, 1500); }
+
+/* ---------- Ergebnis oben ---------- */
+function renderResult() {
+  const r = compute();
+  const box = $('kalkRes'); if (!box) return;
+  const tile = (k, v, win) => `<div class="tile${win ? ' win' : ''}"><p>${k}</p><b>${v != null ? esc(euro(v)) : '–'}</b></div>`;
+  const row = (k, v, cls = '') => `<div class="r ${cls}"><span>${esc(k)}</span><span>${esc(v)}</span></div>`;
+  const active = customers.filter((c) => !DONE.has(c.status)).sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email)));
+  box.innerHTML = `<div class="res-card">
+    <div class="res-row"><div><small>Endpreis${r && r.teile > 1 ? ` für ${r.teile} Teile` : ''}</small><div class="price">${r ? esc(euro(r.gesamt)) : '– €'}</div>${r && r.teile > 1 ? `<div class="per">${esc(euro(r.proStueck))} pro Stück</div>` : ''}</div>
+      <button class="copy" data-a="copyPrice" ${r ? '' : 'disabled'}>Preis kopieren</button></div>
+    <div class="tiles">${tile('Material', r?.material)}${tile('Maschine', r?.maschine)}${tile('Arbeit', r ? cent(r.pausch + r.nacharbeit + r.cad) : null)}${tile('Gewinn', r?.gewinn, true)}</div>
+    ${r && r.rabattP ? `<p class="cyan-note">Mengenrabatt ${r.rabattP} % für ${r.teile} Teile abgezogen.</p>` : ''}
+    <div class="two-btn"><button class="ghost2" data-a="copyOffer" ${r ? '' : 'disabled'}>Angebot kopieren</button><button class="ghost2" data-a="shareOffer" ${r ? '' : 'disabled'}>Angebot senden</button></div>
+    ${r && active.length ? `<div class="assign"><select id="assignSel" aria-label="Kunde"><option value="">Beim Kunden eintragen …</option>${active.map((c) => `<option value="${esc(c.id)}">${esc(c.name || c.email || c.telefon)}</option>`).join('')}</select><button class="ghost2" style="padding:0 14px" data-a="assign">Eintragen</button></div>` : ''}
+    <button class="toggle-row" data-a="details" ${r ? '' : 'disabled'}>Aufschlüsselung <span>${ui.details ? '▲' : '▼'}</span></button>
+    ${ui.details && r ? `<div class="bd">
+      ${row(`Material (${fmtN(r.gramm)} g)`, euro(r.material))}
+      ${row(`Einkauf ${euro(r.einkauf)} + ${P.ausschuss * 100} % Ausschuss`, euro(r.mitAusschuss), 'sub')}
+      ${row(`+ ${r.mm} % Marge`, euro(cent(r.material - r.mitAusschuss)), 'sub')}
+      ${row(`Maschine ${fmtN(r.stunden)} h × ${euro(r.satz)}`, euro(r.maschine))}
+      ${row('Druck', euro(r.produkt), 's')}
+      ${r.rabatt > 0 ? row(`Mengenrabatt ${r.rabattP} %`, '− ' + euro(r.rabatt)) : ''}
+      ${r.pausch > 0 ? row('Bearbeitungspauschale', euro(r.pausch)) : ''}
+      ${r.nacharbeit > 0 ? row(`Nacharbeit ${r.teile} × ${fmtN(r.nachMin)} min`, euro(r.nacharbeit)) : ''}
+      ${r.cad > 0 ? row('CAD-Konstruktion', euro(r.cad)) : ''}
+      ${r.chosen.map((e) => row(`${calc.extras[e.id] > 1 ? calc.extras[e.id] + ' × ' : ''}${e.name}`, euro(e.preis * calc.extras[e.id]))).join('')}
+      ${row('Endpreis', euro(r.gesamt), 's')}
+      <div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">
+      ${row('Deine Kosten', euro(r.kosten.summe))}
+      ${row('Filament inkl. Ausschuss', euro(r.kosten.material), 'sub')}
+      ${row('Strom (0,10 € / h)', euro(r.kosten.strom), 'sub')}
+      ${row('Verschleiß (0,25 € / h)', euro(r.kosten.verschleiss), 'sub')}
+      ${r.kosten.zusatz > 0 ? row('Versand und Verpackung', euro(r.kosten.zusatz), 'sub') : ''}
+      ${row('Gewinn (für deine Arbeitszeit)', euro(r.gewinn), 's')}</div>
+      <p class="note" style="margin-top:6px">${P.mwst}</p></div>` : ''}
+  </div>`;
+}
+
+/* ---------- Eingaben ---------- */
+const field = (label, key, val, unit, mode = 'decimal', ph = '0', p = null) =>
+  `<div><span class="lbl">${label}</span><label class="inp${Number.isNaN(num(val)) ? ' bad' : ''}"><input inputmode="${mode}" autocomplete="off" placeholder="${ph}" value="${esc(val)}" data-k="${key}"${p != null ? ` data-p="${p}"` : ''} aria-label="${esc(label.replace(/<[^>]+>/g, ''))}"><span>${unit}</span></label></div>`;
+const matPicker = (val, key, p) => `<div class="mats" role="radiogroup">${MATS.map((m) => `<button type="button" role="radio" aria-checked="${val === m}" data-mat="${m}" data-k="${key}" data-p="${p}">${m}<small>${m === 'TPU' ? 'manuell' : P.filament[m] + ' €'}</small></button>`).join('')}</div>`;
+
+function renderKalk() {
+  const k = $('kalk'); if (!k) return;
+  const solo = calc.plates.length === 1;
+  const changed = num(calc.mm) !== P.margeStd || num(calc.satz) !== P.satz || num(calc.pausch) !== P.pauschale;
+  const exl = extraList();
+  k.innerHTML = `<div class="res" id="kalkRes"></div>
+  ${calc.plates.map((p, i) => `<section class="plate${solo ? '' : ' boxed'}">
+    ${solo ? '' : `<div class="plate-h">Platte ${i + 1}<button class="icon-round" data-a="delPlate" data-p="${i}" aria-label="Platte ${i + 1} entfernen">✕</button></div>`}
+    <div><span class="lbl">Material</span>${matPicker(p.mat1, 'mat1', i)}</div>
+    ${p.mat1 === 'TPU' ? field('TPU-Preis', 'tpu1', p.tpu1, '€ / kg', 'decimal', 'z. B. 30', i) : ''}
+    ${field('Gewicht (inkl. Stützen)', 'g1', p.g1, 'g', 'decimal', '0', i)}
+    <div class="grid2">${field('Druckzeit', 'h', p.h, 'h', 'numeric', '0', i)}${field('Minuten', 'm', p.m, 'min', 'numeric', '0', i)}</div>
+    ${!p.multi ? `<button class="dash" data-a="multi" data-p="${i}">+ Zweites Material / AMS</button>` : `<div class="sub-box">
+      <div class="plate-h">Zweites Material<button class="icon-round" data-a="unmulti" data-p="${i}" aria-label="Zweites Material entfernen">✕</button></div>
+      ${matPicker(p.mat2, 'mat2', i)}
+      ${p.mat2 === 'TPU' ? field('TPU-Preis', 'tpu2', p.tpu2, '€ / kg', 'decimal', 'z. B. 30', i) : ''}
+      <div class="grid2">${field('Gewicht', 'g2', p.g2, 'g', 'decimal', '0', i)}${field('AMS-Spülung', 'purge', p.purge, 'g', 'decimal', '0', i)}</div>
+      <p class="note">Spülmenge zum Durchschnittspreis beider Materialien.</p></div>`}
+    <div class="grid2">
+      <div><span class="lbl">Teile auf der Platte</span><div class="step"><button data-a="dec" data-f="teile" data-p="${i}" aria-label="Weniger Teile">−</button><b>${p.teile}</b><button data-a="inc" data-f="teile" data-p="${i}" aria-label="Mehr Teile">+</button></div></div>
+      <div><span class="lbl">Platte drucken</span><div class="step"><button data-a="dec" data-f="mal" data-p="${i}" aria-label="Weniger Durchläufe">−</button><b>${p.mal} ×</b><button data-a="inc" data-f="mal" data-p="${i}" aria-label="Mehr Durchläufe">+</button></div></div>
+    </div>
+  </section>`).join('')}
+  <button class="dash cy" data-a="addPlate">+ Platte hinzufügen</button>
+  <div class="grid2">${field('Nacharbeit pro Teil', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
+  <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 10 Teilen 10 %, ab 50 Teilen 20 %.</p>
+
+  <section class="box">
+    <button class="box-h" data-a="rates"><span><b>Marge und Sätze</b><small class="${changed ? 'chg' : ''}">Material +${esc(calc.mm || 0)} % · Maschine ${esc(calc.satz || 0)} € / h · Pauschale ${esc(calc.pausch || 0)} €</small></span><span>${ui.rates ? '▲' : '▼'}</span></button>
+    ${ui.rates ? `<div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+      <div class="chips" role="radiogroup" aria-label="Materialmarge">${P.margeVorlagen.map((v) => `<button role="radio" aria-checked="${num(calc.mm) === v}" data-a="mm" data-v="${v}">${v} %</button>`).join('')}</div>
+      ${field('Eigene Materialmarge', 'mm', calc.mm, '%', 'numeric')}
+      <div class="grid2">${field('Maschinenstundensatz', 'satz', calc.satz, '€ / h')}${field('Pauschale', 'pausch', calc.pausch, '€')}</div>
+      <button class="linkbtn" data-a="resetRates">Auf Standard zurücksetzen</button></div>` : ''}
+  </section>
+
+  <section class="box">
+    <div class="box-h"><b>Versand und Verpackung <small style="display:inline">ohne Marge</small></b><button class="linkbtn" style="text-decoration:none;color:var(--cyan)" data-a="editEx">${ui.editEx ? 'Fertig' : 'Bearbeiten'}</button></div>
+    ${!ui.editEx ? `<div style="margin-top:6px">${exl.map((e) => { const q = calc.extras[e.id] || 0; return `<div class="ex"><div class="nm"><b>${esc(e.name)}</b><small class="${e.preis > 0 ? '' : 'miss'}">${e.preis > 0 ? esc(euro(e.preis)) : 'Preis fehlt'}</small></div>
+      <div class="step" style="height:42px;width:126px"><button data-a="exDec" data-id="${esc(e.id)}" aria-label="${esc(e.name)} weniger">−</button><b>${q}</b><button data-a="exInc" data-id="${esc(e.id)}" aria-label="${esc(e.name)} mehr">+</button></div></div>`; }).join('')}</div>`
+    : `<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${exl.map((e, i) => `<div class="ex-edit"><input value="${esc(e.name)}" data-ex="name" data-i="${i}" aria-label="Bezeichnung"><input value="${e.preis ? String(e.preis).replace('.', ',') : ''}" inputmode="decimal" placeholder="0 €" data-ex="preis" data-i="${i}" aria-label="Preis"><button class="icon-round" data-a="exDel" data-i="${i}" aria-label="Löschen">✕</button></div>`).join('')}
+      <button class="dash" data-a="exAdd">+ Position hinzufügen</button>
+      <button class="linkbtn" data-a="exReset">Auf Standardliste zurücksetzen</button></div>`}
+  </section>
+
+  <button class="linkbtn" data-a="clear">Eingaben leeren</button>
+
+  <section style="border-top:1px solid var(--line);padding-top:14px">
+    <b style="font-size:1.05rem">Verlauf</b>
+    <div class="save-row"><input id="histLabel" placeholder="Bezeichnung (optional)" value="${esc(ui.label)}"><button class="btn" style="height:46px" data-a="save">Speichern</button></div>
+    ${kalkHist.length ? `<ul class="hist">${kalkHist.map((h) => `<li><button class="open" data-a="load" data-id="${esc(h.id)}"><b><span>${esc(h.label || 'Ohne Bezeichnung')}</span><span>${esc(euro(h.gesamt))}</span></b><small>${esc(h.info || '')} · ${new Date(h.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}</small></button><button class="icon-round" data-a="histDel" data-id="${esc(h.id)}" aria-label="Löschen">✕</button></li>`).join('')}</ul>` : '<p class="note" style="margin-top:10px">Noch keine gespeicherten Kalkulationen.</p>'}
+  </section>`;
+  renderResult();
+}
+
+/* ---------- Bedienung (ein Handler für alles) ---------- */
+async function saveExtras(items) {
+  extraStore = { items };
+  try { await db.doc('meta/zusatz').set({ items }); } catch { setLine('Zusatzkosten konnten nicht gespeichert werden.', true); }
+}
+function onKalkInput(e) {
+  const t = e.target;
+  if (t.id === 'histLabel') { ui.label = t.value; return; }
+  if (t.dataset.ex) {
+    const items = extraList().map((x) => ({ ...x })); const i = +t.dataset.i;
+    if (t.dataset.ex === 'name') items[i].name = t.value; else { const v = num(t.value); if (Number.isNaN(v)) return; items[i].preis = v; }
+    extraStore = { items }; clearTimeout(onKalkInput.tm); onKalkInput.tm = setTimeout(() => saveExtras(items), 600);
+    renderResult(); return;
+  }
+  const k = t.dataset.k; if (!k) return;
+  if (t.dataset.p != null) calc.plates[+t.dataset.p][k] = t.value; else calc[k] = t.value;
+  t.closest('.inp')?.classList.toggle('bad', Number.isNaN(num(t.value)));
+  renderResult();
+}
+async function onKalkClick(e) {
+  const b = e.target.closest('button'); if (!b) return;
+  const p = b.dataset.p != null ? +b.dataset.p : null;
+  if (b.dataset.mat) { calc.plates[p][b.dataset.k] = b.dataset.mat; return renderKalk(); }
+  const r = compute();
+  switch (b.dataset.a) {
+    case 'copyPrice': if (r && await copyText(euro(r.gesamt))) flash(b, 'Kopiert'); return;
+    case 'copyOffer': if (r && await copyText(offerText(r))) flash(b, 'Kopiert'); return;
+    case 'shareOffer': if (!r) return; { const text = offerText(r); if (navigator.share) { try { await navigator.share({ text }); } catch {} } else if (await copyText(text)) flash(b, 'Kopiert, jetzt einfügen'); } return;
+    case 'assign': {
+      const id = $('assignSel')?.value; if (!id || !r) return;
+      const c = customers.find((x) => x.id === id); if (!c) return;
+      const patch = { betrag: r.gesamt, verlauf: [...(c.verlauf || []), `${new Date().toLocaleDateString('de-DE')}: Angebot über ${euro(r.gesamt)} kalkuliert`].slice(-20) };
+      if ((ORDER[c.status] ?? 0) < ORDER.angebot) { patch.status = 'angebot'; patch.statusSeit = new Date().toISOString(); }
+      try { await save(id, patch); flash(b, 'Eingetragen'); } catch (err) { setLine(dbMessage(err), true); }
+      return;
+    }
+    case 'details': ui.details = !ui.details; return renderResult();
+    case 'rates': ui.rates = !ui.rates; return renderKalk();
+    case 'mm': calc.mm = b.dataset.v; return renderKalk();
+    case 'resetRates': calc.mm = String(P.margeStd); calc.satz = '2'; calc.pausch = '3'; return renderKalk();
+    case 'multi': calc.plates[p].multi = true; return renderKalk();
+    case 'unmulti': Object.assign(calc.plates[p], { multi: false, g2: '', purge: '', tpu2: '' }); return renderKalk();
+    case 'inc': calc.plates[p][b.dataset.f]++; return renderKalk();
+    case 'dec': calc.plates[p][b.dataset.f] = Math.max(1, calc.plates[p][b.dataset.f] - 1); return renderKalk();
+    case 'addPlate': calc.plates.push(newPlate(calc.plates[calc.plates.length - 1].mat1)); return renderKalk();
+    case 'delPlate': calc.plates.splice(p, 1); return renderKalk();
+    case 'exInc': calc.extras[b.dataset.id] = (calc.extras[b.dataset.id] || 0) + 1; return renderKalk();
+    case 'exDec': calc.extras[b.dataset.id] = Math.max(0, (calc.extras[b.dataset.id] || 0) - 1); return renderKalk();
+    case 'editEx': ui.editEx = !ui.editEx; return renderKalk();
+    case 'exAdd': await saveExtras([...extraList(), { id: 'z' + Date.now().toString(36), name: 'Neue Position', preis: 0 }]); return renderKalk();
+    case 'exDel': await saveExtras(extraList().filter((_, i) => i !== +b.dataset.i)); return renderKalk();
+    case 'exReset': extraStore = { items: null }; try { await db.doc('meta/zusatz').delete(); } catch {} return renderKalk();
+    case 'clear': calc = emptyCalc(); ui.label = ''; return renderKalk();
+    case 'save': {
+      if (!r) { setLine('Bitte erst Gewicht und Druckzeit eingeben.', true); return; }
+      const mats = [...new Set(calc.plates.flatMap((q) => (q.multi ? [q.mat1, q.mat2] : [q.mat1])))].join(' + ');
+      const info = `${mats} · ${fmtN(r.gramm)} g · ${fmtN(r.stunden)} h${calc.plates.length > 1 ? ` · ${calc.plates.length} Platten` : ''}${r.teile > 1 ? ` · ${r.teile} Stk.` : ''}`;
+      const id = 'h' + Date.now().toString(36);
+      try {
+        await db.doc('kalkverlauf/' + id).set({ ts: Date.now(), label: ui.label.trim(), info, gesamt: r.gesamt, inputs: JSON.parse(JSON.stringify(calc)) });
+        ui.label = ''; await loadHist();
+        for (const old of kalkHist.slice(20)) await db.doc('kalkverlauf/' + old.id).delete();
+        if (kalkHist.length > 20) await loadHist();
+        flash(b, 'Gespeichert');
+      } catch (err) { setLine(dbMessage(err), true); }
+      return;
+    }
+    case 'load': { const h = kalkHist.find((x) => x.id === b.dataset.id); if (h) { calc = { ...emptyCalc(), ...JSON.parse(JSON.stringify(h.inputs)) }; ui.label = h.label || ''; renderKalk(); window.scrollTo({ top: 0 }); } return; }
+    case 'histDel': try { await db.doc('kalkverlauf/' + b.dataset.id).delete(); await loadHist(); } catch (err) { setLine(dbMessage(err), true); } return;
+  }
+}
+async function loadHist() {
+  try { const snap = await db.collection('kalkverlauf').orderBy('ts', 'desc').get(); kalkHist = snap.docs.map((d) => ({ id: d.id, ...d.data() })); }
+  catch { kalkHist = []; }
+  if (!$('tabKalk').hidden) renderKalk();
+}
+$('kalk').addEventListener('input', onKalkInput);
+$('kalk').addEventListener('click', onKalkClick);
+
+/* ===================== Tabs, Sperre, Start ===================== */
+function showTab(name) {
+  const kalk = name === 'kalk';
+  $('tabKunden').hidden = kalk; $('tabKalk').hidden = !kalk;
+  $('tabBtnKunden').setAttribute('aria-selected', String(!kalk)); $('tabBtnKalk').setAttribute('aria-selected', String(kalk));
+  $('syncBtn').style.display = kalk ? 'none' : '';
+  if (kalk) renderKalk();
+  window.scrollTo({ top: 0 });
+}
+$('tabBtnKunden').onclick = () => showTab('kunden');
+/* Einmaliger Import (z. B. Übernahme der Daten aus claude.ai) */
+$('importFile').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let j; try { j = JSON.parse(await f.text()); } catch { setLine('Die Datei ist kein gültiges JSON.', true); return; }
+  const cols = j.sammlungen || j; const allowed = ['kunden', 'posteingang', 'kalkverlauf', 'meta'];
+  const items = allowed.flatMap((c) => (Array.isArray(cols[c]) ? cols[c] : []).map((x) => ({ c, ...x }))).filter((x) => x.id && x.data);
+  if (!items.length) { setLine('In der Datei wurden keine Daten gefunden.', true); return; }
+  if (!confirm(`${items.length} Einträge importieren? Vorhandene Einträge mit gleicher ID werden überschrieben.`)) return;
+  let n = 0;
+  for (const x of items) { try { await db.doc(`${x.c}/${x.id}`).set(x.data); n++; setLine(`Import läuft … ${n} von ${items.length}`); } catch {} }
+  const m = await db.doc('meta/sync').get(); if (m.exists) meta = { processed: {}, lastSync: null, ...m.data() };
+  await reloadCustomers(); await loadInbox(); await loadHist();
+  setLine(`Import fertig: ${n} von ${items.length} Einträgen übernommen.`);
+};
+$('tabBtnKalk').onclick = () => showTab('kalk');
+$('lockBtn').onclick = () => location.reload();
+
+$('lockForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const pw = $('lockPw'), btn = e.target.querySelector('button');
+  btn.disabled = true; $('lockErr').textContent = '';
+  try {
+    const res = await fetch('/api/intern/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passwort: pw.value.trim() }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.token) { pw.value = ''; pw.classList.add('bad'); $('lockErr').textContent = res.status === 503 ? 'Auf dem Server ist noch kein Passwort eingerichtet.' : 'Falsches Passwort'; pw.focus(); return; }
+    TOKEN = data.token;
+    if (new URLSearchParams(location.search).get('gmail') === 'ok') history.replaceState(null, '', '/intern');
+    $('lock').remove(); $('app').hidden = false;
+    startApp();
+  } catch { $('lockErr').textContent = 'Server nicht erreichbar. Bitte später noch einmal versuchen.'; }
+  finally { btn.disabled = false; }
+};
+setTimeout(() => $('lockPw')?.focus(), 50);
+
+async function startApp() {
+  render();
+  db = makeDb(); mcp = gmailApi; sample = null;
+  try {
+    const m = await db.doc('meta/sync').get();
+    if (m.exists) meta = { processed: {}, lastSync: null, ...m.data() };
+  } catch {}
+  db.collection('kunden').onSnapshot((snap) => {
+    customers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    render();
+    if (!$('tabKalk').hidden && !document.activeElement?.closest?.('#kalk')) renderResult();
+  }, () => setLine('Die Kundendaten konnten nicht geladen werden. Bitte Seite neu laden.', true));
+  $('syncBtn').disabled = !mcp;
+  loadInbox();
+  if (!mcp) setLine('Gmail ist in dieser Ansicht nicht verfügbar. Kunden kannst du trotzdem von Hand pflegen.', true);
+  else if (!meta.lastSync || Date.now() - new Date(meta.lastSync).getTime() > 30 * 60000) { syncGmail(); }
+  else setLine(meta.lastSync ? `Zuletzt mit Gmail abgeglichen: ${new Date(meta.lastSync).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` : 'Noch nicht mit Gmail abgeglichen.');
+  try { const z = await db.doc('meta/zusatz').get(); if (z.exists && Array.isArray(z.data().items)) extraStore = { items: z.data().items }; } catch {}
+  loadHist();
+}
+})();
+</script>
+</body>
+</html>

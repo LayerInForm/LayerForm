@@ -13,13 +13,13 @@ import { Impressum, AGB, Datenschutz } from './components/LegalPages';
 
 // Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
 const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
-// Interne Umgebung: layer-form.de/#intern leitet zu „LayerForm intern“ weiter (nicht verlinkt)
+// Interne Umgebung liegt unter layer-form.de/intern (public/intern.html, nicht verlinkt)
 const InternRedirect = lazy(() => import('./components/internal/InternRedirect'));
 
 export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner' | 'kalkulation';
 
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
-// #intern (und die alten Adressen #kalk, #kalkulation) leiten zu „LayerForm intern“ in claude.ai weiter
+// #intern, #kalk und #kalkulation leiten zu layer-form.de/intern weiter
 const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#intern': 'kalkulation', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
 const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#intern' };
 
