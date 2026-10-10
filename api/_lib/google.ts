@@ -7,12 +7,14 @@ const ACCESS_KEY = 'lf:google:access';
 
 export const googleConfigured = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 export async function saveRefreshToken(t: string) { await db()!.set(REFRESH_KEY, t); await db()!.del(ACCESS_KEY); }
+let memToken: { t: string; exp: number } | null = null; // Zwischenspeicher, wenn keine Datenbank eingerichtet ist
 
 async function accessToken(): Promise<string> {
   if (!googleConfigured()) throw new GmailError('not_configured', 'Google-Zugangsdaten fehlen');
-  const r = db(); if (!r) throw new GmailError('db_not_configured', 'Datenbank fehlt');
-  const cached = await r.get<string>(ACCESS_KEY); if (cached) return cached;
-  const refresh = (await r.get<string>(REFRESH_KEY)) || process.env.GOOGLE_REFRESH_TOKEN;
+  const r = db(); // optional: ohne Datenbank kommt der Refresh-Token aus GOOGLE_REFRESH_TOKEN
+  if (!r && memToken && memToken.exp > Date.now()) return memToken.t;
+  const cached = r ? await r.get<string>(ACCESS_KEY) : null; if (cached) return cached;
+  const refresh = process.env.GOOGLE_REFRESH_TOKEN || (r ? await r.get<string>(REFRESH_KEY) : null);
   if (!refresh) throw new GmailError('google_not_connected', 'Gmail nicht verbunden');
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -20,13 +22,14 @@ async function accessToken(): Promise<string> {
   });
   const j = await res.json() as { access_token?: string; expires_in?: number; error?: string };
   if (!res.ok || !j.access_token) throw new GmailError(j.error === 'invalid_grant' ? 'needs_reauth' : 'upstream_error', 'Google-Anmeldung fehlgeschlagen');
-  await r.set(ACCESS_KEY, j.access_token, { ex: Math.max(60, (j.expires_in || 3600) - 120) });
+  const ttl = Math.max(60, (j.expires_in || 3600) - 120);
+  if (r) await r.set(ACCESS_KEY, j.access_token, { ex: ttl }); else memToken = { t: j.access_token, exp: Date.now() + ttl * 1000 };
   return j.access_token;
 }
 
 async function g<T>(path: string): Promise<T> {
   const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
-  if (res.status === 401) { await db()?.del(ACCESS_KEY); throw new GmailError('needs_reauth', 'Zugriff abgelaufen'); }
+  if (res.status === 401) { memToken = null; await db()?.del(ACCESS_KEY); throw new GmailError('needs_reauth', 'Zugriff abgelaufen'); }
   if (res.status === 429) throw new GmailError('rate_limited', 'Zu viele Anfragen');
   if (!res.ok) throw new GmailError('upstream_error', `Gmail ${res.status}`);
   return res.json() as Promise<T>;

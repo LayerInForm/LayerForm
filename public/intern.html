@@ -299,7 +299,8 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
   </div>
 
   <div class="board" id="board"></div>
-  <p style="margin-top:28px;text-align:center"><label class="linkbtn" style="cursor:pointer">Daten importieren (JSON)<input type="file" id="importFile" accept=".json,application/json" hidden></label></p>
+  <p style="margin-top:28px;text-align:center;display:flex;gap:18px;justify-content:center;flex-wrap:wrap"><button class="linkbtn" id="exportBtn">Daten sichern (Export)</button><label class="linkbtn" style="cursor:pointer">Daten importieren<input type="file" id="importFile" accept=".json,application/json" hidden></label></p>
+  <p class="note" style="text-align:center;margin-top:6px">Daten werden vorerst nur in diesem Browser gespeichert. Mit Export und Import überträgst du sie auf ein anderes Gerät.</p>
   </div>
 
   <div id="tabKalk" hidden><div class="kalk" id="kalk"></div></div>
@@ -392,13 +393,23 @@ async function api(path, body) {
   return data;
 }
 const snap = (path, data) => ({ id: path.split('/').pop(), exists: data != null, data: () => (data == null ? undefined : JSON.parse(JSON.stringify(data))) });
-const listeners = new Map(); // Sammlung → Rückruffunktionen
-async function fireCollection(col) {
-  for (const cb of listeners.get(col) || []) { try { cb(await colGet(col)); } catch {} }
-}
-async function colGet(col, orderBy) {
-  const r = await api('/api/intern/db', { op: 'list', path: col });
-  const docs = (r.docs || []).map((d) => snap(col + '/' + d.id, d.data));
+/* Speicherung vorerst nur in diesem Browser (localStorage). Später gegen eine Datenbank austauschbar. */
+const LS = 'lf-intern:';
+const lsGet = (path) => { try { const v = localStorage.getItem(LS + path); return v ? JSON.parse(v) : null; } catch { return null; } };
+const lsSet = (path, data) => { try { localStorage.setItem(LS + path, JSON.stringify(data)); } catch (e) { const err = new Error('Speicher voll'); err.code = 'storage_full'; throw err; } };
+const lsDel = (path) => { try { localStorage.removeItem(LS + path); } catch {} };
+const lsList = (col) => {
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(LS + col + '/')) { const id = k.slice(LS.length + col.length + 1); if (!id.includes('/')) out.push({ id, data: lsGet(col + '/' + id) }); }
+  }
+  return out;
+};
+const listeners = new Map();
+function fireCollection(col) { const r = colGet(col); for (const cb of listeners.get(col) || []) { try { cb(r); } catch {} } }
+function colGet(col, orderBy) {
+  const docs = lsList(col).filter((d) => d.data).map((d) => snap(col + '/' + d.id, d.data));
   if (orderBy) docs.sort((a, b) => { const x = a.data()[orderBy.f], y = b.data()[orderBy.f]; return (orderBy.dir === 'desc' ? -1 : 1) * ((x > y) - (x < y)); });
   return { docs, size: docs.length, empty: !docs.length };
 }
@@ -407,21 +418,15 @@ function makeDb() {
   return {
     doc: (path) => ({
       id: path.split('/').pop(), path,
-      get: async () => snap(path, (await api('/api/intern/db', { op: 'get', path })).data),
-      set: async (data) => { await api('/api/intern/db', { op: 'set', path, data }); fireCollection(parent(path)); },
-      update: async (data) => { await api('/api/intern/db', { op: 'update', path, data }); fireCollection(parent(path)); },
-      delete: async () => { await api('/api/intern/db', { op: 'delete', path }); fireCollection(parent(path)); },
+      get: async () => snap(path, lsGet(path)),
+      set: async (data) => { lsSet(path, data); fireCollection(parent(path)); },
+      update: async (data) => { const cur = lsGet(path); if (!cur) { const e = new Error('fehlt'); e.code = 'not_found'; throw e; } lsSet(path, { ...cur, ...data }); fireCollection(parent(path)); },
+      delete: async () => { lsDel(path); fireCollection(parent(path)); },
     }),
     collection: (col) => ({
-      get: () => colGet(col),
-      orderBy: (f, dir) => ({ get: () => colGet(col, { f, dir }) }),
-      onSnapshot: (cb, onErr) => {
-        if (!listeners.has(col)) listeners.set(col, []);
-        listeners.get(col).push(cb);
-        colGet(col).then(cb, onErr);
-        setInterval(() => { if (!document.hidden) colGet(col).then(cb).catch(() => {}); }, 60000);
-        return () => {};
-      },
+      get: async () => colGet(col),
+      orderBy: (f, dir) => ({ get: async () => colGet(col, { f, dir }) }),
+      onSnapshot: (cb) => { if (!listeners.has(col)) listeners.set(col, []); listeners.get(col).push(cb); setTimeout(() => cb(colGet(col)), 0); return () => {}; },
     }),
   };
 }
@@ -610,8 +615,7 @@ $('delBtn').onclick = async () => {
 };
 
 /* ---------- Datenbank ---------- */
-const dbMessage = (e) => e?.code === 'permission_denied' || e?.code === 'not_granted'
-  ? 'Keine Schreibrechte für diese Übersicht.' : 'Speichern fehlgeschlagen. Bitte noch einmal versuchen.';
+const dbMessage = (e) => e?.code === 'storage_full' ? 'Der Speicher dieses Browsers ist voll. Bitte Daten exportieren und alte Einträge löschen.' : 'Speichern fehlgeschlagen. Bitte noch einmal versuchen.';
 async function save(id, data) { await db.doc('kunden/' + id).update(data); }
 async function create(data) {
   const id = 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1143,7 +1147,15 @@ function showTab(name) {
   window.scrollTo({ top: 0 });
 }
 $('tabBtnKunden').onclick = () => showTab('kunden');
-/* Einmaliger Import (z. B. Übernahme der Daten aus claude.ai) */
+$('exportBtn').onclick = () => {
+  const sammlungen = {};
+  for (const c of ['kunden', 'posteingang', 'kalkverlauf', 'meta']) sammlungen[c] = lsList(c).filter((d) => d.data);
+  const blob = new Blob([JSON.stringify({ quelle: 'LayerForm intern', erstellt: new Date().toISOString(), sammlungen }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `layerform-intern-${new Date().toISOString().slice(0, 10)}.json`; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+/* Import (z. B. Übernahme der Daten aus claude.ai oder von einem anderen Gerät) */
 $('importFile').onchange = async (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   let j; try { j = JSON.parse(await f.text()); } catch { setLine('Die Datei ist kein gültiges JSON.', true); return; }
