@@ -727,11 +727,13 @@ function mcpProblem(e) {
     case 'google_not_connected': return { text: 'Gmail ist noch nicht verbunden.', action: { label: 'Gmail verbinden', fn: () => { location.href = '/api/intern/google-auth?t=' + encodeURIComponent(TOKEN); } } };
     case 'unauthorized': return { text: 'Die Sitzung ist abgelaufen.', action: { label: 'Neu anmelden', fn: () => location.reload() } };
     case 'not_configured': return { text: 'Die Gmail-Anbindung ist auf dem Server noch nicht eingerichtet (Google-Zugangsdaten fehlen).' };
+    case 'db_not_configured': return { text: 'Die Datenbank ist auf dem Server nicht erreichbar. Bitte in Vercel prüfen, ob Upstash mit dem Projekt verbunden ist.' };
+    case 'google_auth_error': case 'upstream_error': case 'server_error': return { text: e.message || 'Gmail meldet einen Fehler.', action: { label: 'Gmail neu verbinden', fn: () => { location.href = '/api/intern/google-auth?t=' + encodeURIComponent(TOKEN); } } };
     case 'needs_reauth': return { text: 'Die Gmail-Verbindung ist abgelaufen.', action: { label: 'Gmail neu verbinden', fn: () => { location.href = '/api/intern/google-auth?t=' + encodeURIComponent(TOKEN); } } };
     case 'blocked_by_policy': case 'approval_required': return { text: 'Gmail ist für diese Seite durch eine Richtlinie gesperrt.' };
     case 'rate_limited': return { text: 'Gmail meldet zu viele Anfragen. Bitte in einer Minute noch einmal versuchen.' };
     case 'tool_error': return { text: 'Gmail meldet einen Fehler: ' + (e.message || 'unbekannt') };
-    default: return { text: 'Gmail ist gerade nicht erreichbar. Bitte gleich noch einmal versuchen.' };
+    default: return { text: `Gmail ist gerade nicht erreichbar${e?.code ? ' (' + e.code + (e.message ? ': ' + e.message : '') + ')' : ''}. Bitte gleich noch einmal versuchen.` };
   }
 }
 const payloadOf = (r) => {

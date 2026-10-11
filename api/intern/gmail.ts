@@ -19,6 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return fail(res, status, e.code, e.message);
     }
     console.error('gmail', e);
-    return fail(res, 500, 'server_unavailable', 'Gmail nicht erreichbar');
+    return fail(res, 500, 'server_error', `Serverfehler: ${(e as Error)?.message || 'unbekannt'}`.slice(0, 300));
   }
 }

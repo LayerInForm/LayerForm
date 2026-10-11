@@ -20,8 +20,11 @@ async function accessToken(): Promise<string> {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, client_secret: process.env.GOOGLE_CLIENT_SECRET!, refresh_token: refresh, grant_type: 'refresh_token' }),
   });
-  const j = await res.json() as { access_token?: string; expires_in?: number; error?: string };
-  if (!res.ok || !j.access_token) throw new GmailError(j.error === 'invalid_grant' ? 'needs_reauth' : 'upstream_error', 'Google-Anmeldung fehlgeschlagen');
+  const j = await res.json() as { access_token?: string; expires_in?: number; error?: string; error_description?: string };
+  if (!res.ok || !j.access_token) {
+    console.error('google token', res.status, j);
+    throw new GmailError(j.error === 'invalid_grant' ? 'needs_reauth' : 'google_auth_error', `Google-Anmeldung fehlgeschlagen: ${j.error || res.status}${j.error_description ? ' – ' + j.error_description : ''}`);
+  }
   const ttl = Math.max(60, (j.expires_in || 3600) - 120);
   if (r) await r.set(ACCESS_KEY, j.access_token, { ex: ttl }); else memToken = { t: j.access_token, exp: Date.now() + ttl * 1000 };
   return j.access_token;
@@ -31,7 +34,12 @@ async function g<T>(path: string): Promise<T> {
   const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
   if (res.status === 401) { memToken = null; await db()?.del(ACCESS_KEY); throw new GmailError('needs_reauth', 'Zugriff abgelaufen'); }
   if (res.status === 429) throw new GmailError('rate_limited', 'Zu viele Anfragen');
-  if (!res.ok) throw new GmailError('upstream_error', `Gmail ${res.status}`);
+  if (!res.ok) {
+    let detail = '';
+    try { const e = await res.json() as { error?: { message?: string; status?: string } }; detail = e.error?.message || e.error?.status || ''; } catch {}
+    console.error('gmail api', res.status, detail);
+    throw new GmailError('upstream_error', `Gmail meldet Fehler ${res.status}${detail ? ': ' + detail.slice(0, 220) : ''}`);
+  }
   return res.json() as Promise<T>;
 }
 
