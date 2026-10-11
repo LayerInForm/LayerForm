@@ -46,7 +46,7 @@ export async function addLead(l: Lead): Promise<'neu' | 'aktualisiert' | null> {
   const id = 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const doc: Doc = {
     name: l.name || '', email: l.email || '', telefon: l.telefon || '', firma: l.firma || '', adresse: l.adresse || '',
-    kanal: l.kanal, anliegen: (l.anliegen || '').slice(0, 80), status: 'neu', statusSeit: now,
+    kanal: l.kanal, anliegen: (l.anliegen || '').slice(0, 80), status: 'austausch', statusSeit: now,
     betrag: typeof l.betrag === 'number' ? l.betrag : null, rechnungsnr: '',
     notiz: (l.notiz || '').slice(0, 4000), dateien: (l.dateien || []).slice(0, 30),
     letzteAktivitaet: now, gmailUrl: '', verlauf: [line], neu: true,

@@ -302,7 +302,7 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
 
   <div class="stats" aria-label="Kennzahlen">
     <div class="stat"><p>Aktive Kunden</p><b id="stActive">–</b></div>
-    <div class="stat"><p>Offene Rechnungen</p><b id="stOpen">–</b></div>
+    <div class="stat"><p>Im Austausch</p><b id="stOpen">–</b></div>
     <div class="stat"><p>In Arbeit</p><b id="stWork">–</b></div>
   </div>
 
@@ -389,17 +389,16 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
 (() => {
 /* ---------- Grunddaten ---------- */
 const STATUS = [
-  { id: 'neu',          label: 'Neue Anfrage',       color: '#00E5FF' },
-  { id: 'klaerung',     label: 'In Klärung',         color: '#8CF1FF' },
-  { id: 'angebot',      label: 'Angebot gesendet',   color: '#7FA7FF' },
-  { id: 'zugesagt',     label: 'Zugesagt',           color: '#9B8CFF' },
-  { id: 'rechnung',     label: 'Rechnung offen',     color: '#FFD27A' },
-  { id: 'bezahlt',      label: 'Bezahlt · im Druck', color: '#7CF0B4' },
-  { id: 'versendet',    label: 'Versendet',          color: '#5FD39A' },
+  { id: 'austausch',    label: 'Austausch',          color: '#00E5FF' },
+  { id: 'bezahlt',      label: 'Bezahlt',            color: '#7CF0B4' },
+  { id: 'druck',        label: 'Im Druck',           color: '#9B8CFF' },
+  { id: 'versandbereit',label: 'Versandbereit',      color: '#FFD27A' },
   { id: 'abgeschlossen',label: 'Abgeschlossen',      color: '#72839C' },
   { id: 'abgesagt',     label: 'Abgesagt',           color: '#FFB4A9' },
 ];
 const ORDER = Object.fromEntries(STATUS.map((s, i) => [s.id, i]));
+/* frühere Spalten auf die neuen übertragen */
+const LEGACY = { neu: 'austausch', klaerung: 'austausch', angebot: 'austausch', zugesagt: 'austausch', rechnung: 'austausch', versendet: 'abgeschlossen' };
 const DONE = new Set(['abgeschlossen', 'abgesagt']);
 const OWN = ['benjamin.ridel@layer-form.de', 'info@layer-form.de', 'auftrag@layer-form.de', 'rechner@layer-form.de'];
 const GMAIL = 'Gmail';
@@ -505,6 +504,16 @@ const gmailApi = { callTool: async (_server, tool, input) => ({ payload: await a
 let customers = [];     // [{id, ...data}]
 let meta = { processed: {}, lastSync: null };
 let editing = null;
+const migrated = new Set();
+function migrateStatus(list) {
+  for (const c of list) {
+    const to = LEGACY[c.status];
+    if (!to) continue;
+    c.status = to;
+    if (!migrated.has(c.id) && db) { migrated.add(c.id); db.doc('kunden/' + c.id).update({ status: to }).catch(() => {}); }
+  }
+  return list;
+}
 let dragId = null;
 async function moveTo(id, status) {
   const c = customers.find((x) => x.id === id); if (!c || c.status === status) return;
@@ -528,7 +537,7 @@ function setLine(text, isErr = false, action = null) {
 const DAY = 86400000;
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const daysSince = (iso) => iso ? Math.floor((Date.now() - new Date(iso).getTime()) / DAY) : 0;
-const PRIO = { wv: 0, neu: 1, zugesagt: 2, bezahlt: 3, rechnung: 4, angebot: 5, klaerung: 6, versendet: 7 };
+const PRIO = { wv: 0, versandbereit: 1, bezahlt: 2, austausch: 3, druck: 4 };
 function taskFor(c) {
   if (DONE.has(c.status)) return null;
   const wv = c.wiedervorlage;
@@ -537,13 +546,14 @@ function taskFor(c) {
   const d = daysSince(c.statusSeit || c.letzteAktivitaet);
   const t = (text, sub, late = false) => ({ c, prio: PRIO[c.status] ?? 9, text: c.naechster || text, sub, late });
   switch (c.status) {
-    case 'neu': return t('Anfrage beantworten', d ? `wartet seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute eingegangen', d >= 1);
-    case 'klaerung': return d >= 3 ? t('Nachfragen', `keine Bewegung seit ${d} Tagen`, d >= 7) : null;
-    case 'angebot': return d >= 3 ? t('Beim Angebot nachhaken', `Angebot seit ${d} Tagen offen`, d >= 7) : null;
-    case 'zugesagt': return t('Rechnung schreiben', 'Kunde hat zugesagt', d >= 2);
-    case 'rechnung': return d >= 7 ? t('Zahlung prüfen oder erinnern', `Rechnung seit ${d} Tagen offen`, d >= 14) : null;
-    case 'bezahlt': return t('Drucken und versenden', d ? `bezahlt seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute bezahlt', d >= 4);
-    case 'versendet': return d >= 5 ? t('Erhalt bestätigen, um Bewertung bitten', `versendet vor ${d} Tagen`) : null;
+    case 'austausch': {
+      if (c.neu) return t('Antworten', d ? `neue Nachricht seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'neue Nachricht heute', d >= 1);
+      const a = daysSince(c.letzteAktivitaet);
+      return a >= 3 ? t('Nachhaken', `keine Bewegung seit ${a} Tagen`, a >= 7) : null;
+    }
+    case 'bezahlt': return t('Druck starten', d ? `bezahlt seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute bezahlt', d >= 2);
+    case 'druck': return d >= 3 ? t('Druck prüfen', `im Druck seit ${d} Tagen`, d >= 5) : null;
+    case 'versandbereit': return t('Versenden oder übergeben', d ? `bereit seit ${d} ${d === 1 ? 'Tag' : 'Tagen'}` : 'heute fertig', d >= 2);
   }
   return null;
 }
@@ -580,10 +590,10 @@ function render() {
   const list = customers.filter((c) => !q || [c.name, c.email, c.telefon, c.anliegen, c.rechnungsnr].some((f) => norm(f).includes(q)));
   const active = customers.filter((c) => !DONE.has(c.status));
   $('stActive').textContent = active.length;
-  const open = customers.filter((c) => c.status === 'rechnung');
+  const open = customers.filter((c) => c.status === 'austausch');
   const openSum = open.reduce((s, c) => s + (Number(c.betrag) || 0), 0);
-  $('stOpen').textContent = open.length ? (openSum ? euro(openSum) : open.length) : '0';
-  $('stWork').textContent = customers.filter((c) => c.status === 'bezahlt').length;
+  $('stOpen').textContent = String(open.length);
+  $('stWork').textContent = customers.filter((c) => ['bezahlt', 'druck', 'versandbereit'].includes(c.status)).length;
 
   renderTodo();
   const board = $('board'); board.innerHTML = '';
@@ -606,7 +616,7 @@ function render() {
     col.addEventListener('drop', (e) => { e.preventDefault(); col.classList.remove('drop-target'); if (dragId) moveTo(dragId, s.id); dragId = null; });
     if (!items.length) box.innerHTML = '<p class="empty">Keine Kunden</p>';
     const idx = ORDER[s.id];
-    const next = !DONE.has(s.id) && STATUS[idx + 1] && !DONE.has(STATUS[idx + 1].id) ? STATUS[idx + 1] : (s.id === 'versendet' ? STATUS[ORDER.abgeschlossen] : null);
+    const next = !DONE.has(s.id) && STATUS[idx + 1] && !DONE.has(STATUS[idx + 1].id) ? STATUS[idx + 1] : (s.id === 'versandbereit' ? STATUS[ORDER.abgeschlossen] : null);
     for (const c of items) {
       const card = document.createElement('div');
       card.className = 'card'; card.draggable = true;
@@ -700,6 +710,14 @@ Falls Sie bereits überwiesen haben, betrachten Sie diese Nachricht einfach als 
 Viele Grüße
 LayerForm
 www.layer-form.de` },
+  { id: 'zahlung', label: 'Zahlung erhalten', betreff: 'Zahlung erhalten, Druck startet', text: (c) =>
+`Hallo ${c.name || ''},
+
+vielen Dank, Ihre Zahlung ist eingegangen. Ich starte jetzt den Druck und melde mich, sobald Ihr Auftrag versandbereit ist.
+
+Viele Grüße
+LayerForm
+www.layer-form.de` },
   { id: 'versand', label: 'Versand', betreff: 'Ihr Auftrag ist unterwegs', text: (c) =>
 `Hallo ${c.name || ''},
 
@@ -720,13 +738,13 @@ Vielen Dank und viele Grüße
 LayerForm
 www.layer-form.de` },
 ];
-const STATUS_TPL = { neu: 'rueckfrage', klaerung: 'angebot', angebot: 'angebot', zugesagt: 'angebot', rechnung: 'erinnerung', bezahlt: 'versand', versendet: 'bewertung', abgeschlossen: 'bewertung' };
+const STATUS_TPL = { austausch: 'rueckfrage', bezahlt: 'zahlung', druck: 'zahlung', versandbereit: 'versand', abgeschlossen: 'bewertung' };
 let tplCustomer = null, tplCurrent = null;
 function openTemplates(c) {
   tplCustomer = c;
   $('tplChips').innerHTML = TEMPLATES.map((t) => `<button type="button" role="radio" data-t="${t.id}">${t.label}</button>`).join('');
   $('tplChips').querySelectorAll('button').forEach((b) => b.onclick = () => pickTemplate(b.dataset.t));
-  pickTemplate(STATUS_TPL[c.status] || 'rueckfrage');
+  pickTemplate(c.status === 'austausch' && c.betrag ? (c.rechnungsnr ? 'erinnerung' : 'angebot') : (STATUS_TPL[c.status] || 'rueckfrage'));
   $('tplDlg').showModal();
 }
 function pickTemplate(id) {
@@ -751,7 +769,7 @@ function openEdit(c) {
   editing = c || null;
   const f = $('editForm');
   $('editTitle').textContent = c ? (c.name || 'Kunde') : 'Neuer Kunde';
-  f.status.value = c?.status || 'neu';
+  f.status.value = LEGACY[c?.status] || c?.status || 'austausch';
   f.name.value = c?.name || ''; f.email.value = c?.email || ''; f.telefon.value = c?.telefon || '';
   f.kanal.value = c?.kanal || 'E-Mail'; f.betrag.value = c?.betrag != null ? String(c.betrag).replace('.', ',') : '';
   f.anliegen.value = c?.anliegen || ''; f.rechnungsnr.value = c?.rechnungsnr || ''; f.notiz.value = c?.notiz || '';
@@ -819,6 +837,7 @@ function findCustomer(u) {
   return null;
 }
 async function applyUpdate(u, sourceNote) {
+  if (u && LEGACY[u.status]) u = { ...u, status: LEGACY[u.status] };
   if (!u || !STATUS.some((s) => s.id === u.status)) return 'skip';
   const now = new Date().toLocaleDateString('de-DE');
   const ex = findCustomer(u);
@@ -969,7 +988,7 @@ async function syncGmail() {
         // Anfrage aus dem Preisrechner: Name aus dem Betreff, E-Mail aus dem Vorschautext
         const name = ((rechner.subject || '').match(/Druckanfrage von (.+?)(?:\s*\(|$)/) || [])[1] || '';
         const est = parseNum(((rechner.snippet || '').match(/Richtpreis[^:]*:\s*([\d.,]+)\s*€/) || [])[1]);
-        r = await applyUpdate({ name, email: emailIn(rechner.snippet), status: 'neu', kanal: 'Preisrechner', anliegen: 'Anfrage über den Preisrechner', betrag: est ?? undefined, datum: rechner.date, zusammenfassung: 'Anfrage über den Preisrechner', gmailUrl: url }, 'Preisrechner');
+        r = await applyUpdate({ name, email: emailIn(rechner.snippet), status: 'austausch', kanal: 'Preisrechner', anliegen: 'Anfrage über den Preisrechner', betrag: est ?? undefined, datum: rechner.date, zusammenfassung: 'Anfrage über den Preisrechner', gmailUrl: url }, 'Preisrechner');
       } else {
         const ext = msgs.flatMap((m) => [m.sender, ...(m.toRecipients || [])]).find((a) => a && !isOwn(a));
         if (!ext) { meta.processed[t.id] = stamp(t); continue; }
@@ -993,7 +1012,7 @@ async function syncGmail() {
         } else {
           await create({
             name: info?.name || '', email: ext, telefon: info?.telefon || '', firma: '', adresse: '', kanal: 'E-Mail',
-            anliegen: subj || 'Anfrage per E-Mail', status: 'neu', statusSeit: date, betrag: null, rechnungsnr: '',
+            anliegen: subj || 'Anfrage per E-Mail', status: 'austausch', statusSeit: date, betrag: null, rechnungsnr: '',
             notiz: [info?.eckdaten, info?.text].filter(Boolean).join('\n\n').slice(0, 4000), anhaenge: info?.anhaenge || [], dateien: [],
             letzteAktivitaet: date, gmailUrl: url, verlauf: [stampLine], neu: true,
           });
@@ -1035,7 +1054,7 @@ function renderInbox() {
       <div class="lead-act"><button class="mini primary">Als Kunde</button><button class="mini">Ignorieren</button>${m.url ? `<a class="mini" href="${esc(m.url)}" target="_blank" rel="noopener">Öffnen</a>` : ''}</div>`;
     const [add, skip] = li.querySelectorAll('button');
     add.onclick = async () => {
-      await create({ name: '', email: m.email, telefon: '', kanal: 'E-Mail', anliegen: (m.betreff || '').slice(0, 60), status: 'neu', statusSeit: m.datum, betrag: null, rechnungsnr: '', notiz: '', letzteAktivitaet: m.datum, gmailUrl: m.url || '', verlauf: [`${new Date().toLocaleDateString('de-DE')}: aus E-Mail übernommen`], neu: true });
+      await create({ name: '', email: m.email, telefon: '', kanal: 'E-Mail', anliegen: (m.betreff || '').slice(0, 60), status: 'austausch', statusSeit: m.datum, betrag: null, rechnungsnr: '', notiz: '', letzteAktivitaet: m.datum, gmailUrl: m.url || '', verlauf: [`${new Date().toLocaleDateString('de-DE')}: aus E-Mail übernommen`], neu: true });
       await db.doc('posteingang/' + m.id).delete(); await loadInbox(); await reloadCustomers();
     };
     skip.onclick = async () => { await db.doc('posteingang/' + m.id).delete(); await loadInbox(); };
@@ -1087,7 +1106,7 @@ $('waGo').onclick = async () => {
 /* ---------- Start ---------- */
 async function reloadCustomers() {
   const snap = await db.collection('kunden').get();
-  customers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  customers = migrateStatus(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   render();
 }
 /* ===================== Kalkulator (Werte wie src/pricing.ts der Website) ===================== */
@@ -1306,7 +1325,6 @@ async function onKalkClick(e) {
       const id = $('assignSel')?.value; if (!id || !r) return;
       const c = customers.find((x) => x.id === id); if (!c) return;
       const patch = { betrag: r.gesamt, verlauf: [...(c.verlauf || []), `${new Date().toLocaleDateString('de-DE')}: Angebot über ${euro(r.gesamt)} kalkuliert`].slice(-20) };
-      if ((ORDER[c.status] ?? 0) < ORDER.angebot) { patch.status = 'angebot'; patch.statusSeit = new Date().toISOString(); }
       try { await save(id, patch); flash(b, 'Eingetragen'); } catch (err) { setLine(dbMessage(err), true); }
       return;
     }
@@ -1443,7 +1461,7 @@ async function startApp() {
     if (m.exists) meta = { processed: {}, lastSync: null, ...m.data() };
   } catch {}
   db.collection('kunden').onSnapshot((snap) => {
-    customers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    customers = migrateStatus(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     render();
     if (!$('tabKalk').hidden && !document.activeElement?.closest?.('#kalk')) renderResult();
   }, () => setLine('Die Kundendaten konnten nicht geladen werden. Bitte Seite neu laden.', true));
