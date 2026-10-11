@@ -300,7 +300,7 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
 
   <div class="board" id="board"></div>
   <p style="margin-top:28px;text-align:center;display:flex;gap:18px;justify-content:center;flex-wrap:wrap"><button class="linkbtn" id="exportBtn">Daten sichern (Export)</button><label class="linkbtn" style="cursor:pointer">Daten importieren<input type="file" id="importFile" accept=".json,application/json" hidden></label></p>
-  <p class="note" style="text-align:center;margin-top:6px">Daten werden vorerst nur in diesem Browser gespeichert. Mit Export und Import überträgst du sie auf ein anderes Gerät.</p>
+  <p class="note" id="storageNote" style="text-align:center;margin-top:6px"></p>
   </div>
 
   <div id="tabKalk" hidden><div class="kalk" id="kalk"></div></div>
@@ -413,6 +413,41 @@ function colGet(col, orderBy) {
   if (orderBy) docs.sort((a, b) => { const x = a.data()[orderBy.f], y = b.data()[orderBy.f]; return (orderBy.dir === 'desc' ? -1 : 1) * ((x > y) - (x < y)); });
   return { docs, size: docs.length, empty: !docs.length };
 }
+/* Zentrale Speicherung auf dem Server (wenn in Vercel eine Datenbank verbunden ist): auf allen Geräten gleich */
+const srvListeners = new Map();
+async function srvColGet(col, orderBy) {
+  const r = await api('/api/intern/db', { op: 'list', path: col });
+  const docs = (r.docs || []).map((d) => snap(col + '/' + d.id, d.data));
+  if (orderBy) docs.sort((a, b) => { const x = a.data()[orderBy.f], y = b.data()[orderBy.f]; return (orderBy.dir === 'desc' ? -1 : 1) * ((x > y) - (x < y)); });
+  return { docs, size: docs.length, empty: !docs.length };
+}
+async function srvFire(col) { if (!srvListeners.has(col)) return; try { const r = await srvColGet(col); srvListeners.get(col).forEach((cb) => cb(r)); } catch {} }
+function makeServerDb() {
+  const parent = (path) => path.split('/').slice(0, -1).join('/');
+  return {
+    doc: (path) => ({
+      id: path.split('/').pop(), path,
+      get: async () => snap(path, (await api('/api/intern/db', { op: 'get', path })).data),
+      set: async (data) => { await api('/api/intern/db', { op: 'set', path, data }); srvFire(parent(path)); },
+      update: async (data) => { await api('/api/intern/db', { op: 'update', path, data }); srvFire(parent(path)); },
+      delete: async () => { await api('/api/intern/db', { op: 'delete', path }); srvFire(parent(path)); },
+    }),
+    collection: (col) => ({
+      get: () => srvColGet(col),
+      orderBy: (f, dir) => ({ get: () => srvColGet(col, { f, dir }) }),
+      onSnapshot: (cb, onErr) => {
+        if (!srvListeners.has(col)) srvListeners.set(col, []);
+        srvListeners.get(col).push(cb);
+        srvColGet(col).then(cb, onErr);
+        // regelmäßig nachladen, damit Änderungen von anderen Geräten erscheinen
+        setInterval(() => { if (!document.hidden) srvColGet(col).then(cb).catch(() => {}); }, 30000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) srvColGet(col).then(cb).catch(() => {}); });
+        return () => {};
+      },
+    }),
+  };
+}
+let storageMode = 'lokal';
 function makeDb() {
   const parent = (path) => path.split('/').slice(0, -1).join('/');
   return {
@@ -1147,9 +1182,13 @@ function showTab(name) {
   window.scrollTo({ top: 0 });
 }
 $('tabBtnKunden').onclick = () => showTab('kunden');
-$('exportBtn').onclick = () => {
+$('exportBtn').onclick = async () => {
   const sammlungen = {};
-  for (const c of ['kunden', 'posteingang', 'kalkverlauf', 'meta']) sammlungen[c] = lsList(c).filter((d) => d.data);
+  for (const c of ['kunden', 'posteingang', 'kalkverlauf', 'meta']) {
+    sammlungen[c] = storageMode === 'server'
+      ? (await srvColGet(c)).docs.map((d) => ({ id: d.id, data: d.data() }))
+      : lsList(c).filter((d) => d.data);
+  }
   const blob = new Blob([JSON.stringify({ quelle: 'LayerForm intern', erstellt: new Date().toISOString(), sammlungen }, null, 1)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `layerform-intern-${new Date().toISOString().slice(0, 10)}.json`; document.body.append(a); a.click(); a.remove();
@@ -1189,9 +1228,35 @@ $('lockForm').onsubmit = async (e) => {
 };
 setTimeout(() => $('lockPw')?.focus(), 50);
 
+/* Einmalig: Daten aus dem Browser in die zentrale Datenbank übernehmen */
+async function migrateLocal() {
+  try {
+    const local = ['kunden', 'posteingang', 'kalkverlauf', 'meta'].flatMap((c) => lsList(c).filter((d) => d.data).map((d) => ({ c, ...d })));
+    if (!local.length || localStorage.getItem(LS + 'migriert')) return;
+    const remote = await srvColGet('kunden');
+    if (!confirm(`Auf diesem Gerät sind ${local.length} Einträge gespeichert${remote.size ? `, auf dem Server ${remote.size} Kunden` : ''}. Jetzt in die zentrale Speicherung übernehmen?`)) { localStorage.setItem(LS + 'migriert', 'nein'); return; }
+    let n = 0;
+    for (const x of local) {
+      if (x.c === 'meta' && x.id === 'sync') {
+        const cur = (await api('/api/intern/db', { op: 'get', path: 'meta/sync' })).data || {};
+        await api('/api/intern/db', { op: 'set', path: 'meta/sync', data: { processed: { ...(cur.processed || {}), ...(x.data.processed || {}) }, lastSync: cur.lastSync > x.data.lastSync ? cur.lastSync : x.data.lastSync } });
+      } else await api('/api/intern/db', { op: 'set', path: `${x.c}/${x.id}`, data: x.data });
+      n++;
+    }
+    localStorage.setItem(LS + 'migriert', new Date().toISOString());
+    setLine(`${n} Einträge von diesem Gerät übernommen.`);
+  } catch { setLine('Übernahme der Gerätedaten fehlgeschlagen. Bitte später erneut versuchen.', true); }
+}
 async function startApp() {
   render();
-  db = makeDb(); mcp = gmailApi; sample = null;
+  mcp = gmailApi; sample = null;
+  // Server-Datenbank verfügbar? Dann zentral speichern, sonst im Browser
+  try { await api('/api/intern/db', { op: 'get', path: 'meta/sync' }); db = makeServerDb(); storageMode = 'server'; }
+  catch (e) { db = makeDb(); storageMode = 'lokal'; }
+  if (storageMode === 'server') await migrateLocal();
+  $('storageNote').textContent = storageMode === 'server'
+    ? 'Daten werden zentral gespeichert und sind auf allen Geräten gleich.'
+    : 'Daten werden vorerst nur in diesem Browser gespeichert. Mit Export und Import überträgst du sie auf ein anderes Gerät.';
   try {
     const m = await db.doc('meta/sync').get();
     if (m.exists) meta = { processed: {}, lastSync: null, ...m.data() };
