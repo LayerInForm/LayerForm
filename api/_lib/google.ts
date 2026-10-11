@@ -1,4 +1,4 @@
-import { db } from './intern';
+import { db } from './intern.js';
 
 /** Zugriff auf Gmail (nur lesen) mit dem bei der Verbindung gespeicherten Refresh-Token. */
 export class GmailError extends Error { constructor(public code: string, msg: string) { super(msg); } }

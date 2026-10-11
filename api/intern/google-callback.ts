@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db, origin, verifyToken } from '../_lib/intern';
-import { saveRefreshToken } from '../_lib/google';
+import { db, origin, verifyToken } from '../_lib/intern.js';
+import { saveRefreshToken } from '../_lib/google.js';
 
 /** Rücksprung von Google: speichert den Refresh-Token in der Datenbank und führt zurück zu /intern. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

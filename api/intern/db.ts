@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db, fail, requireAuth } from '../_lib/intern';
+import { db, fail, requireAuth } from '../_lib/intern.js';
 
 /**
  * Einfacher Dokumentspeicher für Kunden, Kalkulationsverlauf und Einstellungen.

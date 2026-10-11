@@ -1218,7 +1218,7 @@ $('lockForm').onsubmit = async (e) => {
   try {
     const res = await fetch('/api/intern/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passwort: pw.value.trim() }) });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.token) { pw.value = ''; pw.classList.add('bad'); $('lockErr').textContent = res.status === 503 ? 'Auf dem Server ist noch kein Passwort eingerichtet.' : 'Falsches Passwort'; pw.focus(); return; }
+    if (!res.ok || !data.token) { pw.value = ''; pw.classList.add('bad'); $('lockErr').textContent = res.status === 401 ? 'Falsches Passwort' : res.status === 503 ? 'Auf dem Server ist noch kein Passwort eingerichtet.' : `Serverfehler (${res.status}). Bitte später noch einmal versuchen.`; pw.focus(); return; }
     TOKEN = data.token;
     if (new URLSearchParams(location.search).get('gmail') === 'ok') history.replaceState(null, '', '/intern');
     $('lock').remove(); $('app').hidden = false;

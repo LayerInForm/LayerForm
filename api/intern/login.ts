@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { fail, makeToken, passwordMatches } from '../_lib/intern';
+import { fail, makeToken, passwordMatches } from '../_lib/intern.js';
 
 /** Anmeldung für layer-form.de/intern. Gibt eine Sitzung für 12 Stunden zurück, die nur im Browser-Speicher der Seite liegt. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

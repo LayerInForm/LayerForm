@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { fail, requireAuth } from '../_lib/intern';
-import { GmailError, getThread, listLabels, searchThreads } from '../_lib/google';
+import { fail, requireAuth } from '../_lib/intern.js';
+import { GmailError, getThread, listLabels, searchThreads } from '../_lib/google.js';
 
 /** Liest Gmail für die Kundenübersicht (nur lesen). Gleiche Antwortform wie vorher in claude.ai. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

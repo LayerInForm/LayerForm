@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { origin, verifyToken } from '../_lib/intern';
-import { googleConfigured } from '../_lib/google';
+import { origin, verifyToken } from '../_lib/intern.js';
+import { googleConfigured } from '../_lib/google.js';
 
 /** Startet die einmalige Verbindung mit Gmail (Google-Anmeldung, nur Lesezugriff). */
 export default function handler(req: VercelRequest, res: VercelResponse) {
