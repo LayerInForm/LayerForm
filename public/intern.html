@@ -776,64 +776,42 @@ async function syncGmail() {
       threads.push(...(res?.threads || []));
       token = res?.nextPageToken; if (!token) break;
     }
-    // Gmail-Label „Lead“ (wird von Google Workspace Studio gesetzt)
-    let leadId = null;
-    try { const l = await gmail('list_labels', {}); leadId = (l?.labels || []).find((x) => norm(x.name) === 'lead')?.labelId || null; } catch (e) { if (['needs_reauth', 'server_not_connected', 'not_granted', 'blocked_by_policy'].includes(e?.code)) throw e; }
-    // unveränderte Unterhaltungen liefert der Server ohne Inhalt (spart Abrufe)
+    // Jede Unterhaltung mit dem Label „Lead“ wird ein Kunde bzw. beim bekannten Kunden ergänzt. Keine weiteren Abrufe.
     const stamp = (t) => t.historyId || (t.messages || []).slice(-1)[0]?.id;
     const fresh = threads.filter((t) => !t.unchanged && (t.messages || []).length && meta.processed[t.id] !== stamp(t));
-    const noise = /(noreply|no-reply|notifications?@|service@paypal|@paypal|@n26|@ionos|newsletter|mailer-daemon|@google\.com|@vercel|@resend|@github|@link\.com|@lexware|@stripe|@amazon|@ebay|@dhl|@dpd|@hermes|@bambulab)/i;
 
-    for (const t of fresh.slice(0, 60)) {
+    for (const t of fresh) {
       const msgs = t.messages || [];
       const last = msgs[msgs.length - 1];
+      const first = msgs[0];
       const url = t.viewUrl || '';
       const date = last?.date || new Date().toISOString();
-      const lexRe = msgs.find((m) => isOwn(m.sender) && /Rechnung\s+(RE[\w-]+)\s+von\s+LayerForm/i.test(m.subject || ''));
-      const lexAn = msgs.find((m) => isOwn(m.sender) && /Angebot\s+(A[\w-]+)\s+von\s+LayerForm/i.test(m.subject || ''));
-      const rechner = msgs.find((m) => /Druckanfrage von|Anfrage über den Preisrechner/i.test(m.subject || ''));
       let r = null;
-      if (lexRe) {
-        const nr = lexRe.subject.match(/(RE[\w-]+)/i)[1];
-        const betrag = parseNum(((lexRe.snippet || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2})\s*€/) || [])[1]);
-        r = await applyUpdate({ email: (lexRe.toRecipients || [])[0] || '', status: 'rechnung', rechnungsnr: nr, betrag: betrag ?? undefined, datum: lexRe.date, kanal: 'E-Mail', zusammenfassung: `Rechnung ${nr} verschickt`, gmailUrl: url }, 'Lexware');
-      } else if (lexAn) {
-        const nr = lexAn.subject.match(/(A[\w-]+)/i)[1];
-        const betrag = parseNum(((lexAn.snippet || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2})\s*€/) || [])[1]);
-        r = await applyUpdate({ email: (lexAn.toRecipients || [])[0] || '', status: 'angebot', betrag: betrag ?? undefined, datum: lexAn.date, kanal: 'E-Mail', zusammenfassung: `Angebot ${nr} verschickt`, gmailUrl: url }, 'Lexware');
-      } else if (rechner) {
-        // Preisrechner-Mail hat ein festes Format, Inhalt ohne KI auslesen
-        let body = rechner.snippet || '';
-        try { const full = await gmail('get_thread', { threadId: t.id, messageFormat: 'PLAIN_TEXT' }); body = (full?.messages || []).map((m) => m.plaintextBody || '').join('\n') || body; } catch (e) { if (['needs_reauth', 'server_not_connected', 'not_granted', 'blocked_by_policy'].includes(e?.code)) throw e; }
+      const rechner = msgs.find((m) => /Druckanfrage von|Anfrage über den Preisrechner/i.test(m.subject || ''));
+      if (rechner) {
+        // Anfrage aus dem Preisrechner: Name aus dem Betreff, E-Mail aus dem Vorschautext
         const name = ((rechner.subject || '').match(/Druckanfrage von (.+?)(?:\s*\(|$)/) || [])[1] || '';
-        const mat = (body.match(/Material:\s*([^\n]+)/) || [])[1] || '';
-        const teile = (body.match(/Platte \d+:\s*([^\n]+)/g) || []).map((x) => x.replace(/Platte \d+:\s*/, '')).join(', ');
-        const est = parseNum(((body.match(/Richtpreis[^:\n]*:\s*([\d.,]+)\s*€/) || [])[1]));
-        r = await applyUpdate({ name, email: emailIn(body.split(/KOMMENTAR/)[0]), status: 'neu', kanal: 'Preisrechner', anliegen: [mat, teile].filter(Boolean).join(' · ').slice(0, 60), betrag: est ?? undefined, datum: rechner.date, zusammenfassung: 'Anfrage über den Preisrechner', gmailUrl: url }, 'Preisrechner');
+        const est = parseNum(((rechner.snippet || '').match(/Richtpreis[^:]*:\s*([\d.,]+)\s*€/) || [])[1]);
+        r = await applyUpdate({ name, email: emailIn(rechner.snippet), status: 'neu', kanal: 'Preisrechner', anliegen: 'Anfrage über den Preisrechner', betrag: est ?? undefined, datum: rechner.date, zusammenfassung: 'Anfrage über den Preisrechner', gmailUrl: url }, 'Preisrechner');
       } else {
-        // bekannter Kunde? Dann nur Verlauf und Datum aktualisieren, sonst als möglicher Lead vormerken
-        const ext = msgs.flatMap((m) => [m.sender, ...(m.toRecipients || [])]).find((a) => a && !isOwn(a) && !noise.test(a));
-        if (ext) {
-          const known = customers.find((c) => norm(c.email) === norm(ext));
-          if (known) {
-            const line = `${new Date(date).toLocaleDateString('de-DE')}: E-Mail „${(last.subject || '').slice(0, 60)}“`;
-            await save(known.id, { letzteAktivitaet: date > (known.letzteAktivitaet || '') ? date : known.letzteAktivitaet, gmailUrl: url, verlauf: [...(known.verlauf || []), line].slice(-20) });
-          } else if (leadId && msgs.some((m) => (m.labelIds || []).includes(leadId))) {
-            // von Gemini als Lead markiert: direkt als neue Anfrage anlegen
-            r = await applyUpdate({ email: ext, status: 'neu', kanal: 'E-Mail', anliegen: (last.subject || '').slice(0, 60), datum: date, zusammenfassung: 'als Lead markiert', gmailUrl: url }, 'Gmail');
-          } else if (msgs.some((m) => !isOwn(m.sender) && !noise.test(m.sender || ''))) {
-            await db.doc('posteingang/' + t.id).set({ email: ext, betreff: last.subject || '', text: strip(last.snippet).slice(0, 220), datum: date, url });
-            leads++;
-          }
+        const ext = msgs.flatMap((m) => [m.sender, ...(m.toRecipients || [])]).find((a) => a && !isOwn(a));
+        if (!ext) { meta.processed[t.id] = stamp(t); continue; }
+        const known = customers.find((c) => norm(c.email) === norm(ext));
+        if (known) {
+          const line = `${new Date(date).toLocaleDateString('de-DE')}: E-Mail „${(last.subject || '').slice(0, 60)}“`;
+          await save(known.id, { letzteAktivitaet: date > (known.letzteAktivitaet || '') ? date : known.letzteAktivitaet, gmailUrl: url, neu: true, verlauf: [...(known.verlauf || []), line].slice(-20) });
+          r = 'aktualisiert';
+        } else {
+          r = await applyUpdate({ email: ext, status: 'neu', kanal: 'E-Mail', anliegen: (first?.subject || '').replace(/^(AW|RE|WG|FW|Fwd):\s*/i, '').slice(0, 60), datum: date, zusammenfassung: 'als Lead markiert', gmailUrl: url }, 'Gmail');
         }
       }
-      if (r === 'neu') made++; else if (r === 'status') moved++;
+      if (r === 'neu') made++; else if (r === 'status') moved++; else if (r === 'aktualisiert') leads++;
       meta.processed[t.id] = stamp(t);
     }
     fresh.forEach((t) => { meta.processed[t.id] = stamp(t); });
     await finishSync();
     await reloadCustomers(); await loadInbox();
-    const parts = [made && `${made} neue Kunden`, moved && `${moved} Statusänderungen`, leads && `${leads} mögliche Leads zum Prüfen`].filter(Boolean);
+    const parts = [made && `${made} neue Kunden`, moved && `${moved} Statusänderungen`, leads && `${leads} Kunden aktualisiert`].filter(Boolean);
     setLine(parts.length ? `Abgeglichen: ${parts.join(', ')}.` : `Abgeglichen, nichts Neues. ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr`);
   } catch (e) {
     if (e && typeof e.code === 'string') { const p = mcpProblem(e); setLine(p.text, true, p.action); }
