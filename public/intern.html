@@ -1120,7 +1120,7 @@ const P = {
   rabatt: [{ ab: 25, p: 10 }, { ab: 100, p: 20 }],
   handling: 0.5,   // € pro Teil: abnehmen, entgraten, prüfen, einzeln verpacken
   minStk: 2.0,     // € Mindestpreis pro Teil (ohne CAD und Versand)
-  strom: 0.10, verschleiss: 0.25,
+  strom: 0.25 * 0.40, verschleiss: 0.25, // Strom: 250 W × 0,40 € pro kWh = 0,10 € pro Druckstunde
   zusatz: [
     { id: 'paket-klein', name: 'Kleines Paket', preis: 0.32 },
     { id: 'paket-gross', name: 'Großes Paket', preis: 0.4 },
@@ -1239,7 +1239,7 @@ function renderResult() {
       <div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">
       ${row('Deine Kosten', euro(r.kosten.summe))}
       ${row('Filament inkl. Ausschuss', euro(r.kosten.material), 'sub')}
-      ${row('Strom (0,10 € / h)', euro(r.kosten.strom), 'sub')}
+      ${row('Strom (250 W × 0,40 € / kWh = 0,10 € / h)', euro(r.kosten.strom), 'sub')}
       ${row('Verschleiß (0,25 € / h)', euro(r.kosten.verschleiss), 'sub')}
       ${r.kosten.zusatz > 0 ? row('Versand und Verpackung', euro(r.kosten.zusatz), 'sub') : ''}
       ${row('Gewinn (für deine Arbeitszeit)', euro(r.gewinn), 's')}</div>
