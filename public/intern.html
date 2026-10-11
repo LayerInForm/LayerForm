@@ -767,15 +767,20 @@ async function syncGmail() {
     const query = `newer_than:${since}d -category:promotions -category:social -in:spam -in:trash`;
     setLine('Postfach wird abgeglichen …');
     let threads = [], token;
-    for (let page = 0; page < 4; page++) {
-      const res = await gmail('search_threads', { query, pageSize: 50, ...(token ? { pageToken: token } : {}) });
+    const pages = meta.lastSync ? 4 : 2; // erster Abgleich kleiner, um das Google-Kontingent zu schonen
+    for (let page = 0; page < pages; page++) {
+      let res;
+      try { res = await gmail('search_threads', { query, pageSize: 50, known: meta.processed, ...(token ? { pageToken: token } : {}) }); }
+      catch (e) { if (e?.code === 'rate_limited' && threads.length) break; throw e; } // Teilergebnis verarbeiten, Rest beim nächsten Abgleich
       threads.push(...(res?.threads || []));
       token = res?.nextPageToken; if (!token) break;
     }
     // Gmail-Label „Lead“ (wird von Google Workspace Studio gesetzt)
     let leadId = null;
     try { const l = await gmail('list_labels', {}); leadId = (l?.labels || []).find((x) => norm(x.name) === 'lead')?.labelId || null; } catch (e) { if (['needs_reauth', 'server_not_connected', 'not_granted', 'blocked_by_policy'].includes(e?.code)) throw e; }
-    const fresh = threads.filter((t) => { const last = (t.messages || []).slice(-1)[0]; return last && meta.processed[t.id] !== last.id; });
+    // unveränderte Unterhaltungen liefert der Server ohne Inhalt (spart Abrufe)
+    const stamp = (t) => t.historyId || (t.messages || []).slice(-1)[0]?.id;
+    const fresh = threads.filter((t) => !t.unchanged && (t.messages || []).length && meta.processed[t.id] !== stamp(t));
     const noise = /(noreply|no-reply|notifications?@|service@paypal|@paypal|@n26|@ionos|newsletter|mailer-daemon|@google\.com|@vercel|@resend|@github|@link\.com|@lexware|@stripe|@amazon|@ebay|@dhl|@dpd|@hermes|@bambulab)/i;
 
     for (const t of fresh.slice(0, 60)) {
@@ -822,9 +827,9 @@ async function syncGmail() {
         }
       }
       if (r === 'neu') made++; else if (r === 'status') moved++;
-      meta.processed[t.id] = last.id;
+      meta.processed[t.id] = stamp(t);
     }
-    fresh.forEach((t) => { meta.processed[t.id] = (t.messages || []).slice(-1)[0]?.id; });
+    fresh.forEach((t) => { meta.processed[t.id] = stamp(t); });
     await finishSync();
     await reloadCustomers(); await loadInbox();
     const parts = [made && `${made} neue Kunden`, moved && `${moved} Statusänderungen`, leads && `${leads} mögliche Leads zum Prüfen`].filter(Boolean);

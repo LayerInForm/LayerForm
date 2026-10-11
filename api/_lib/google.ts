@@ -30,10 +30,18 @@ async function accessToken(): Promise<string> {
   return j.access_token;
 }
 
-async function g<T>(path: string): Promise<T> {
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+async function g<T>(path: string, attempt = 0): Promise<T> {
   const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
   if (res.status === 401) { memToken = null; await db()?.del(ACCESS_KEY); throw new GmailError('needs_reauth', 'Zugriff abgelaufen'); }
-  if (res.status === 429) throw new GmailError('rate_limited', 'Zu viele Anfragen');
+  if (res.status === 429 || res.status === 403) {
+    const body = await res.clone().text();
+    if (res.status === 429 || /quota|rate ?limit/i.test(body)) {
+      // Google-Kontingent pro Minute erreicht: kurz warten und erneut versuchen
+      if (attempt < 3) { await sleep(2000 * (attempt + 1)); return g<T>(path, attempt + 1); }
+      throw new GmailError('rate_limited', 'Google-Kontingent kurzzeitig erschöpft');
+    }
+  }
   if (!res.ok) {
     let detail = '';
     try { const e = await res.json() as { error?: { message?: string; status?: string } }; detail = e.error?.message || e.error?.status || ''; } catch {}
@@ -74,14 +82,17 @@ async function pool<T, R>(items: T[], n: number, fn: (x: T) => Promise<R>): Prom
   return out;
 }
 
-export async function searchThreads(input: { query?: string; pageSize?: number; pageToken?: string }) {
+export async function searchThreads(input: { query?: string; pageSize?: number; pageToken?: string; known?: Record<string, string> }) {
   const q = new URLSearchParams({ maxResults: String(Math.min(50, input.pageSize || 20)) });
   if (input.query) q.set('q', input.query);
   if (input.pageToken) q.set('pageToken', input.pageToken);
-  const list = await g<{ threads?: { id: string }[]; nextPageToken?: string }>(`threads?${q}`);
-  const threads = await pool(list.threads || [], 8, async (t) => {
-    const full = await g<{ id: string; messages: Msg[] }>(`threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date`);
-    return { id: full.id, viewUrl: viewUrl(full.id), messageCount: full.messages.length, messages: full.messages.map(baseMsg) };
+  const list = await g<{ threads?: { id: string; historyId?: string }[]; nextPageToken?: string }>(`threads?${q}`);
+  const known = input.known || {};
+  // Nur neue oder veränderte Unterhaltungen im Detail laden, langsam und nacheinander (Google-Kontingent)
+  const threads = await pool(list.threads || [], 3, async (t) => {
+    if (t.historyId && known[t.id] === t.historyId) return { id: t.id, historyId: t.historyId, unchanged: true, messages: [] };
+    const full = await g<{ id: string; historyId?: string; messages: Msg[] }>(`threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date`);
+    return { id: full.id, historyId: full.historyId || t.historyId, viewUrl: viewUrl(full.id), messageCount: full.messages.length, messages: full.messages.map(baseMsg) };
   });
   return { threads, nextPageToken: list.nextPageToken };
 }

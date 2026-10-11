@@ -1,23 +1,52 @@
 {
   "rewrites": [
-    { "source": "/intern", "destination": "/intern.html" }
+    {
+      "source": "/intern",
+      "destination": "/intern.html"
+    }
   ],
   "redirects": [
-    { "source": "/kalk", "destination": "/intern", "permanent": false }
+    {
+      "source": "/kalk",
+      "destination": "/intern",
+      "permanent": false
+    }
   ],
   "headers": [
     {
       "source": "/intern(.html)?",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "same-origin" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        }
       ]
     },
     {
       "source": "/api/intern/(.*)",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
-  ]
+  ],
+  "functions": {
+    "api/intern/gmail.ts": {
+      "maxDuration": 60
+    }
+  }
 }
