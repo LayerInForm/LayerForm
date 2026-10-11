@@ -616,7 +616,7 @@ function render() {
       b.className = 'card-main';
       b.innerHTML = `<div class="row1"><span class="nm">${esc(c.name || c.email || c.telefon || 'Unbekannt')}</span><span class="amt">${esc(euro(c.betrag))}</span></div>
         ${c.anliegen ? `<div class="what">${esc(c.anliegen)}</div>` : ''}
-        <div class="meta">${c.neu ? '<span class="tag new">neu</span>' : ''}${c.wiedervorlage ? `<span class="tag${c.wiedervorlage <= todayStr() ? ' late' : ''}">${esc(new Date(c.wiedervorlage).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }))}${c.naechster ? ' · ' + esc(c.naechster) : ''}</span>` : ''}<span class="tag">${esc(c.kanal || 'E-Mail')}</span>${c.rechnungsnr ? `<span class="tag">${esc(c.rechnungsnr)}</span>` : ''}<span>${esc(ago(c.letzteAktivitaet))}</span></div>`;
+        <div class="meta">${c.neu ? '<span class="tag new">neu</span>' : ''}${c.wiedervorlage ? `<span class="tag${c.wiedervorlage <= todayStr() ? ' late' : ''}">${esc(new Date(c.wiedervorlage).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }))}${c.naechster ? ' · ' + esc(c.naechster) : ''}</span>` : ''}<span class="tag">${esc(c.kanal || 'E-Mail')}</span>${((c.anhaenge || []).length + (c.dateien || []).length) ? `<span class="tag">📎 ${(c.anhaenge || []).length + (c.dateien || []).length}</span>` : ''}${c.rechnungsnr ? `<span class="tag">${esc(c.rechnungsnr)}</span>` : ''}<span>${esc(ago(c.letzteAktivitaet))}</span></div>`;
       b.onclick = () => openEdit(c);
       card.append(b);
       if (next) {
@@ -757,8 +757,10 @@ function openEdit(c) {
   f.anliegen.value = c?.anliegen || ''; f.rechnungsnr.value = c?.rechnungsnr || ''; f.notiz.value = c?.notiz || '';
   f.firma.value = c?.firma || ''; f.adresse.value = c?.adresse || '';
   renderQuick(c);
-  const fl = $('fileList'); const ds = c?.dateien || []; fl.hidden = !ds.length;
-  fl.innerHTML = ds.length ? '<b>Dateien</b>' + ds.map((d) => `<a href="${esc(d.url)}" target="_blank" rel="noopener">📎 ${esc(d.name)}</a>`).join('') : '';
+  const fl = $('fileList'); const ds = c?.dateien || [], an = c?.anhaenge || []; fl.hidden = !ds.length && !an.length;
+  fl.innerHTML = (ds.length || an.length) ? '<b>Dateien und Anhänge</b>'
+    + ds.map((d) => `<a href="${esc(d.url)}" target="_blank" rel="noopener">📎 ${esc(d.name)}</a>`).join('')
+    + an.map((x) => `<a href="${esc(anhangUrl(x))}" target="_blank" rel="noopener">📎 ${esc(x.name)}${x.size ? ` (${Math.max(1, Math.round(x.size / 1024))} KB)` : ''}</a>`).join('') : '';
   f.naechster.value = c?.naechster || ''; f.wiedervorlage.value = c?.wiedervorlage || '';
   const ml = $('mailLink'); ml.hidden = !c?.gmailUrl; if (c?.gmailUrl) ml.href = c.gmailUrl;
   const vl = $('verlauf'); vl.hidden = !c?.verlauf?.length; vl.textContent = (c?.verlauf || []).slice(-6).join('\n');
@@ -900,6 +902,35 @@ async function gmail(tool, input) {
 const strip = (t) => String(t || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/[ \t\u034f\ufeff]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 
 let syncing = false;
+/* ---------- E-Mail auswerten (feste Regeln, keine KI) ---------- */
+function cleanBody(t) {
+  let x = String(t || '').replace(/\r/g, '');
+  const cut = x.search(/^(Am|On) .{4,160}(schrieb|wrote)|^-{2,} ?(Original|Ursprüngliche)|^Von: .+\n(Gesendet|Datum|An):|^From: .+\n(Sent|Date|To):|^-- $/mi);
+  if (cut > 0) x = x.slice(0, cut);
+  return x.split('\n').filter((l) => !/^\s*>/.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function analyseMail(full) {
+  const msgs = (full?.messages || []).filter((m) => !isOwn(m.sender));
+  if (!msgs.length) return null;
+  const firstC = msgs[0], lastC = msgs[msgs.length - 1];
+  const raw = msgs.map((m) => m.plaintextBody || m.snippet || '').join('\n');
+  let name = (firstC.senderName || '').replace(/["']/g, '').trim();
+  if (!name || name.includes('@')) name = '';
+  const phones = (raw.match(/(?:\+49|0049|\b0)\s?[1-9][\d\s\/()-]{6,16}\d/g) || []).map((p) => p.trim()).filter((p) => !p.replace(/\D/g, '').endsWith('17685922649'));
+  const menge = (raw.match(/\b(\d{1,5})\s*(?:stück|stk\.?|teile|exemplare)\b/i) || [])[1];
+  const material = [...new Set((raw.match(/\b(PLA|PETG|ABS|ASA|TPU)\b/gi) || []).map((m) => m.toUpperCase()))].join(', ');
+  const masse = (raw.match(/\d+(?:[.,]\d+)?\s*[x×]\s*\d+(?:[.,]\d+)?(?:\s*[x×]\s*\d+(?:[.,]\d+)?)?\s*(?:mm|cm)\b/i) || [])[0];
+  const termin = (raw.match(/\b(?:bis|zum|spätestens)\s+(?:zum\s+)?\d{1,2}\.\s?\d{1,2}\.(?:\s?\d{2,4})?/i) || [])[0];
+  const anhaenge = msgs.flatMap((m) => (m.attachments || []).filter((a) => a.attachmentId).map((a) => ({ name: a.filename, m: a.messageId || m.id, a: a.attachmentId, typ: a.mimeType, size: a.size || 0 })));
+  const eck = [menge && `Stückzahl: ${menge}`, material && `Material: ${material}`, masse && `Maße: ${masse}`, termin && `Termin: ${termin}`, anhaenge.length && `Anhänge: ${anhaenge.map((x) => x.name).join(', ')}`].filter(Boolean);
+  return {
+    name, telefon: phones[0] || '', anhaenge,
+    eckdaten: eck.length ? 'Erkannt: ' + eck.join(' · ') : '',
+    text: cleanBody(lastC.plaintextBody || lastC.snippet).slice(0, 2500),
+  };
+}
+const anhangUrl = (x) => `/api/intern/anhang?m=${encodeURIComponent(x.m)}&a=${encodeURIComponent(x.a)}&n=${encodeURIComponent(x.name)}&ty=${encodeURIComponent(x.typ || '')}&t=${encodeURIComponent(TOKEN)}`;
+
 /* Abgleich ohne KI: feste Regeln für Lexware- und Preisrechner-Mails, alles andere landet unter „Mögliche Leads“ */
 const ownRe = new RegExp(OWN.map((a) => a.replace(/[.]/g, '\\.')).join('|'), 'i');
 const isOwn = (addr) => ownRe.test(addr || '');
@@ -942,13 +973,31 @@ async function syncGmail() {
       } else {
         const ext = msgs.flatMap((m) => [m.sender, ...(m.toRecipients || [])]).find((a) => a && !isOwn(a));
         if (!ext) { meta.processed[t.id] = stamp(t); continue; }
-        const known = customers.find((c) => norm(c.email) === norm(ext));
+        // Mail vollständig lesen und auswerten: Name, Telefon, Nachricht, Eckdaten, Anhänge
+        let info = null;
+        try { info = analyseMail(await gmail('get_thread', { threadId: t.id, messageFormat: 'FULL_CONTENT' })); }
+        catch (e) { if (['needs_reauth', 'google_not_connected', 'unauthorized'].includes(e?.code)) throw e; }
+        const subj = (first?.subject || '').replace(/^((AW|RE|WG|FW|Fwd):\s*)+/i, '').slice(0, 80);
+        const known = customers.find((c) => norm(c.email) === norm(ext) && !DONE.has(c.status));
+        const stampLine = `${new Date(date).toLocaleDateString('de-DE')}: E-Mail „${(last.subject || '').slice(0, 60)}“${info?.anhaenge.length ? ` mit ${info.anhaenge.length} Anhang/Anhängen` : ''}`;
         if (known) {
-          const line = `${new Date(date).toLocaleDateString('de-DE')}: E-Mail „${(last.subject || '').slice(0, 60)}“`;
-          await save(known.id, { letzteAktivitaet: date > (known.letzteAktivitaet || '') ? date : known.letzteAktivitaet, gmailUrl: url, neu: true, verlauf: [...(known.verlauf || []), line].slice(-20) });
+          const seen = new Set((known.anhaenge || []).map((x) => x.a));
+          await save(known.id, {
+            letzteAktivitaet: date > (known.letzteAktivitaet || '') ? date : known.letzteAktivitaet, gmailUrl: url, neu: true,
+            telefon: known.telefon || info?.telefon || '', name: known.name || info?.name || '',
+            notiz: info?.text ? [known.notiz, `${new Date(date).toLocaleDateString('de-DE')}:\n${info.text}`].filter(Boolean).join('\n\n').slice(-4000) : known.notiz || '',
+            anhaenge: [...(known.anhaenge || []), ...(info?.anhaenge || []).filter((x) => !seen.has(x.a))].slice(-40),
+            verlauf: [...(known.verlauf || []), stampLine].slice(-20),
+          });
           r = 'aktualisiert';
         } else {
-          r = await applyUpdate({ email: ext, status: 'neu', kanal: 'E-Mail', anliegen: (first?.subject || '').replace(/^(AW|RE|WG|FW|Fwd):\s*/i, '').slice(0, 60), datum: date, zusammenfassung: 'als Lead markiert', gmailUrl: url }, 'Gmail');
+          await create({
+            name: info?.name || '', email: ext, telefon: info?.telefon || '', firma: '', adresse: '', kanal: 'E-Mail',
+            anliegen: subj || 'Anfrage per E-Mail', status: 'neu', statusSeit: date, betrag: null, rechnungsnr: '',
+            notiz: [info?.eckdaten, info?.text].filter(Boolean).join('\n\n').slice(0, 4000), anhaenge: info?.anhaenge || [], dateien: [],
+            letzteAktivitaet: date, gmailUrl: url, verlauf: [stampLine], neu: true,
+          });
+          r = 'neu';
         }
       }
       if (r === 'neu') made++; else if (r === 'status') moved++; else if (r === 'aktualisiert') leads++;

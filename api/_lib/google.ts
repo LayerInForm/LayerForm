@@ -52,17 +52,23 @@ async function g<T>(path: string, attempt = 0): Promise<T> {
 }
 
 type Header = { name: string; value: string };
-type Part = { mimeType?: string; filename?: string; body?: { data?: string }; parts?: Part[]; headers?: Header[] };
+type Part = { mimeType?: string; filename?: string; body?: { data?: string; attachmentId?: string; size?: number }; parts?: Part[]; headers?: Header[] };
 type Msg = { id: string; threadId: string; snippet?: string; labelIds?: string[]; internalDate?: string; payload?: Part };
 const hdr = (m: Msg, n: string) => m.payload?.headers?.find((h) => h.name.toLowerCase() === n.toLowerCase())?.value || '';
 const emails = (v: string) => (v.match(/[\w.+-]+@[\w-]+\.[\w.-]+/g) || []);
 const viewUrl = (id: string) => `https://mail.google.com/mail/u/0/#all/${id}`;
 const decode = (d?: string) => (d ? Buffer.from(d, 'base64url').toString('utf8') : '');
-function textOf(p?: Part): { plain: string; html: string; files: string[] } {
-  const out = { plain: '', html: '', files: [] as string[] };
+type FileRef = { filename: string; attachmentId: string; mimeType: string; size: number };
+function textOf(p?: Part): { plain: string; html: string; files: FileRef[] } {
+  const out = { plain: '', html: '', files: [] as FileRef[] };
   const walk = (x?: Part) => {
     if (!x) return;
-    if (x.filename) out.files.push(x.filename);
+    if (x.filename) {
+      const size = x.body?.size || 0;
+      // kleine eingebettete Bilder (Logos in Signaturen) überspringen
+      const inline = /^image\//.test(x.mimeType || '') && size < 25000;
+      if (x.body?.attachmentId && !inline) out.files.push({ filename: x.filename, attachmentId: x.body.attachmentId, mimeType: x.mimeType || 'application/octet-stream', size });
+    }
     else if (x.mimeType === 'text/plain' && !out.plain) out.plain = decode(x.body?.data);
     else if (x.mimeType === 'text/html' && !out.html) out.html = decode(x.body?.data);
     x.parts?.forEach(walk);
@@ -73,6 +79,7 @@ function textOf(p?: Part): { plain: string; html: string; files: string[] } {
 const baseMsg = (m: Msg) => ({
   id: m.id, threadId: m.threadId, snippet: m.snippet || '', subject: hdr(m, 'Subject'),
   sender: emails(hdr(m, 'From'))[0] || '', toRecipients: emails(hdr(m, 'To')),
+  senderName: hdr(m, 'From').replace(/<[^>]*>/, '').replace(/["']/g, '').trim(),
   date: m.internalDate ? new Date(Number(m.internalDate)).toISOString() : '', labelIds: m.labelIds || [], viewUrl: viewUrl(m.threadId),
 });
 
@@ -105,7 +112,7 @@ export async function getThread(input: { threadId: string }) {
     messages: full.messages.map((m) => {
       const t = textOf(m.payload);
       const body = t.plain || t.html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
-      return { ...baseMsg(m), plaintextBody: body.slice(0, 20000), attachments: t.files.map((filename) => ({ filename })) };
+      return { ...baseMsg(m), plaintextBody: body.slice(0, 20000), attachments: t.files.map((f) => ({ ...f, messageId: m.id })) };
     }),
   };
 }
@@ -113,4 +120,11 @@ export async function getThread(input: { threadId: string }) {
 export async function listLabels() {
   const r = await g<{ labels?: { id: string; name: string; type?: string }[] }>('labels');
   return { labels: (r.labels || []).map((l) => ({ labelId: l.id, name: l.name, labelType: l.type })) };
+}
+
+/** Lädt einen Anhang (für die Anzeige in der Kundenübersicht). Vercel erlaubt Antworten bis ca. 4,5 MB. */
+export async function getAttachment(messageId: string, attachmentId: string): Promise<Buffer> {
+  if (!/^[\w-]+$/.test(messageId) || !/^[\w-]+$/.test(attachmentId)) throw new GmailError('bad_request', 'Ungültige ID');
+  const r = await g<{ data?: string; size?: number }>(`messages/${messageId}/attachments/${attachmentId}`);
+  return Buffer.from(r.data || '', 'base64url');
 }
