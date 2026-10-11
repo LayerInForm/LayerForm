@@ -764,7 +764,8 @@ async function syncGmail() {
   let made = 0, moved = 0, leads = 0;
   try {
     const since = meta.lastSync ? Math.max(2, Math.ceil((Date.now() - new Date(meta.lastSync)) / 86400000) + 1) : 60;
-    const query = `newer_than:${since}d -category:promotions -category:social -in:spam -in:trash`;
+    // nur Mails mit dem Gmail-Label „Lead“ (setzt der Gemini-Workflow in Google Workspace)
+    const query = `label:Lead newer_than:${Math.max(since, meta.lastSync ? since : 90)}d -in:spam -in:trash`;
     setLine('Postfach wird abgeglichen …');
     let threads = [], token;
     const pages = meta.lastSync ? 4 : 2; // erster Abgleich kleiner, um das Google-Kontingent zu schonen
