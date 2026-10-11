@@ -233,6 +233,9 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
 .step button{width:46px;height:100%;border:0;background:none;color:var(--muted);font-size:1.2rem;border-radius:999px}
 .step button:active{background:rgba(232,241,247,.1)}
 .step b{font-variant-numeric:tabular-nums}
+.step.qty{height:54px}
+.step.qty input{flex:1;min-width:0;width:100%;height:100%;border:0;background:none;text-align:center;font-size:1.25rem;font-weight:600;color:var(--fg);outline:none;font-variant-numeric:tabular-nums}
+.step.qty button{width:56px}
 .box{border-radius:20px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)}
 .box-h{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;text-align:left;padding:0}
 .box-h b{font-weight:600}
@@ -1256,23 +1259,22 @@ function renderKalk() {
   const exl = extraList();
   k.innerHTML = `<div class="res" id="kalkRes"></div>
   ${calc.plates.map((p, i) => `<section class="plate${solo ? '' : ' boxed'}">
-    ${solo ? '' : `<div class="plate-h">Platte ${i + 1}<button class="icon-round" data-a="delPlate" data-p="${i}" aria-label="Platte ${i + 1} entfernen">✕</button></div>`}
+    ${solo ? '' : `<div class="plate-h">Teil ${i + 1}<button class="icon-round" data-a="delPlate" data-p="${i}" aria-label="Teil ${i + 1} entfernen">✕</button></div>`}
     <div><span class="lbl">Material</span>${matPicker(p.mat1, 'mat1', i)}</div>
     ${p.mat1 === 'TPU' ? field('TPU-Preis', 'tpu1', p.tpu1, '€ / kg', 'decimal', 'z. B. 30', i) : ''}
-    ${field('Gewicht (inkl. Stützen)', 'g1', p.g1, 'g', 'decimal', '0', i)}
-    <div class="grid2">${field('Druckzeit', 'h', p.h, 'h', 'numeric', '0', i)}${field('Minuten', 'm', p.m, 'min', 'numeric', '0', i)}</div>
+    ${field('Gewicht pro Stück (inkl. Stützen)', 'g1', p.g1, 'g', 'decimal', '0', i)}
+    <div class="grid2">${field('Druckzeit pro Stück', 'h', p.h, 'h', 'numeric', '0', i)}${field('Minuten', 'm', p.m, 'min', 'numeric', '0', i)}</div>
     ${!p.multi ? `<button class="dash" data-a="multi" data-p="${i}">+ Zweites Material / AMS</button>` : `<div class="sub-box">
       <div class="plate-h">Zweites Material<button class="icon-round" data-a="unmulti" data-p="${i}" aria-label="Zweites Material entfernen">✕</button></div>
       ${matPicker(p.mat2, 'mat2', i)}
       ${p.mat2 === 'TPU' ? field('TPU-Preis', 'tpu2', p.tpu2, '€ / kg', 'decimal', 'z. B. 30', i) : ''}
       <div class="grid2">${field('Gewicht', 'g2', p.g2, 'g', 'decimal', '0', i)}${field('AMS-Spülung', 'purge', p.purge, 'g', 'decimal', '0', i)}</div>
       <p class="note">Spülmenge zum Durchschnittspreis beider Materialien.</p></div>`}
-    <div class="grid2">
-      <div><span class="lbl">Teile auf der Platte</span><div class="step"><button data-a="dec" data-f="teile" data-p="${i}" aria-label="Weniger Teile">−</button><b>${p.teile}</b><button data-a="inc" data-f="teile" data-p="${i}" aria-label="Mehr Teile">+</button></div></div>
-      <div><span class="lbl">Platte drucken</span><div class="step"><button data-a="dec" data-f="mal" data-p="${i}" aria-label="Weniger Durchläufe">−</button><b>${p.mal} ×</b><button data-a="inc" data-f="mal" data-p="${i}" aria-label="Mehr Durchläufe">+</button></div></div>
-    </div>
+    <div><span class="lbl">Menge</span><div class="step qty"><button data-a="dec" data-f="mal" data-p="${i}" aria-label="Weniger">−</button><input inputmode="numeric" value="${p.mal}" data-k="mal" data-p="${i}" aria-label="Menge"><button data-a="inc" data-f="mal" data-p="${i}" aria-label="Mehr">+</button></div>
+      ${p.teile > 1 ? `<p class="note" style="margin-top:6px">Ältere Eingabe: ${p.teile} Teile pro Platte, wird mitgerechnet.</p>` : ''}</div>
   </section>`).join('')}
-  <button class="dash cy" data-a="addPlate">+ Platte hinzufügen</button>
+  <button class="dash cy" data-a="addPlate">+ Weiteres Teil hinzufügen</button>
+  <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit, Handling und Nacharbeit.</p>
   <div class="grid2">${field('Nacharbeit pro Teil', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
   <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 25 Teilen 10 %, ab 100 Teilen 20 %.</p>
 
@@ -1320,7 +1322,7 @@ function onKalkInput(e) {
     renderResult(); return;
   }
   const k = t.dataset.k; if (!k) return;
-  if (t.dataset.p != null) calc.plates[+t.dataset.p][k] = t.value; else calc[k] = t.value;
+  if (t.dataset.p != null) calc.plates[+t.dataset.p][k] = k === 'mal' ? Math.max(1, Math.floor(num(t.value) || 1)) : t.value; else calc[k] = t.value;
   t.closest('.inp')?.classList.toggle('bad', Number.isNaN(num(t.value)));
   renderResult();
 }
@@ -1360,7 +1362,7 @@ async function onKalkClick(e) {
     case 'save': {
       if (!r) { setLine('Bitte erst Gewicht und Druckzeit eingeben.', true); return; }
       const mats = [...new Set(calc.plates.flatMap((q) => (q.multi ? [q.mat1, q.mat2] : [q.mat1])))].join(' + ');
-      const info = `${mats} · ${fmtN(r.gramm)} g · ${fmtN(r.stunden)} h${calc.plates.length > 1 ? ` · ${calc.plates.length} Platten` : ''}${r.teile > 1 ? ` · ${r.teile} Stk.` : ''}`;
+      const info = `${mats} · ${fmtN(r.gramm)} g · ${fmtN(r.stunden)} h${calc.plates.length > 1 ? ` · ${calc.plates.length} Teile-Arten` : ''}${r.teile > 1 ? ` · ${r.teile} Stk.` : ''}`;
       const id = 'h' + Date.now().toString(36);
       try {
         await db.doc('kalkverlauf/' + id).set({ ts: Date.now(), label: ui.label.trim(), info, gesamt: r.gesamt, inputs: JSON.parse(JSON.stringify(calc)) });
