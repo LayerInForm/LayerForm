@@ -66,6 +66,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
   const [invalid, setInvalid] = useState<Record<string, boolean>>({});
   const [formErr, setFormErr] = useState('');
   const [send, setSend] = useState<SendState>({ kind: 'idle' });
+  const [filesMissing, setFilesMissing] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const nextId = useRef(1);
   const formRef = useRef<HTMLElement>(null);
@@ -192,12 +193,15 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
       const { upload } = await import('@vercel/blob/client');
       const files = [...new Set(parts.map((p) => p.file).filter((f): f is File => !!f))];
       const uploaded: { name: string; url: string; size: number }[] = [];
+      let uploadFailed = false;
       for (let i = 0; i < files.length; i++) {
         setSend({ kind: 'sending', text: `Dateien werden hochgeladen (${i + 1} von ${files.length}) …` });
         const f = files[i];
         const safe = f.name.replace(/[^\w.\-]+/g, '_');
-        const blob = await upload(`anfragen/${Date.now()}-${safe}`, f, { access: 'public', handleUploadUrl: '/api/upload' });
-        uploaded.push({ name: f.name, url: blob.url, size: f.size });
+        try {
+          const blob = await upload(`anfragen/${Date.now()}-${safe}`, f, { access: 'public', handleUploadUrl: '/api/upload' });
+          uploaded.push({ name: f.name, url: blob.url, size: f.size });
+        } catch { uploadFailed = true; } // Anfrage trotzdem senden, Dateien reicht der Kunde nach
       }
       // 2. Anfrage verschicken
       setSend({ kind: 'sending', text: 'Anfrage wird gesendet …' });
@@ -216,6 +220,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
+      setFilesMissing(uploadFailed);
       setSend({ kind: 'sent' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
@@ -235,6 +240,13 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
           <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-fg/80">
             Wir prüfen Ihre Dateien und melden uns mit dem finalen Preis inklusive Versand und der Rechnung per E-Mail an {form.email}.
           </p>
+          {filesMissing && (
+            <p className="mt-4 max-w-[52ch] rounded-media border border-white/15 p-4 text-[15px] text-fg/85">
+              Ihre Dateien konnten gerade nicht hochgeladen werden. Bitte schicken Sie sie kurz per{' '}
+              <a href={`https://wa.me/${WHATSAPP}`} className="text-cyan underline">WhatsApp</a> oder an{' '}
+              <a href={`mailto:${EMAIL}`} className="text-cyan underline">{EMAIL}</a>.
+            </p>
+          )}
           <button onClick={onBack} className="btn-primary mt-9">Zur Startseite</button>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { addLead } from './_lib/crm.js';
 
 /**
  * Nimmt Anfragen aus dem Preisrechner entgegen und schickt sie als E-Mail an LayerForm.
@@ -19,7 +20,6 @@ interface Plate { plate: number; items: { name: string; qty: number }[] }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Nur POST erlaubt' });
   const key = process.env.RESEND_API_KEY;
-  if (!key) return res.status(503).json({ error: 'E-Mail-Versand ist noch nicht eingerichtet' });
 
   const b = (req.body ?? {}) as Record<string, unknown>;
   if (b.website) return res.status(200).json({ ok: true }); // Spamschutz: verstecktes Feld ausgefüllt
@@ -62,6 +62,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <h3 style="margin:16px 0 6px">Dateien</h3>
     <ul style="margin:0;padding-left:18px">${files.map((f) => `<li><a href="${esc(f.url)}">${esc(f.name)}</a> (${mb(f.size)})</li>`).join('')}</ul>
   </div>`;
+
+  // Anfrage direkt in die Kundenübersicht schreiben (layer-form.de/intern)
+  let gespeichert = false;
+  try {
+    const teile = plates.flatMap((p) => p.items).map((i) => `${Number(i.qty) || 1} × ${clip(i.name, 200)}`).join(', ');
+    const r = await addLead({
+      name, email, adresse: [street, `${zip} ${city}`.trim()].filter(Boolean).join(', '), kanal: 'Preisrechner',
+      anliegen: [material, teile].filter(Boolean).join(' · '),
+      betrag: (() => { const m = estimate.match(/([\d.]+,\d{2})/); return m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : null; })(),
+      notiz: [`Qualität: ${quality}, Infill: ${infill} %`, `Richtpreis: ${estimate}`, comment ? `Kommentar: ${comment}` : ''].filter(Boolean).join('\n'),
+      dateien: files.map((f) => ({ name: f.name, url: f.url })),
+      quelle: 'Anfrage über den Preisrechner',
+    });
+    gespeichert = !!r;
+  } catch (e) { console.error('crm', e); }
+  if (!key) return gespeichert ? res.status(200).json({ ok: true, mail: false }) : res.status(503).json({ error: 'E-Mail-Versand ist noch nicht eingerichtet' });
 
   // Kleine Dateien zusätzlich direkt anhängen (gesamt bis ca. 20 MB), große bleiben als Download-Link in der Mail
   let total = 0;
@@ -121,6 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('Versand fehlgeschlagen', e);
+    if (gespeichert) return res.status(200).json({ ok: true, mail: false });
     return res.status(502).json({ error: 'Versand fehlgeschlagen' });
   }
 }

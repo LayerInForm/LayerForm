@@ -109,6 +109,13 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
       via === 'whatsapp'
         ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
         : `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    // Anfrage zusätzlich direkt in der Kundenübersicht speichern (läuft im Hintergrund weiter)
+    try {
+      fetch('/api/lead', {
+        method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, type, topics, via }),
+      }).catch(() => {});
+    } catch { /* ohne Speicherung weiter */ }
     window.open(url, via === 'whatsapp' ? '_blank' : '_self');
     setSentVia(via);
   };
