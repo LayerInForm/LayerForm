@@ -42,9 +42,15 @@ export const CAD_STUNDENSATZ = 45;
 
 /** Mengenrabatt auf Material und Maschinenzeit, höchste passende Stufe gilt */
 export const MENGENRABATT = [
-  { abStueck: 10, prozent: 10 },
-  { abStueck: 50, prozent: 20 },
+  { abStueck: 25, prozent: 10 },
+  { abStueck: 100, prozent: 20 },
 ];
+
+/** Handling pro Teil in €: abnehmen, entgraten, prüfen, einzeln verpacken */
+export const HANDLING_PRO_TEIL = 0.5;
+
+/** Mindestpreis pro Teil in € (ohne CAD und Versand), damit viele kleine Teile auf einer Platte nicht zu billig werden */
+export const MINDESTPREIS_PRO_TEIL = 2.0;
 
 /** Eigene Kosten (nur zur Gewinnanzeige im internen Kalkulator) */
 export const STROM_PREIS_KWH = 0.4;
@@ -89,6 +95,8 @@ export interface Kalkulation {
   rabatt: number;
   pauschale: number;
   nacharbeit: number;
+  handling: number;          // € Handling für alle Teile
+  mindestAufschlag: number;  // € Aufschlag, falls der Mindestpreis pro Teil greift
   cad: number;
   zusatz: number;
   gesamt: number;            // Endpreis
@@ -138,7 +146,11 @@ export function kalkuliere(opts: {
   const rabatt = (produkt * rabattProzent) / 100;
   const nacharbeit = ((opts.nacharbeitMinutenProStueck ?? 0) / 60) * ARBEIT_STUNDENSATZ * stueck;
   const cad = ((opts.cadMinuten ?? 0) / 60) * CAD_STUNDENSATZ;
-  const gesamt = cent(produkt - rabatt + pauschale + nacharbeit + cad + zusatz);
+  const teile = Math.max(1, Math.floor(opts.mengeFuerRabatt ?? stueck));
+  const handling = HANDLING_PRO_TEIL * teile;
+  const druckanteil = produkt - rabatt + pauschale + nacharbeit + handling;
+  const mindestAufschlag = Math.max(0, teile * MINDESTPREIS_PRO_TEIL - druckanteil);
+  const gesamt = cent(druckanteil + mindestAufschlag + cad + zusatz);
 
   const kMaterial = materialMitAusschuss * stueck;
   const kStrom = opts.stunden * STROM_PRO_STUNDE * stueck;
@@ -160,6 +172,8 @@ export function kalkuliere(opts: {
     rabatt: cent(rabatt),
     pauschale: cent(pauschale),
     nacharbeit: cent(nacharbeit),
+    handling: cent(handling),
+    mindestAufschlag: cent(mindestAufschlag),
     cad: cent(cad),
     zusatz: cent(zusatz),
     gesamt,

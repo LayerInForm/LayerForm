@@ -1114,7 +1114,9 @@ const P = {
   filament: { PLA: 15, PETG: 16, ABS: 18, ASA: 26 }, // € pro 1000 g, TPU manuell
   ausschuss: 0.1, margeStd: 100, margeVorlagen: [50, 100, 150, 200],
   satz: 2.0, pauschale: 3.0, arbeit: 30, cad: 45,
-  rabatt: [{ ab: 10, p: 10 }, { ab: 50, p: 20 }],
+  rabatt: [{ ab: 25, p: 10 }, { ab: 100, p: 20 }],
+  handling: 0.5,   // € pro Teil: abnehmen, entgraten, prüfen, einzeln verpacken
+  minStk: 2.0,     // € Mindestpreis pro Teil (ohne CAD und Versand)
   strom: 0.10, verschleiss: 0.25,
   zusatz: [
     { id: 'paket-klein', name: 'Kleines Paket', preis: 0.32 },
@@ -1127,9 +1129,9 @@ const P = {
 const MATS = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU'];
 const num = (x) => { let t = String(x ?? '').trim().replace(/\s/g, ''); if (!t) return 0; if (t.includes(',') && t.includes('.')) t = t.replace(/\./g, ''); const v = parseFloat(t.replace(',', '.')); return isFinite(v) && v >= 0 ? v : NaN; };
 const cent = (v) => Math.round(v * 100) / 100;
-const fmtN = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
+const fmtN = (v) => String(Math.round(v * 100) / 100).replace('.', ',');
 const newPlate = (mat = 'PLA') => ({ mat1: mat, tpu1: '', g1: '', h: '', m: '', multi: false, mat2: 'PETG', tpu2: '', g2: '', purge: '', teile: 1, mal: 1 });
-const emptyCalc = () => ({ plates: [newPlate()], nach: '', cad: '', mm: String(P.margeStd), satz: '2', pausch: '3', extras: {} });
+const emptyCalc = () => ({ plates: [newPlate()], nach: '', cad: '', mm: String(P.margeStd), satz: '2', pausch: '3', handling: '0,5', minStk: '2', extras: {} });
 let calc = emptyCalc();
 let extraStore = { items: null };      // eigene Zusatzpositionen (in der Datenbank, auf allen Geräten gleich)
 let kalkHist = [];
@@ -1139,7 +1141,7 @@ const kgOf = (m, tpu) => (m === 'TPU' ? num(tpu) : P.filament[m]);
 
 function compute() {
   const bad = (x) => Number.isNaN(x);
-  const n = { nach: num(calc.nach), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch) };
+  const n = { nach: num(calc.nach), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch), handling: num(calc.handling ?? P.handling), minStk: num(calc.minStk ?? P.minStk) };
   if (Object.values(n).some(bad)) return null;
   let einkauf = 0, stunden = 0, gramm = 0, teile = 0;
   for (const p of calc.plates) {
@@ -1164,11 +1166,17 @@ function compute() {
   const cadK = n.cad / 60 * P.cad;
   const chosen = extraList().filter((e) => (calc.extras[e.id] || 0) > 0);
   const zusatz = chosen.reduce((a, e) => a + e.preis * calc.extras[e.id], 0);
-  const gesamt = cent(produkt - rabatt + n.pausch + nacharbeit + cadK + zusatz);
+  const handling = n.handling * teile;
+  // Mindestpreis pro Teil: der Druckanteil (ohne CAD und Versand) liegt nie unter Teile × Mindestpreis
+  const druckanteil = produkt - rabatt + n.pausch + nacharbeit + handling;
+  const minGesamt = teile * n.minStk;
+  const minAufschlag = Math.max(0, minGesamt - druckanteil);
+  const gesamt = cent(druckanteil + minAufschlag + cadK + zusatz);
   const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
   return {
     einkauf: cent(einkauf), mitAusschuss: cent(mitAusschuss), material: cent(material), stunden, satz: n.satz, maschine: cent(maschine),
     produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach,
+    handling: cent(handling), handlingStk: n.handling, minAufschlag: cent(minAufschlag), minStk: n.minStk,
     cad: cent(cadK), zusatz: cent(zusatz), chosen, gesamt, teile, gramm, proStueck: cent(gesamt / teile), mm: n.mm,
     kosten: { material: cent(mitAusschuss), strom: cent(stunden * P.strom), verschleiss: cent(stunden * P.verschleiss), zusatz: cent(zusatz), summe: cent(kosten) },
     gewinn: cent(gesamt - kosten),
@@ -1205,8 +1213,9 @@ function renderResult() {
   box.innerHTML = `<div class="res-card">
     <div class="res-row"><div><small>Endpreis${r && r.teile > 1 ? ` für ${r.teile} Teile` : ''}</small><div class="price">${r ? esc(euro(r.gesamt)) : '– €'}</div>${r && r.teile > 1 ? `<div class="per">${esc(euro(r.proStueck))} pro Stück</div>` : ''}</div>
       <button class="copy" data-a="copyPrice" ${r ? '' : 'disabled'}>Preis kopieren</button></div>
-    <div class="tiles">${tile('Material', r?.material)}${tile('Maschine', r?.maschine)}${tile('Arbeit', r ? cent(r.pausch + r.nacharbeit + r.cad) : null)}${tile('Gewinn', r?.gewinn, true)}</div>
+    <div class="tiles">${tile('Material', r?.material)}${tile('Maschine', r?.maschine)}${tile('Arbeit', r ? cent(r.pausch + r.nacharbeit + r.handling + r.cad) : null)}${tile('Gewinn', r?.gewinn, true)}</div>
     ${r && r.rabattP ? `<p class="cyan-note">Mengenrabatt ${r.rabattP} % für ${r.teile} Teile abgezogen.</p>` : ''}
+    ${r && r.minAufschlag > 0 ? `<p class="cyan-note">Mindestpreis von ${euro(r.minStk)} pro Teil greift.</p>` : ''}
     <div class="two-btn"><button class="ghost2" data-a="copyOffer" ${r ? '' : 'disabled'}>Angebot kopieren</button><button class="ghost2" data-a="shareOffer" ${r ? '' : 'disabled'}>Angebot senden</button></div>
     ${r && active.length ? `<div class="assign"><select id="assignSel" aria-label="Kunde"><option value="">Beim Kunden eintragen …</option>${active.map((c) => `<option value="${esc(c.id)}">${esc(c.name || c.email || c.telefon)}</option>`).join('')}</select><button class="ghost2" style="padding:0 14px" data-a="assign">Eintragen</button></div>` : ''}
     <button class="toggle-row" data-a="details" ${r ? '' : 'disabled'}>Aufschlüsselung <span>${ui.details ? '▲' : '▼'}</span></button>
@@ -1219,6 +1228,8 @@ function renderResult() {
       ${r.rabatt > 0 ? row(`Mengenrabatt ${r.rabattP} %`, '− ' + euro(r.rabatt)) : ''}
       ${r.pausch > 0 ? row('Bearbeitungspauschale', euro(r.pausch)) : ''}
       ${r.nacharbeit > 0 ? row(`Nacharbeit ${r.teile} × ${fmtN(r.nachMin)} min`, euro(r.nacharbeit)) : ''}
+      ${r.handling > 0 ? row(`Handling ${r.teile} × ${euro(r.handlingStk)}`, euro(r.handling)) : ''}
+      ${r.minAufschlag > 0 ? row(`Mindestpreis ${euro(r.minStk)} pro Teil`, '+ ' + euro(r.minAufschlag)) : ''}
       ${r.cad > 0 ? row('CAD-Konstruktion', euro(r.cad)) : ''}
       ${r.chosen.map((e) => row(`${calc.extras[e.id] > 1 ? calc.extras[e.id] + ' × ' : ''}${e.name}`, euro(e.preis * calc.extras[e.id]))).join('')}
       ${row('Endpreis', euro(r.gesamt), 's')}
@@ -1241,7 +1252,7 @@ const matPicker = (val, key, p) => `<div class="mats" role="radiogroup">${MATS.m
 function renderKalk() {
   const k = $('kalk'); if (!k) return;
   const solo = calc.plates.length === 1;
-  const changed = num(calc.mm) !== P.margeStd || num(calc.satz) !== P.satz || num(calc.pausch) !== P.pauschale;
+  const changed = num(calc.mm) !== P.margeStd || num(calc.satz) !== P.satz || num(calc.pausch) !== P.pauschale || num(calc.handling ?? P.handling) !== P.handling || num(calc.minStk ?? P.minStk) !== P.minStk;
   const exl = extraList();
   k.innerHTML = `<div class="res" id="kalkRes"></div>
   ${calc.plates.map((p, i) => `<section class="plate${solo ? '' : ' boxed'}">
@@ -1263,14 +1274,15 @@ function renderKalk() {
   </section>`).join('')}
   <button class="dash cy" data-a="addPlate">+ Platte hinzufügen</button>
   <div class="grid2">${field('Nacharbeit pro Teil', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
-  <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 10 Teilen 10 %, ab 50 Teilen 20 %.</p>
+  <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 25 Teilen 10 %, ab 100 Teilen 20 %.</p>
 
   <section class="box">
-    <button class="box-h" data-a="rates"><span><b>Marge und Sätze</b><small class="${changed ? 'chg' : ''}">Material +${esc(calc.mm || 0)} % · Maschine ${esc(calc.satz || 0)} € / h · Pauschale ${esc(calc.pausch || 0)} €</small></span><span>${ui.rates ? '▲' : '▼'}</span></button>
+    <button class="box-h" data-a="rates"><span><b>Marge und Sätze</b><small class="${changed ? 'chg' : ''}">Material +${esc(calc.mm || 0)} % · Maschine ${esc(calc.satz || 0)} € / h · Pauschale ${esc(calc.pausch || 0)} € · Handling ${esc(calc.handling ?? '0,5')} € · min. ${esc(calc.minStk ?? '2')} € / Teil</small></span><span>${ui.rates ? '▲' : '▼'}</span></button>
     ${ui.rates ? `<div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
       <div class="chips" role="radiogroup" aria-label="Materialmarge">${P.margeVorlagen.map((v) => `<button role="radio" aria-checked="${num(calc.mm) === v}" data-a="mm" data-v="${v}">${v} %</button>`).join('')}</div>
       ${field('Eigene Materialmarge', 'mm', calc.mm, '%', 'numeric')}
       <div class="grid2">${field('Maschinenstundensatz', 'satz', calc.satz, '€ / h')}${field('Pauschale', 'pausch', calc.pausch, '€')}</div>
+      <div class="grid2">${field('Handling pro Teil', 'handling', calc.handling ?? '0,5', '€')}${field('Mindestpreis pro Teil', 'minStk', calc.minStk ?? '2', '€')}</div>
       <button class="linkbtn" data-a="resetRates">Auf Standard zurücksetzen</button></div>` : ''}
   </section>
 
@@ -1331,7 +1343,7 @@ async function onKalkClick(e) {
     case 'details': ui.details = !ui.details; return renderResult();
     case 'rates': ui.rates = !ui.rates; return renderKalk();
     case 'mm': calc.mm = b.dataset.v; return renderKalk();
-    case 'resetRates': calc.mm = String(P.margeStd); calc.satz = '2'; calc.pausch = '3'; return renderKalk();
+    case 'resetRates': calc.mm = String(P.margeStd); calc.satz = '2'; calc.pausch = '3'; calc.handling = '0,5'; calc.minStk = '2'; return renderKalk();
     case 'multi': calc.plates[p].multi = true; return renderKalk();
     case 'unmulti': Object.assign(calc.plates[p], { multi: false, g2: '', purge: '', tpu2: '' }); return renderKalk();
     case 'inc': calc.plates[p][b.dataset.f]++; return renderKalk();
