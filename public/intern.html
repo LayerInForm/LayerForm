@@ -263,6 +263,13 @@ dialog::backdrop{background:rgba(4,11,29,.72);backdrop-filter:blur(4px)}
 .save-row{display:flex;gap:6px;margin-top:10px}
 .save-row input{flex:1;min-width:0;height:46px;border-radius:999px;border:1px solid rgba(232,241,247,.12);background:rgba(4,11,29,.7);color:var(--fg);padding:0 16px;font-size:16px;outline:none}
 .save-row input:focus{border-color:var(--cyan)}
+.pos{width:100%;border-collapse:collapse;margin-top:10px;font-size:.88rem;font-variant-numeric:tabular-nums}
+.pos th{text-align:right;font-weight:500;color:var(--subtle);font-size:.75rem;padding:4px 4px}
+.pos th:first-child,.pos td:first-child{text-align:left}
+.pos td{padding:7px 4px;border-top:1px solid var(--line);text-align:right;vertical-align:top}
+.pos td small{display:block;color:var(--subtle);font-size:.72rem}
+.pos tfoot td{font-weight:600;color:var(--fg)}
+.inp input.txt{font-size:1rem;font-weight:500}
 .linkbtn{background:none;border:0;color:var(--muted);font-weight:600;font-size:.88rem;text-decoration:underline;text-underline-offset:4px;align-self:flex-start;padding:4px 0}
 </style>
 </head>
@@ -1146,19 +1153,26 @@ function compute() {
   const bad = (x) => Number.isNaN(x);
   const n = { nach: num(calc.nach), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch), handling: num(calc.handling ?? P.handling), minStk: num(calc.minStk ?? P.minStk) };
   if (Object.values(n).some(bad)) return null;
-  let einkauf = 0, stunden = 0, gramm = 0, teile = 0;
-  for (const p of calc.plates) {
+  // erst jedes Teil einzeln, dann der Auftrag
+  const items = [];
+  for (const [idx, p] of calc.plates.entries()) {
     const g1 = num(p.g1), h = num(p.h), m = num(p.m), g2 = num(p.g2), pu = num(p.purge);
     if ([g1, h, m, g2, pu].some(bad) || !(g1 > 0) || !(h * 60 + m > 0)) return null;
     const k1 = kgOf(p.mat1, p.tpu1); if (!(k1 > 0)) return null;
-    const mal = Math.max(1, p.mal), parts = Math.max(1, p.teile);
-    einkauf += g1 / 1000 * k1 * mal; gramm += g1 * mal;
+    const mal = Math.max(1, p.mal), menge = Math.max(1, p.teile) * mal;
+    let einkauf = g1 / 1000 * k1 * mal, gramm = g1 * mal;
     if (p.multi) {
       const k2 = kgOf(p.mat2, p.tpu2); if (!(k2 > 0)) return null;
       einkauf += (g2 / 1000 * k2 + pu / 1000 * (k1 + k2) / 2) * mal; gramm += (g2 + pu) * mal;
     }
-    stunden += (h + m / 60) * mal; teile += parts * mal;
+    const stunden = (h + m / 60) * mal;
+    const mats = p.multi ? `${p.mat1} + ${p.mat2}` : p.mat1;
+    items.push({ name: (p.name || '').trim() || `Teil ${idx + 1}`, mats, menge, einkauf, gramm, stunden });
   }
+  const teile = items.reduce((a, x) => a + x.menge, 0);
+  const einkauf = items.reduce((a, x) => a + x.einkauf, 0);
+  const gramm = items.reduce((a, x) => a + x.gramm, 0);
+  const stunden = items.reduce((a, x) => a + x.stunden, 0);
   const mitAusschuss = einkauf * (1 + P.ausschuss);
   const material = mitAusschuss * (1 + n.mm / 100);
   const maschine = stunden * n.satz;
@@ -1172,19 +1186,35 @@ function compute() {
   const handling = n.handling * teile;
   // Mindestpreis pro Teil: der Druckanteil (ohne CAD und Versand) liegt nie unter Teile × Mindestpreis
   const druckanteil = produkt - rabatt + n.pausch + nacharbeit + handling;
-  const minGesamt = teile * n.minStk;
-  const minAufschlag = Math.max(0, minGesamt - druckanteil);
-  const gesamt = cent(druckanteil + minAufschlag + cadK + zusatz);
+  const minAufschlag = Math.max(0, teile * n.minStk - druckanteil);
+
+  // Rechnungspositionen: Druckanteil auf die Teile verteilen (nach ihrem Anteil an Material, Zeit und Handarbeit)
+  const pauschInPreis = !!calc.pauschInPreis;
+  const pool = druckanteil + minAufschlag - (pauschInPreis ? 0 : n.pausch);
+  const base = items.map((x) => (x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100) + x.stunden * n.satz) * (1 - rabattP / 100) + (n.handling + n.nach / 60 * P.arbeit) * x.menge);
+  const baseSum = base.reduce((a, b) => a + b, 0) || 1;
+  const positionen = items.map((x, k) => {
+    const einzel = Math.ceil(Math.round(pool * base[k] / baseSum / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
+    return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge) };
+  });
+  if (!pauschInPreis && n.pausch > 0) positionen.push({ name: 'Bearbeitungspauschale', menge: 1, einzel: cent(n.pausch), summe: cent(n.pausch), fix: true });
+  if (cadK > 0) positionen.push({ name: `CAD-Konstruktion (${fmtN(n.cad)} min)`, menge: 1, einzel: cent(cadK), summe: cent(cadK), fix: true });
+  for (const e of chosen) positionen.push({ name: e.name, menge: calc.extras[e.id], einzel: cent(e.preis), summe: cent(e.preis * calc.extras[e.id]), fix: true });
+  // Endpreis = Summe der Positionen, damit die Rechnung exakt aufgeht
+  const gesamt = cent(positionen.reduce((a, x) => a + x.summe, 0));
   const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
   return {
     einkauf: cent(einkauf), mitAusschuss: cent(mitAusschuss), material: cent(material), stunden, satz: n.satz, maschine: cent(maschine),
     produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach,
     handling: cent(handling), handlingStk: n.handling, minAufschlag: cent(minAufschlag), minStk: n.minStk,
     cad: cent(cadK), zusatz: cent(zusatz), chosen, gesamt, teile, gramm, proStueck: cent(gesamt / teile), mm: n.mm,
+    positionen, pauschInPreis,
     kosten: { material: cent(mitAusschuss), strom: cent(stunden * P.strom), verschleiss: cent(stunden * P.verschleiss), zusatz: cent(zusatz), summe: cent(kosten) },
     gewinn: cent(gesamt - kosten),
   };
 }
+
+const positionsText = (r) => r.positionen.map((x, i) => `${i + 1}. ${x.name}${x.mats ? ` (${x.mats})` : ''}: ${x.menge} × ${euro(x.einzel)} = ${euro(x.summe)}`).join('\n') + `\nGesamt: ${euro(r.gesamt)}`;
 
 function offerText(r) {
   const mats = [...new Set(calc.plates.flatMap((p) => (p.multi ? [p.mat1, p.mat2] : [p.mat1])))];
@@ -1193,7 +1223,10 @@ function offerText(r) {
   if (r.cad > 0) L.push('inklusive CAD-Konstruktion');
   if (r.nacharbeit > 0) L.push('inklusive Nacharbeit');
   if (r.chosen.length) L.push('inklusive Verpackung');
-  L.push('', r.teile > 1 ? `Preis: ${euro(r.gesamt)} (${euro(r.proStueck)} pro Stück)` : `Preis: ${euro(r.gesamt)}`);
+  const druckPos = r.positionen.filter((x) => !x.fix);
+  if (r.positionen.length > 1 || druckPos.some((x) => x.menge > 1)) {
+    L.push('', ...r.positionen.map((x) => `${x.name}: ${x.menge} × ${euro(x.einzel)} = ${euro(x.summe)}`), '', `Gesamtpreis: ${euro(r.gesamt)}`);
+  } else L.push('', `Preis: ${euro(r.gesamt)}`);
   if (r.rabattP > 0) L.push(`Mengenrabatt von ${r.rabattP} % ist bereits abgezogen.`);
   L.push(P.mwst, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid. Ich erstelle Ihnen dann die Rechnung und starte den Druck, sobald die Zahlung eingegangen ist.', '',
     'Für die Rechnung benötige ich Ihren Vor- und Nachnamen, Ihre Adresse und Ihre E-Mail-Adresse. Falls Sie mir diese Daten noch nicht geschickt haben, senden Sie sie mir gerne direkt mit Ihrer Zusage:',
@@ -1207,8 +1240,19 @@ async function copyText(t) {
 function flash(btn, txt) { const old = btn.innerHTML; btn.textContent = txt; setTimeout(() => { btn.innerHTML = old; }, 1500); }
 
 /* ---------- Ergebnis oben ---------- */
+function renderPositions(r) {
+  const box = $('posBox'); if (!box) return;
+  if (!r) { box.innerHTML = '<b>Rechnungspositionen</b><p class="note" style="margin-top:6px">Erscheinen, sobald Gewicht und Druckzeit eingetragen sind.</p>'; return; }
+  box.innerHTML = `<div class="box-h"><b>Rechnungspositionen</b><button class="linkbtn" style="text-decoration:none;color:var(--cyan)" data-a="copyPos">Kopieren</button></div>
+    <table class="pos"><thead><tr><th>Position</th><th>Menge</th><th>Einzel</th><th>Gesamt</th></tr></thead><tbody>
+    ${r.positionen.map((x) => `<tr><td>${esc(x.name)}${x.mats ? `<small>${esc(x.mats)}</small>` : ''}</td><td>${x.menge}</td><td>${esc(euro(x.einzel))}</td><td>${esc(euro(x.summe))}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td colspan="3">Gesamt</td><td>${esc(euro(r.gesamt))}</td></tr></tfoot></table>
+    <label class="toggle" style="height:auto;margin-top:10px"><input type="checkbox" data-a="pauschToggle" ${r.pauschInPreis ? 'checked' : ''}> Bearbeitungspauschale in die Stückpreise einrechnen</label>
+    <p class="note" style="margin-top:4px">${P.mwst}</p>`;
+}
 function renderResult() {
   const r = compute();
+  renderPositions(r);
   const box = $('kalkRes'); if (!box) return;
   const tile = (k, v, win) => `<div class="tile${win ? ' win' : ''}"><p>${k}</p><b>${v != null ? esc(euro(v)) : '–'}</b></div>`;
   const row = (k, v, cls = '') => `<div class="r ${cls}"><span>${esc(k)}</span><span>${esc(v)}</span></div>`;
@@ -1260,6 +1304,7 @@ function renderKalk() {
   k.innerHTML = `<div class="res" id="kalkRes"></div>
   ${calc.plates.map((p, i) => `<section class="plate${solo ? '' : ' boxed'}">
     ${solo ? '' : `<div class="plate-h">Teil ${i + 1}<button class="icon-round" data-a="delPlate" data-p="${i}" aria-label="Teil ${i + 1} entfernen">✕</button></div>`}
+    <div><span class="lbl">Bezeichnung (für die Rechnung)</span><label class="inp"><input class="txt" autocomplete="off" placeholder="z. B. Halterung" value="${esc(p.name || '')}" data-k="name" data-p="${i}" aria-label="Bezeichnung Teil ${i + 1}"></label></div>
     <div><span class="lbl">Material</span>${matPicker(p.mat1, 'mat1', i)}</div>
     ${p.mat1 === 'TPU' ? field('TPU-Preis', 'tpu1', p.tpu1, '€ / kg', 'decimal', 'z. B. 30', i) : ''}
     ${field('Gewicht pro Stück (inkl. Stützen)', 'g1', p.g1, 'g', 'decimal', '0', i)}
@@ -1275,6 +1320,7 @@ function renderKalk() {
   </section>`).join('')}
   <button class="dash cy" data-a="addPlate">+ Weiteres Teil hinzufügen</button>
   <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit, Handling und Nacharbeit.</p>
+  <section class="box" id="posBox"></section>
   <div class="grid2">${field('Nacharbeit pro Teil', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
   <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 25 Teilen 10 %, ab 100 Teilen 20 %.</p>
 
@@ -1323,7 +1369,7 @@ function onKalkInput(e) {
   }
   const k = t.dataset.k; if (!k) return;
   if (t.dataset.p != null) calc.plates[+t.dataset.p][k] = k === 'mal' ? Math.max(1, Math.floor(num(t.value) || 1)) : t.value; else calc[k] = t.value;
-  t.closest('.inp')?.classList.toggle('bad', Number.isNaN(num(t.value)));
+  if (k !== 'name') t.closest('.inp')?.classList.toggle('bad', Number.isNaN(num(t.value)));
   renderResult();
 }
 async function onKalkClick(e) {
@@ -1333,6 +1379,7 @@ async function onKalkClick(e) {
   const r = compute();
   switch (b.dataset.a) {
     case 'copyPrice': if (r && await copyText(euro(r.gesamt))) flash(b, 'Kopiert'); return;
+    case 'copyPos': if (r && await copyText(positionsText(r))) flash(b, 'Kopiert'); return;
     case 'copyOffer': if (r && await copyText(offerText(r))) flash(b, 'Kopiert'); return;
     case 'shareOffer': if (!r) return; { const text = offerText(r); if (navigator.share) { try { await navigator.share({ text }); } catch {} } else if (await copyText(text)) flash(b, 'Kopiert, jetzt einfügen'); } return;
     case 'assign': {
@@ -1384,6 +1431,7 @@ async function loadHist() {
 }
 $('kalk').addEventListener('input', onKalkInput);
 $('kalk').addEventListener('click', onKalkClick);
+$('kalk').addEventListener('change', (e) => { if (e.target.dataset?.a === 'pauschToggle') { calc.pauschInPreis = e.target.checked; renderResult(); } });
 
 /* ===================== Tabs, Sperre, Start ===================== */
 function showTab(name) {
