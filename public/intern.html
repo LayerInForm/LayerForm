@@ -1194,12 +1194,13 @@ function compute() {
   const base = items.map((x) => (x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100) + x.stunden * n.satz) * (1 - rabattP / 100) + (n.handling + n.nach / 60 * P.arbeit) * x.menge);
   const baseSum = base.reduce((a, b) => a + b, 0) || 1;
   const positionen = items.map((x, k) => {
-    const einzel = Math.ceil(Math.round(pool * base[k] / baseSum / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
+    // Versand und Verpackung gleichmäßig auf jedes Stück verteilen
+    const anteil = pool * base[k] / baseSum + zusatz * x.menge / teile;
+    const einzel = Math.ceil(Math.round(anteil / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
     return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge) };
   });
   if (!pauschInPreis && n.pausch > 0) positionen.push({ name: 'Bearbeitungspauschale', menge: 1, einzel: cent(n.pausch), summe: cent(n.pausch), fix: true });
   if (cadK > 0) positionen.push({ name: `CAD-Konstruktion (${fmtN(n.cad)} min)`, menge: 1, einzel: cent(cadK), summe: cent(cadK), fix: true });
-  for (const e of chosen) positionen.push({ name: e.name, menge: calc.extras[e.id], einzel: cent(e.preis), summe: cent(e.preis * calc.extras[e.id]), fix: true });
   // Endpreis = Summe der Positionen, damit die Rechnung exakt aufgeht
   const gesamt = cent(positionen.reduce((a, x) => a + x.summe, 0));
   const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
@@ -1247,6 +1248,7 @@ function renderPositions(r) {
     <table class="pos"><thead><tr><th>Position</th><th>Menge</th><th>Einzel</th><th>Gesamt</th></tr></thead><tbody>
     ${r.positionen.map((x) => `<tr><td>${esc(x.name)}${x.mats ? `<small>${esc(x.mats)}</small>` : ''}</td><td>${x.menge}</td><td>${esc(euro(x.einzel))}</td><td>${esc(euro(x.summe))}</td></tr>`).join('')}
     </tbody><tfoot><tr><td colspan="3">Gesamt</td><td>${esc(euro(r.gesamt))}</td></tr></tfoot></table>
+    ${r.zusatz > 0 ? `<p class="note" style="margin-top:8px">Versand und Verpackung (${esc(euro(r.zusatz))}) sind in den Stückpreisen enthalten.</p>` : ''}
     <label class="toggle" style="height:auto;margin-top:10px"><input type="checkbox" data-a="pauschToggle" ${r.pauschInPreis ? 'checked' : ''}> Bearbeitungspauschale in die Stückpreise einrechnen</label>
     <p class="note" style="margin-top:4px">${P.mwst}</p>`;
 }
