@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -21,6 +22,11 @@ export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'daten
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
 // #intern, #kalk und #kalkulation leiten zu layer-form.de/intern weiter
 const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#intern': 'kalkulation', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
+// Seitenaufrufe für Vercel Web Analytics (ohne Cookies). Die Ansichten heißen dort wie eigene Seiten.
+const VIEW_PATH: Partial<Record<View, string>> = {
+  home: '/', rechner: '/preisrechner', inquiry: '/anfrage', contact: '/kontakt',
+  impressum: '/impressum', agb: '/agb', datenschutz: '/datenschutz',
+};
 const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#intern' };
 
 interface OrderSummary {
@@ -60,6 +66,8 @@ const App: React.FC = () => {
 
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
+      {/* Besucherstatistik ohne Cookies; die interne Weiterleitung wird nicht gezählt */}
+      {VIEW_PATH[currentView] && <Analytics route={VIEW_PATH[currentView]} path={VIEW_PATH[currentView]} />}
       <a
         href="#main"
         className="sr-only z-nav rounded-full bg-cyan px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
