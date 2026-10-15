@@ -43,13 +43,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/intern/gmail.ts": {
-      "maxDuration": 60
-    },
-    "api/intern/anhang.ts": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
