@@ -45,7 +45,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const presetTopics = TOPICS.filter((t) => new RegExp(t.split(' ')[0], 'i').test(preset));
 
   const [type, setType] = useState<CustomerType>(presetType);
-  const [topics, setTopics] = useState<string[]>(presetTopics);
+  const [topics] = useState<string[]>(presetTopics); // Thema nur noch aus vorausgefüllten Angeboten, keine Auswahl mehr
   const [form, setForm] = useState({
     vorname: '',
     nachname: '',
@@ -72,8 +72,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const toggleTopic = (t: string) =>
-    setTopics((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
   // Fertiger Nachrichtentext für WhatsApp und E-Mail
   const text = useMemo(() => {
@@ -239,31 +237,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                           <Icon size={18} className="hidden shrink-0 min-[400px]:block" aria-hidden="true" /> {label}
                         </button>
                       ))}
-                    </div>
-                  </div>
-
-                  {/* Themen */}
-                  <div>
-                    <span className="mb-2 block text-sm font-semibold">
-                      Worum geht es? <span className="font-normal text-fg-muted">(mehrere möglich)</span>
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {TOPICS.map((t) => {
-                        const on = topics.includes(t);
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            aria-pressed={on}
-                            onClick={() => toggleTopic(t)}
-                            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                              on ? 'border-cyan bg-cyan/15 text-fg' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
-                            }`}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
                     </div>
                   </div>
 
