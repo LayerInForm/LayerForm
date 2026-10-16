@@ -382,11 +382,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   <div className="border-t border-white/10 pt-6">
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <button type="button" onClick={() => send('whatsapp')} className="btn-primary w-full">
-                        <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
-                      </button>
-                      <button type="button" onClick={() => send('email')} disabled={sending} className="btn-ghost w-full disabled:opacity-60">
+                      <button type="button" onClick={() => send('email')} disabled={sending} className="btn-primary w-full disabled:opacity-60">
                         <EnvelopeSimple size={20} aria-hidden="true" /> {sending ? 'Wird gesendet …' : 'E-Mail'}
+                      </button>
+                      <button type="button" onClick={() => send('whatsapp')} className="btn-ghost w-full">
+                        <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
                       </button>
                     </div>
                     <p className="mt-3 text-sm text-fg-muted">
