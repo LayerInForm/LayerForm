@@ -4,6 +4,7 @@ import { ArrowUpRight, List, X } from '@phosphor-icons/react';
 import { ETSY_URL } from './links';
 import { EASE_OUT } from './effects';
 import type { View } from '../App';
+import { PREISRECHNER_AKTIV } from '../src/features';
 
 interface NavbarProps {
   currentView: View;
@@ -29,7 +30,7 @@ type NavItem = { label: string; anchor?: string; href?: string; view?: View };
 const NAV_ITEMS: NavItem[] = [
   { label: 'Projekte', anchor: 'projekte' },
   { label: 'Leistungen', anchor: 'leistungen' },
-  { label: 'Preisrechner', view: 'rechner' },
+  ...(PREISRECHNER_AKTIV ? [{ label: 'Preisrechner', view: 'rechner' as View }] : []),
   { label: 'Etsy-Shop', href: ETSY_URL },
   { label: 'Kontakt', anchor: 'kontakt' },
 ];

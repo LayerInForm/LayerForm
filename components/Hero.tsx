@@ -6,7 +6,7 @@ import { formatRating, REVIEW_COUNT } from './Reviews';
 
 interface HeroProps {
   onInquiryClick: () => void;
-  onCalculatorClick: () => void;
+  onCalculatorClick?: () => void; // fehlt, wenn der Preisrechner ausgeschaltet ist
 }
 
 const item = {
@@ -78,7 +78,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
             className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4"
           >
             <button onClick={onInquiryClick} className="btn-primary">Projekt anfragen</button>
-            <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>
+            {onCalculatorClick && <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>}
           </motion.div>
         </div>
 

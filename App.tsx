@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { PREISRECHNER_AKTIV } from './src/features';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -21,7 +22,10 @@ export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'daten
 
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
 // #intern, #kalk und #kalkulation leiten zu layer-form.de/intern weiter
-const HASH_VIEW: Record<string, View> = { '#preisrechner': 'rechner', '#intern': 'kalkulation', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation' };
+const HASH_VIEW: Record<string, View> = {
+  ...(PREISRECHNER_AKTIV ? { '#preisrechner': 'rechner' as View } : {}),
+  '#intern': 'kalkulation', '#kalk': 'kalkulation', '#kalkulation': 'kalkulation',
+};
 // Seitenaufrufe für Vercel Web Analytics (ohne Cookies). Die Ansichten heißen dort wie eigene Seiten.
 const VIEW_PATH: Partial<Record<View, string>> = {
   home: '/', rechner: '/preisrechner', inquiry: '/anfrage', contact: '/kontakt',
@@ -92,7 +96,7 @@ const App: React.FC = () => {
       <main id="main" className="flex-grow">
         {currentView === 'home' && (
           <>
-            <Hero onInquiryClick={openInquiry} onCalculatorClick={() => setCurrentView('rechner')} />
+            <Hero onInquiryClick={openInquiry} onCalculatorClick={PREISRECHNER_AKTIV ? () => setCurrentView('rechner') : undefined} />
             <Projects onInquiry={handleInquiryWithTopic} />
             <CorporateServices onInquiryClick={openInquiry} />
             <CadShowcase onInquiry={handleInquiryWithTopic} />
@@ -113,7 +117,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {currentView === 'rechner' && (
+        {PREISRECHNER_AKTIV && currentView === 'rechner' && (
           <div className="pt-28">
             <Suspense fallback={<p className="px-5 py-24 text-center text-fg-muted">Preisrechner wird geladen …</p>}>
               <PriceCalculator onBack={() => setCurrentView('home')} onPrivacy={() => setCurrentView('datenschutz')} />
