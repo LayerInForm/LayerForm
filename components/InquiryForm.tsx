@@ -59,7 +59,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   });
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | null>(null);
+  const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | 'mailto' | null>(null);
+  const [sending, setSending] = useState(false);
+  const [hp, setHp] = useState(''); // Spamschutz (verstecktes Feld)
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, []);
 
@@ -96,21 +98,44 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = 'Bitte geben Sie Ihren Namen an.';
     if (form.message.trim().length < 10) e.message = 'Beschreiben Sie Ihr Projekt bitte in ein paar Worten.';
-    if (via === 'email' && form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Diese E-Mail-Adresse sieht nicht vollständig aus.';
+    if (via === 'email' && !form.email.trim()) e.email = 'Bitte geben Sie Ihre E-Mail-Adresse an, damit wir Ihnen antworten können.';
+    else if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Diese E-Mail-Adresse sieht nicht vollständig aus.';
     if (!consent) e.consent = 'Bitte bestätigen Sie den Hinweis zum Datenschutz.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const send = (via: 'whatsapp' | 'email') => {
-    if (!validate(via)) return;
-    const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? `, ${form.company}` : ''}`;
-    const url =
-      via === 'whatsapp'
-        ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`
-        : `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    window.open(url, via === 'whatsapp' ? '_blank' : '_self');
-    setSentVia(via);
+  const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? `, ${form.company}` : ''}`;
+  const mailtoUrl = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+
+  // Anfrage im Hintergrund direkt an LayerForm übertragen (landet automatisch in der Kundenverwaltung)
+  const transmit = (via: 'whatsapp' | 'email') =>
+    fetch('/api/kontakt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({ via, ...form, type, topics, text, subject, website: hp }),
+    }).then((r) => r.ok);
+
+  const send = async (via: 'whatsapp' | 'email') => {
+    if (!validate(via) || sending) return;
+    if (via === 'whatsapp') {
+      // WhatsApp sofort öffnen (sonst blockiert der Browser das Fenster), Übertragung läuft parallel
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
+      transmit('whatsapp').catch(() => {});
+      setSentVia('whatsapp');
+      return;
+    }
+    setSending(true);
+    const ok = await transmit('email').catch(() => false);
+    setSending(false);
+    if (ok) {
+      setSentVia('email');
+    } else {
+      // Rückfall: wie bisher im Mailprogramm vorbereiten
+      window.open(mailtoUrl, '_self');
+      setSentVia('mailto');
+    }
   };
 
   return (
@@ -152,15 +177,24 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   className="py-10 text-center"
                 >
                   <CheckCircle size={52} className="mx-auto text-cyan" aria-hidden="true" />
-                  <h2 className="mt-6 text-3xl font-semibold">Fast geschafft</h2>
+                  <h2 className="mt-6 text-3xl font-semibold">{sentVia === 'email' ? 'Anfrage gesendet' : 'Fast geschafft'}</h2>
                   <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-fg-muted">
-                    {sentVia === 'whatsapp'
-                      ? 'Ihre Nachricht ist in WhatsApp vorbereitet. Tippen Sie dort nur noch auf „Senden“.'
-                      : 'Ihre E-Mail ist in Ihrem Mailprogramm vorbereitet. Klicken Sie dort nur noch auf „Senden“.'}
+                    {sentVia === 'email'
+                      ? 'Vielen Dank! Ihre Anfrage ist bei uns angekommen. Sie erhalten gleich eine Bestätigung per E-Mail – Fotos oder Dateien können Sie einfach als Antwort darauf schicken.'
+                      : sentVia === 'whatsapp'
+                        ? 'Ihre Nachricht ist in WhatsApp vorbereitet. Tippen Sie dort nur noch auf „Senden“.'
+                        : 'Ihre E-Mail ist in Ihrem Mailprogramm vorbereitet. Klicken Sie dort nur noch auf „Senden“.'}
                   </p>
                   <div className="mt-8 flex flex-wrap justify-center gap-3">
-                    <button onClick={() => send(sentVia)} className="btn-primary">Erneut öffnen</button>
-                    <button onClick={() => setSentVia(null)} className="btn-ghost">Anfrage bearbeiten</button>
+                    {sentVia === 'whatsapp' && (
+                      <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank')} className="btn-primary">Erneut öffnen</button>
+                    )}
+                    {sentVia === 'mailto' && (
+                      <button onClick={() => window.open(mailtoUrl, '_self')} className="btn-primary">Erneut öffnen</button>
+                    )}
+                    {sentVia !== 'email' && (
+                      <button onClick={() => setSentVia(null)} className="btn-ghost">Anfrage bearbeiten</button>
+                    )}
                   </div>
                   <p className="mt-6 text-sm text-fg-muted">
                     Hat sich nichts geöffnet? Schreiben Sie direkt an{' '}
@@ -258,7 +292,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                         <input value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
                       </Field>
                     )}
-                    <Field label="E-Mail" optional error={errors.email}>
+                    <Field label="E-Mail" error={errors.email}>
                       <input value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' && (
@@ -323,18 +357,29 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     {errors.consent && <span className="mt-1.5 block text-sm text-red-300">{errors.consent}</span>}
                   </div>
 
+                  <input
+                    type="text"
+                    name="website"
+                    value={hp}
+                    onChange={(e) => setHp(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute -left-[9999px] h-0 w-0 opacity-0"
+                  />
+
                   <div className="border-t border-white/10 pt-6">
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('whatsapp')} className="btn-primary w-full">
                         <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
                       </button>
-                      <button type="button" onClick={() => send('email')} className="btn-ghost w-full">
-                        <EnvelopeSimple size={20} aria-hidden="true" /> E-Mail
+                      <button type="button" onClick={() => send('email')} disabled={sending} className="btn-ghost w-full disabled:opacity-60">
+                        <EnvelopeSimple size={20} aria-hidden="true" /> {sending ? 'Wird gesendet …' : 'E-Mail'}
                       </button>
                     </div>
                     <p className="mt-3 text-sm text-fg-muted">
-                      Ihre Anfrage wird als fertige Nachricht vorbereitet. Sie müssen sie nur noch abschicken.
+                      Per E-Mail geht Ihre Anfrage direkt an uns. Bei WhatsApp wird die Nachricht vorbereitet – Sie tippen nur noch auf „Senden“.
                     </p>
                   </div>
                 </motion.form>

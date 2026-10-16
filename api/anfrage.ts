@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { hubspotAktiv, legeLeadAn, materialWert } from './_lib/hubspot.js';
 
 /**
  * Nimmt Anfragen aus dem Preisrechner entgegen und schickt sie als E-Mail an LayerForm.
@@ -62,7 +63,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <ul style="margin:0;padding-left:18px">${files.map((f) => `<li><a href="${esc(f.url)}">${esc(f.name)}</a> (${mb(f.size)})</li>`).join('')}</ul>
   </div>`;
 
-  if (!key) return res.status(503).json({ error: 'E-Mail-Versand ist noch nicht eingerichtet' });
+  // 1. Direkt in HubSpot (mit allen Dateien)
+  let inHubspot = false;
+  if (hubspotAktiv()) {
+    try {
+      const nachname = name.split(/\s+/).slice(1).join(' ') || name;
+      const stueck = plates.flatMap((p) => p.items).reduce((n, i) => n + (Number(i.qty) || 1), 0);
+      await legeLeadAn({
+        titel: `Preisrechner ${material} – ${nachname}`,
+        name, email, strasse: street, plz: zip, ort: city,
+        kundentyp: 'privat', kanal: 'website', leistungen: ['3d_druck'],
+        material: materialWert(material), stueckzahl: stueck ? String(stueck) : '',
+        anforderungen: [`Material: ${material}`, `Qualität: ${quality}`, `Infill: ${infill} %`, `Richtpreis Rechner: ${estimate}`].join(' | '),
+        beschreibung: `Anfrage über den Preisrechner. ${platesText.replace(/\n/g, '; ')}${comment ? ` – Kommentar: ${comment.slice(0, 800)}` : ''}`,
+        volltext: text,
+        dateien: files.map((f) => ({ name: f.name, url: f.url })),
+      });
+      inHubspot = true;
+    } catch (e) {
+      console.error('HubSpot fehlgeschlagen – Ersatz per E-Mail', e);
+    }
+  }
+  if (!key) return inHubspot ? res.status(200).json({ ok: true }) : res.status(503).json({ error: 'Übertragung ist noch nicht eingerichtet' });
 
   // Kleine Dateien zusätzlich direkt anhängen (gesamt bis ca. 20 MB), große bleiben als Download-Link in der Mail
   let total = 0;
@@ -70,7 +92,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const resend = new Resend(key);
-    const { error } = await resend.emails.send({
+    // 2. Interne Mail nur noch als Ersatz, wenn HubSpot nicht erreichbar war
+    const { error } = inHubspot ? { error: null } : await resend.emails.send({
       from: process.env.ANFRAGE_ABSENDER || 'LayerForm <rechner@layer-form.de>',
       to: process.env.ANFRAGE_EMPFAENGER || 'auftrag@layer-form.de',
       replyTo: email,
