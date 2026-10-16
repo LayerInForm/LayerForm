@@ -77,6 +77,8 @@ export interface Lead {
   kanal: 'website' | 'whatsapp';
   leistungen: ('3d_druck' | 'cad' | 'werbeartikel' | 'beratung')[];
   material?: string;            // HubSpot-Werte, mit ; getrennt
+  vorname?: string;
+  nachname?: string;
   stueckzahl?: string;
   anforderungen?: string;
   beschreibung: string;         // Kurzbeschreibung für die Karte
@@ -87,7 +89,9 @@ export interface Lead {
 const LINK = /https?:\/\/[^\s<>"')\]]+/gi;
 
 export async function legeLeadAn(l: Lead): Promise<{ dealId: string; url: string }> {
-  const [vorname, ...rest] = l.name.trim().split(/\s+/);
+  const [vn, ...rn] = l.name.trim().split(/\s+/);
+  const vorname = l.vorname?.trim() || vn;
+  const rest = l.nachname?.trim() ? [l.nachname.trim()] : rn;
   let kontaktId = await sucheKontakt(l.email, l.telefon);
   if (!kontaktId) {
     const props: Record<string, string> = {

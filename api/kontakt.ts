@@ -32,17 +32,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let inHubspot = false;
   if (hubspotAktiv()) {
     try {
-      const nachname = name.split(/\s+/).slice(1).join(' ') || name;
+      const nachname = clip(b.nachname, 80) || name.split(/\s+/).slice(1).join(' ') || name;
       await legeLeadAn({
         titel: `${topics[0] ?? 'Anfrage'} – ${kundentyp === 'unternehmen' && company ? company : nachname}`,
-        name, email, telefon: phone, firma: company,
+        name, vorname: clip(b.vorname, 80), nachname, email, telefon: phone, firma: company,
         strasse: clip(b.street, 200), plz: clip(b.zip, 20), ort: clip(b.city, 120),
         kundentyp,
         kanal: via === 'whatsapp' ? 'whatsapp' : 'website',
         leistungen: topics.length ? topics.map((t) => LEISTUNG[t] ?? '3d_druck') : ['3d_druck'],
         stueckzahl: clip(b.quantity, 20),
         anforderungen: [topics.length ? `Thema: ${topics.join(', ')}` : '', b.quantity ? `Stückzahl: ${clip(b.quantity, 20)}` : '',
-          b.deadline ? `Wunschtermin: ${clip(b.deadline, 80)}` : '', via === 'whatsapp' ? 'Kunde hat WhatsApp gewählt' : ''].filter(Boolean).join(' | '),
+          b.deadline ? `Wunschtermin: ${clip(b.deadline, 80)}` : '',
+          b.filament ? `Filament: ${clip(b.filament, 30)}` : '', b.farbe ? `Farbe: ${clip(b.farbe, 60)}` : '', via === 'whatsapp' ? 'Kunde hat WhatsApp gewählt' : ''].filter(Boolean).join(' | '),
         beschreibung: message.slice(0, 2000),
         volltext: text || message,
       });
@@ -78,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 3. Eingangsbestätigung an den Kunden (nur bei E-Mail; Fehler blockieren nichts)
   if (resend && via === 'email' && process.env.ANFRAGE_BESTAETIGUNG !== 'aus') {
     const ctext = [
-      `Hallo ${name.split(' ')[0]},`, '',
+      `Hallo ${clip(b.vorname, 80) || name.split(' ')[0]},`, '',
       'vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen, wir melden uns in der Regel innerhalb eines Werktags mit Preis und Lieferzeit.', '',
       'Fotos, Skizzen oder Dateien (STL, STEP, 3MF) können Sie einfach als Antwort auf diese E-Mail schicken.', '',
       'Ihre Anfrage:', text || message, '',

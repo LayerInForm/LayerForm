@@ -15,6 +15,7 @@ interface InquiryFormProps {
 const WHATSAPP_NUMBER = '4917685922649';
 const EMAIL = 'auftrag@layer-form.de';
 
+const FILAMENTE = ['PLA', 'PETG', 'ABS', 'TPU', 'Auf Anfrage'];
 const TOPICS = ['Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
 
 type CustomerType = 'privat' | 'unternehmen';
@@ -46,7 +47,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const [type, setType] = useState<CustomerType>(presetType);
   const [topics, setTopics] = useState<string[]>(presetTopics);
   const [form, setForm] = useState({
-    name: '',
+    vorname: '',
+    nachname: '',
+    filament: 'Auf Anfrage',
+    farbe: '',
     company: '',
     email: '',
     phone: '',
@@ -82,8 +86,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
       topics.length ? `Thema: ${topics.join(', ')}` : '',
       form.quantity ? `Stückzahl: ${form.quantity}` : '',
       form.deadline ? `Wunschtermin: ${form.deadline}` : '',
+      `Filament: ${form.filament}`,
+      form.farbe.trim() ? `Farbe: ${form.farbe.trim()}` : '',
       '',
-      `Name: ${form.name.trim()}`,
+      `Name: ${form.vorname.trim()} ${form.nachname.trim()}`,
       type === 'unternehmen' && form.company ? `Firma: ${form.company.trim()}` : '',
       form.email ? `E-Mail: ${form.email.trim()}` : '',
       form.phone ? `Telefon: ${form.phone.trim()}` : '',
@@ -96,7 +102,8 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
   const validate = (via: 'whatsapp' | 'email') => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Bitte geben Sie Ihren Namen an.';
+    if (!form.vorname.trim()) e.vorname = 'Bitte geben Sie Ihren Vornamen an.';
+    if (!form.nachname.trim()) e.nachname = 'Bitte geben Sie Ihren Nachnamen an.';
     if (form.message.trim().length < 10) e.message = 'Beschreiben Sie Ihr Projekt bitte in ein paar Worten.';
     if (via === 'email' && !form.email.trim()) e.email = 'Bitte geben Sie Ihre E-Mail-Adresse an, damit wir Ihnen antworten können.';
     else if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Diese E-Mail-Adresse sieht nicht vollständig aus.';
@@ -114,7 +121,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       keepalive: true,
-      body: JSON.stringify({ via, ...form, type, topics, text, subject, website: hp }),
+      body: JSON.stringify({ via, ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
     }).then((r) => r.ok);
 
   const send = async (via: 'whatsapp' | 'email') => {
@@ -279,9 +286,40 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     </Field>
                   </div>
 
+                  {/* Filament und Farbe */}
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold">Filament</span>
+                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filament">
+                      {FILAMENTE.map((f) => {
+                        const on = form.filament === f;
+                        return (
+                          <button
+                            key={f}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            onClick={() => setForm((x) => ({ ...x, filament: f }))}
+                            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                              on ? 'border-cyan bg-cyan/15 text-fg' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <span className="mt-1.5 block text-xs text-fg-muted">Unsicher? Dann „Auf Anfrage“ wählen, wir beraten Sie gern.</span>
+                  </div>
+                  <Field label="Farbe" optional>
+                    <input value={form.farbe} onChange={set('farbe')} placeholder="z. B. Schwarz, Weiß oder RAL-Ton" className={inputCls} />
+                  </Field>
+
                   <div className="grid gap-5 sm:grid-cols-2">
-                    <Field label="Name" error={errors.name}>
-                      <input value={form.name} onChange={set('name')} autoComplete="name" className={inputCls} />
+                    <Field label="Vorname" error={errors.vorname}>
+                      <input value={form.vorname} onChange={set('vorname')} autoComplete="given-name" className={inputCls} />
+                    </Field>
+                    <Field label="Nachname" error={errors.nachname}>
+                      <input value={form.nachname} onChange={set('nachname')} autoComplete="family-name" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' ? (
                       <Field label="Firma" optional>
