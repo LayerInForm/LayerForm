@@ -14,7 +14,7 @@ export const Impressum: React.FC = () => (
   <LegalLayout title="Impressum">
     <div className="space-y-8 bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm text-slate-700">
       <div>
-        <h2 className="text-base font-bold text-[#0096C7] uppercase tracking-wider mb-2">Angaben gemäß § 5 TMG</h2>
+        <h2 className="text-base font-bold text-[#0096C7] uppercase tracking-wider mb-2">Angaben gemäß § 5 DDG</h2>
         <p className="leading-relaxed text-slate-800 font-medium">
           LayerForm<br />
           Inhaber: Benjamin Ridel<br />
