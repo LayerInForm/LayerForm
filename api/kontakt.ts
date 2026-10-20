@@ -11,7 +11,7 @@ const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '
 const clip = (s: unknown, n = 300) => String(s ?? '').trim().slice(0, n);
 
 const LEISTUNG: Record<string, Lead['leistungen'][number]> = {
-  'Giveaways': 'werbeartikel', 'CAD-Konstruktion': 'cad',
+  'Giveaways': 'werbeartikel', 'CAD-Konstruktion': 'cad', 'Automatisierung': 'beratung', 'IT-Service': 'beratung',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

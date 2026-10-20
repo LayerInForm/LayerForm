@@ -30,6 +30,7 @@ type NavItem = { label: string; anchor?: string; href?: string; view?: View };
 const NAV_ITEMS: NavItem[] = [
   { label: 'Projekte', anchor: 'projekte' },
   { label: 'Leistungen', anchor: 'leistungen' },
+  { label: 'Automatisierung', anchor: 'automatisierung' },
   ...(PREISRECHNER_AKTIV ? [{ label: 'Preisrechner', view: 'rechner' as View }] : []),
   { label: 'Etsy-Shop', href: ETSY_URL },
   { label: 'Kontakt', anchor: 'kontakt' },

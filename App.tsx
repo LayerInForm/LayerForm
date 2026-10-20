@@ -8,6 +8,7 @@ import { InquiryForm } from './components/InquiryForm';
 import { Reviews } from './components/Reviews';
 import { Footer } from './components/Footer';
 import { CorporateServices } from './components/CorporateServices';
+import { Automation } from './components/Automation';
 import { CadShowcase } from './components/CadShowcase';
 import { Projects } from './components/Projects';
 import { ConsultationHub } from './components/ConsultationHub';
@@ -100,6 +101,7 @@ const App: React.FC = () => {
             <Projects onInquiry={handleInquiryWithTopic} />
             <CorporateServices onInquiryClick={openInquiry} />
             <CadShowcase onInquiry={handleInquiryWithTopic} />
+            <Automation onInquiry={handleInquiryWithTopic} />
             <Reviews />
             <ConsultationHub onInquiryClick={openInquiry} />
           </>

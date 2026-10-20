@@ -70,7 +70,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
             variants={item} initial={from} animate="show" custom={2}
             className="mt-6 max-w-[34rem] text-lg leading-relaxed text-fg-muted md:text-xl"
           >
-            3D-Druck und CAD-Konstruktion für Unternehmen und Privatkunden. Vom Ersatzteil bis zur Serie, in ganz Deutschland.
+            3D-Druck und CAD-Konstruktion für Unternehmen und Privatkunden. Vom Ersatzteil bis zur Serie, in ganz Deutschland. Dazu IT-Service und Automatisierung für kleine Unternehmen.
           </motion.p>
 
           <motion.div
@@ -79,6 +79,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
           >
             <button onClick={onInquiryClick} className="btn-primary">Projekt anfragen</button>
             {onCalculatorClick && <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>}
+            <a href="#automatisierung" className="link-arrow text-[15px]">Abläufe automatisieren <span aria-hidden="true">→</span></a>
           </motion.div>
         </div>
 

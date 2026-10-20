@@ -16,7 +16,7 @@ const WHATSAPP_NUMBER = '4917685922649';
 const EMAIL = 'auftrag@layer-form.de';
 
 const FILAMENTE = ['PLA', 'PETG', 'ABS', 'TPU', 'Auf Anfrage'];
-const TOPICS = ['Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
+const TOPICS = ['Automatisierung', 'IT-Service', 'Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
 
 type CustomerType = 'privat' | 'unternehmen';
 
@@ -41,7 +41,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
   // Themen aus dem vorausgefüllten Text erkennen
   const preset = `${initialProduct ?? ''} ${initialPersonalization ?? ''}`;
-  const presetType: CustomerType = /unternehmen|giveaway|serie/i.test(preset) ? 'unternehmen' : 'privat';
+  // Anfrage zu Automatisierung oder IT-Service: anderes Formular (kein Filament, Fokus auf Abläufe)
+  const isIT = /automatisierung|it-service/i.test(preset);
+  const presetType: CustomerType = isIT || /unternehmen|giveaway|serie/i.test(preset) ? 'unternehmen' : 'privat';
   const presetTopics = TOPICS.filter((t) => new RegExp(t.split(' ')[0], 'i').test(preset));
 
   const [type, setType] = useState<CustomerType>(presetType);
@@ -59,7 +61,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     city: '',
     quantity: '',
     deadline: '',
-    message: [initialProduct, initialPersonalization].filter(Boolean).join('\n'),
+    message: isIT ? '' : [initialProduct, initialPersonalization].filter(Boolean).join('\n'),
   });
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,8 +86,8 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
       topics.length ? `Thema: ${topics.join(', ')}` : '',
       form.quantity ? `Stückzahl: ${form.quantity}` : '',
       form.deadline ? `Wunschtermin: ${form.deadline}` : '',
-      `Filament: ${form.filament}`,
-      form.farbe.trim() ? `Farbe: ${form.farbe.trim()}` : '',
+      isIT ? '' : `Filament: ${form.filament}`,
+      !isIT && form.farbe.trim() ? `Farbe: ${form.farbe.trim()}` : '',
       '',
       `Name: ${form.vorname.trim()} ${form.nachname.trim()}`,
       type === 'unternehmen' && form.company ? `Firma: ${form.company.trim()}` : '',
@@ -155,10 +157,13 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
         <div className="grid gap-10 md:grid-cols-[1fr_1.6fr] md:gap-14">
           {/* Linke Spalte */}
           <div className="md:sticky md:top-28 md:self-start">
-            <h1 className="text-4xl font-semibold leading-[1.05] md:text-5xl">Projekt anfragen</h1>
+            <h1 className="text-4xl font-semibold leading-[1.05] md:text-5xl">{isIT ? 'Erstgespräch anfragen' : 'Projekt anfragen'}</h1>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">
-              Beschreiben Sie kurz, was Sie brauchen. Sie bekommen eine persönliche Rückmeldung mit Preis und Lieferzeit.
+              {isIT
+                ? 'Beschreiben Sie kurz, welche Abläufe Sie Zeit kosten. Wir melden uns für ein kostenloses, unverbindliches Erstgespräch.'
+                : 'Beschreiben Sie kurz, was Sie brauchen. Sie bekommen eine persönliche Rückmeldung mit Preis und Lieferzeit.'}
             </p>
+            {!isIT && (
             <div className="mt-8 rounded-panel border border-white/[.07] bg-surface p-5">
               <p className="flex items-center gap-2 font-semibold">
                 <Paperclip size={17} className="text-cyan" aria-hidden="true" /> Fotos oder Dateien?
@@ -168,6 +173,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                 Foto, Skizze, STL oder STEP.
               </p>
             </div>
+            )}
           </div>
 
           {/* Formular */}
@@ -245,11 +251,12 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                       rows={5}
                       value={form.message}
                       onChange={set('message')}
-                      placeholder="Was soll gedruckt werden? Maße, Farbe, Einsatzzweck …"
+                      placeholder={isIT ? 'Welche Abläufe kosten Sie heute Zeit? Welche Programme nutzen Sie, z. B. Google Workspace, Microsoft 365, Lexware?' : 'Was soll gedruckt werden? Maße, Farbe, Einsatzzweck …'}
                       className={`${inputCls} resize-y`}
                     />
                   </Field>
 
+                  {!isIT && (<>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Stückzahl" optional>
                       <input value={form.quantity} onChange={set('quantity')} inputMode="numeric" placeholder="z. B. 1 oder 250" className={inputCls} />
@@ -286,6 +293,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   <Field label="Farbe" optional>
                     <input value={form.farbe} onChange={set('farbe')} placeholder="z. B. Schwarz, Weiß oder RAL-Ton" className={inputCls} />
                   </Field>
+                  </>)}
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Vorname" error={errors.vorname}>
