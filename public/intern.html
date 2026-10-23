@@ -1156,7 +1156,7 @@ const kgOf = (m, tpu) => (m === 'TPU' ? num(tpu) : P.filament[m]);
 
 function compute() {
   const bad = (x) => Number.isNaN(x);
-  const n = { nach: num(calc.nach), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch), handling: num(calc.handling ?? P.handling), minStk: num(calc.minStk ?? P.minStk) };
+  const n = { nach: num(calc.nach), arbeit: num(calc.arbeit ?? String(P.arbeit)), cad: num(calc.cad), mm: num(calc.mm), satz: num(calc.satz), pausch: num(calc.pausch), handling: num(calc.handling ?? P.handling), minStk: num(calc.minStk ?? P.minStk) };
   if (Object.values(n).some(bad)) return null;
   // erst jedes Teil einzeln, dann der Auftrag
   const items = [];
@@ -1184,7 +1184,8 @@ function compute() {
   const produkt = material + maschine;
   const rabattP = P.rabatt.filter((r) => teile >= r.ab).reduce((a, r) => Math.max(a, r.p), 0);
   const rabatt = produkt * rabattP / 100;
-  const nacharbeit = n.nach / 60 * P.arbeit * teile;
+  // Nacharbeit wird für den ganzen Auftrag eingetragen (nicht pro Teil)
+  const nacharbeit = n.nach / 60 * n.arbeit;
   const cadK = n.cad / 60 * P.cad;
   const chosen = extraList().filter((e) => (calc.extras[e.id] || 0) > 0);
   const zusatz = chosen.reduce((a, e) => a + e.preis * calc.extras[e.id], 0);
@@ -1196,7 +1197,7 @@ function compute() {
   // Rechnungspositionen: Druckanteil auf die Teile verteilen (nach ihrem Anteil an Material, Zeit und Handarbeit)
   const pauschInPreis = !!calc.pauschInPreis;
   const pool = druckanteil + minAufschlag - (pauschInPreis ? 0 : n.pausch);
-  const base = items.map((x) => (x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100) + x.stunden * n.satz) * (1 - rabattP / 100) + (n.handling + n.nach / 60 * P.arbeit) * x.menge);
+  const base = items.map((x) => (x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100) + x.stunden * n.satz) * (1 - rabattP / 100) + n.handling * x.menge + nacharbeit * x.menge / teile);
   const baseSum = base.reduce((a, b) => a + b, 0) || 1;
   const positionen = items.map((x, k) => {
     // Versand und Verpackung gleichmäßig auf jedes Stück verteilen
@@ -1211,7 +1212,7 @@ function compute() {
   const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
   return {
     einkauf: cent(einkauf), mitAusschuss: cent(mitAusschuss), material: cent(material), stunden, satz: n.satz, maschine: cent(maschine),
-    produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach,
+    produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach, arbeitSatz: n.arbeit,
     handling: cent(handling), handlingStk: n.handling, minAufschlag: cent(minAufschlag), minStk: n.minStk,
     cad: cent(cadK), zusatz: cent(zusatz), chosen, gesamt, teile, gramm, proStueck: cent(gesamt / teile), mm: n.mm,
     positionen, pauschInPreis,
@@ -1281,7 +1282,7 @@ function renderResult() {
       ${row('Druck', euro(r.produkt), 's')}
       ${r.rabatt > 0 ? row(`Mengenrabatt ${r.rabattP} %`, '− ' + euro(r.rabatt)) : ''}
       ${r.pausch > 0 ? row('Bearbeitungspauschale', euro(r.pausch)) : ''}
-      ${r.nacharbeit > 0 ? row(`Nacharbeit ${r.teile} × ${fmtN(r.nachMin)} min`, euro(r.nacharbeit)) : ''}
+      ${r.nacharbeit > 0 ? row(`Nacharbeit ${fmtN(r.nachMin)} min × ${euro(r.arbeitSatz)} / h`, euro(r.nacharbeit)) : ''}
       ${r.handling > 0 ? row(`Handling ${r.teile} × ${euro(r.handlingStk)}`, euro(r.handling)) : ''}
       ${r.minAufschlag > 0 ? row(`Mindestpreis ${euro(r.minStk)} pro Teil`, '+ ' + euro(r.minAufschlag)) : ''}
       ${r.cad > 0 ? row('CAD-Konstruktion', euro(r.cad)) : ''}
@@ -1306,7 +1307,7 @@ const matPicker = (val, key, p) => `<div class="mats" role="radiogroup">${MATS.m
 function renderKalk() {
   const k = $('kalk'); if (!k) return;
   const solo = calc.plates.length === 1;
-  const changed = num(calc.mm) !== P.margeStd || num(calc.satz) !== P.satz || num(calc.pausch) !== P.pauschale || num(calc.handling ?? P.handling) !== P.handling || num(calc.minStk ?? P.minStk) !== P.minStk;
+  const changed = num(calc.mm) !== P.margeStd || num(calc.satz) !== P.satz || num(calc.pausch) !== P.pauschale || num(calc.handling ?? P.handling) !== P.handling || num(calc.minStk ?? P.minStk) !== P.minStk || num(calc.arbeit ?? String(P.arbeit)) !== P.arbeit;
   const exl = extraList();
   k.innerHTML = `<div class="res" id="kalkRes"></div>
   ${calc.plates.map((p, i) => `<section class="plate${solo ? '' : ' boxed'}">
@@ -1325,9 +1326,9 @@ function renderKalk() {
       ${p.teile > 1 ? `<p class="note" style="margin-top:6px">Ältere Eingabe: ${p.teile} Teile pro Platte, wird mitgerechnet.</p>` : ''}</div>
   </section>`).join('')}
   <button class="dash cy" data-a="addPlate">+ Weiteres Teil hinzufügen</button>
-  <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit, Handling und Nacharbeit.</p>
+  <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit und Handling. Nacharbeit trägst du für den ganzen Auftrag ein.</p>
   <section class="box" id="posBox"></section>
-  <div class="grid2">${field('Nacharbeit pro Teil', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
+  <div class="grid2">${field('Nacharbeit gesamt', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
   <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 25 Teilen 10 %, ab 100 Teilen 20 %.</p>
 
   <section class="box">
@@ -1337,6 +1338,7 @@ function renderKalk() {
       ${field('Eigene Materialmarge', 'mm', calc.mm, '%', 'numeric')}
       <div class="grid2">${field('Maschinenstundensatz', 'satz', calc.satz, '€ / h')}${field('Pauschale', 'pausch', calc.pausch, '€')}</div>
       <div class="grid2">${field('Handling pro Teil', 'handling', calc.handling ?? '0,5', '€')}${field('Mindestpreis pro Teil', 'minStk', calc.minStk ?? '2', '€')}</div>
+      ${field('Stundensatz Nacharbeit', 'arbeit', calc.arbeit ?? String(P.arbeit), '€ / h')}
       <button class="linkbtn" data-a="resetRates">Auf Standard zurücksetzen</button></div>` : ''}
   </section>
 
@@ -1398,7 +1400,7 @@ async function onKalkClick(e) {
     case 'details': ui.details = !ui.details; return renderResult();
     case 'rates': ui.rates = !ui.rates; return renderKalk();
     case 'mm': calc.mm = b.dataset.v; return renderKalk();
-    case 'resetRates': calc.mm = String(P.margeStd); calc.satz = '2'; calc.pausch = '3'; calc.handling = '0,5'; calc.minStk = '2'; return renderKalk();
+    case 'resetRates': calc.mm = String(P.margeStd); calc.satz = '2'; calc.pausch = '3'; calc.handling = '0,5'; calc.minStk = '2'; calc.arbeit = String(P.arbeit); return renderKalk();
     case 'multi': calc.plates[p].multi = true; return renderKalk();
     case 'unmulti': Object.assign(calc.plates[p], { multi: false, g2: '', purge: '', tpu2: '' }); return renderKalk();
     case 'inc': calc.plates[p][b.dataset.f]++; return renderKalk();
