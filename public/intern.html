@@ -1182,37 +1182,43 @@ function compute() {
   const material = mitAusschuss * (1 + n.mm / 100);
   const maschine = stunden * n.satz;
   const produkt = material + maschine;
-  const rabattP = P.rabatt.filter((r) => teile >= r.ab).reduce((a, r) => Math.max(a, r.p), 0);
-  const rabatt = produkt * rabattP / 100;
   // Nacharbeit wird für den ganzen Auftrag eingetragen (nicht pro Teil)
   const nacharbeit = n.nach / 60 * n.arbeit;
   const cadK = n.cad / 60 * P.cad;
   const chosen = extraList().filter((e) => (calc.extras[e.id] || 0) > 0);
   const zusatz = chosen.reduce((a, e) => a + e.preis * calc.extras[e.id], 0);
   const handling = n.handling * teile;
-  // Mindestpreis pro Teil: der Druckanteil (ohne CAD und Versand) liegt nie unter Teile × Mindestpreis
-  const druckanteil = produkt - rabatt + n.pausch + nacharbeit + handling;
-  const minAufschlag = Math.max(0, teile * n.minStk - druckanteil);
-
-  // Rechnungspositionen: Druckanteil auf die Teile verteilen (nach ihrem Anteil an Material, Zeit und Handarbeit)
   const pauschInPreis = !!calc.pauschInPreis;
-  const pool = druckanteil + minAufschlag - (pauschInPreis ? 0 : n.pausch);
-  const base = items.map((x) => (x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100) + x.stunden * n.satz) * (1 - rabattP / 100) + n.handling * x.menge + nacharbeit * x.menge / teile);
-  const baseSum = base.reduce((a, b) => a + b, 0) || 1;
-  const positionen = items.map((x, k) => {
-    // Versand und Verpackung gleichmäßig auf jedes Stück verteilen
-    const anteil = pool * base[k] / baseSum + zusatz * x.menge / teile;
-    const einzel = Math.ceil(Math.round(anteil / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
-    return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge) };
+
+  // Jedes Teil wird für sich berechnet: Material, Druckzeit, Handling, Mengenrabatt und Mindestpreis.
+  // Danach werden die Teile nur addiert, es gibt keinen Durchschnitt über verschiedene Teile.
+  let rabatt = 0, minAufschlag = 0;
+  const rabattStufen = [];
+  const positionen = items.map((x) => {
+    const mat = x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100);
+    const masch = x.stunden * n.satz;
+    const rP = P.rabatt.filter((r) => x.menge >= r.ab).reduce((a, r) => Math.max(a, r.p), 0);
+    const rab = (mat + masch) * rP / 100;
+    if (rP) rabattStufen.push(`${x.name}: ${rP} %`);
+    let teil = mat + masch - rab + n.handling * x.menge;
+    const minT = Math.max(0, x.menge * n.minStk - teil);
+    teil += minT;
+    rabatt += rab; minAufschlag += minT;
+    // Versand/Verpackung und auf Wunsch die Pauschale nach Stückzahl auf die Teile verteilen
+    teil += zusatz * x.menge / teile + (pauschInPreis ? n.pausch * x.menge / teile : 0);
+    const einzel = Math.ceil(Math.round(teil / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
+    return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge), rabattP: rP };
   });
+  const rabattP = items.length === 1 ? positionen[0].rabattP : 0;
   if (!pauschInPreis && n.pausch > 0) positionen.push({ name: 'Bearbeitungspauschale', menge: 1, einzel: cent(n.pausch), summe: cent(n.pausch), fix: true });
+  if (nacharbeit > 0) positionen.push({ name: `Nacharbeit (${fmtN(n.nach)} min)`, menge: 1, einzel: cent(nacharbeit), summe: cent(nacharbeit), fix: true });
   if (cadK > 0) positionen.push({ name: `CAD-Konstruktion (${fmtN(n.cad)} min)`, menge: 1, einzel: cent(cadK), summe: cent(cadK), fix: true });
   // Endpreis = Summe der Positionen, damit die Rechnung exakt aufgeht
   const gesamt = cent(positionen.reduce((a, x) => a + x.summe, 0));
   const kosten = mitAusschuss + stunden * (P.strom + P.verschleiss) + zusatz;
   return {
     einkauf: cent(einkauf), mitAusschuss: cent(mitAusschuss), material: cent(material), stunden, satz: n.satz, maschine: cent(maschine),
-    produkt: cent(produkt), rabattP, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach, arbeitSatz: n.arbeit,
+    produkt: cent(produkt), rabattP, rabattStufen, sorten: items.length, rabatt: cent(rabatt), pausch: cent(n.pausch), nacharbeit: cent(nacharbeit), nachMin: n.nach, arbeitSatz: n.arbeit,
     handling: cent(handling), handlingStk: n.handling, minAufschlag: cent(minAufschlag), minStk: n.minStk,
     cad: cent(cadK), zusatz: cent(zusatz), chosen, gesamt, teile, gramm, proStueck: cent(gesamt / teile), mm: n.mm,
     positionen, pauschInPreis,
@@ -1234,7 +1240,7 @@ function offerText(r) {
   if (r.positionen.length > 1 || druckPos.some((x) => x.menge > 1)) {
     L.push('', ...r.positionen.map((x) => `${x.name}: ${x.menge} × ${euro(x.einzel)} = ${euro(x.summe)}`), '', `Gesamtpreis: ${euro(r.gesamt)}`);
   } else L.push('', `Preis: ${euro(r.gesamt)}`);
-  if (r.rabattP > 0) L.push(`Mengenrabatt von ${r.rabattP} % ist bereits abgezogen.`);
+  if (r.rabattStufen.length) L.push('Mengenrabatt ist bereits abgezogen.');
   L.push(P.mwst, '', 'Wenn das für Sie passt, geben Sie mir kurz Bescheid. Ich erstelle Ihnen dann die Rechnung und starte den Druck, sobald die Zahlung eingegangen ist.', '',
     'Für die Rechnung benötige ich Ihren Vor- und Nachnamen, Ihre Adresse und Ihre E-Mail-Adresse. Falls Sie mir diese Daten noch nicht geschickt haben, senden Sie sie mir gerne direkt mit Ihrer Zusage:',
     '- Vor- und Nachname', '- Adresse', '- E-Mail-Adresse', '', 'Viele Grüße', 'LayerForm', 'www.layer-form.de');
@@ -1266,10 +1272,10 @@ function renderResult() {
   const row = (k, v, cls = '') => `<div class="r ${cls}"><span>${esc(k)}</span><span>${esc(v)}</span></div>`;
   const active = customers.filter((c) => !DONE.has(c.status)).sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email)));
   box.innerHTML = `<div class="res-card">
-    <div class="res-row"><div><small>Endpreis${r && r.teile > 1 ? ` für ${r.teile} Teile` : ''}</small><div class="price">${r ? esc(euro(r.gesamt)) : '– €'}</div>${r && r.teile > 1 ? `<div class="per">${esc(euro(r.proStueck))} pro Stück</div>` : ''}</div>
+    <div class="res-row"><div><small>Endpreis${r && r.teile > 1 ? ` für ${r.teile} Teile` : ''}${r && r.sorten > 1 ? ` (${r.sorten} verschiedene)` : ''}</small><div class="price">${r ? esc(euro(r.gesamt)) : '– €'}</div>${r && r.sorten === 1 && r.teile > 1 ? `<div class="per">${esc(euro(r.positionen[0].einzel))} pro Stück</div>` : ''}${r && r.sorten > 1 ? `<div class="per">${r.positionen.filter((x) => !x.fix).map((x) => `${esc(x.name)}: ${x.menge} × ${esc(euro(x.einzel))}`).join('<br>')}</div>` : ''}</div>
       <button class="copy" data-a="copyPrice" ${r ? '' : 'disabled'}>Preis kopieren</button></div>
     <div class="tiles">${tile('Material', r?.material)}${tile('Maschine', r?.maschine)}${tile('Arbeit', r ? cent(r.pausch + r.nacharbeit + r.handling + r.cad) : null)}${tile('Gewinn', r?.gewinn, true)}</div>
-    ${r && r.rabattP ? `<p class="cyan-note">Mengenrabatt ${r.rabattP} % für ${r.teile} Teile abgezogen.</p>` : ''}
+    ${r && r.rabattStufen.length ? `<p class="cyan-note">Mengenrabatt: ${esc(r.rabattStufen.join(', '))}</p>` : ''}
     ${r && r.minAufschlag > 0 ? `<p class="cyan-note">Mindestpreis von ${euro(r.minStk)} pro Teil greift.</p>` : ''}
     <div class="two-btn"><button class="ghost2" data-a="copyOffer" ${r ? '' : 'disabled'}>Angebot kopieren</button><button class="ghost2" data-a="shareOffer" ${r ? '' : 'disabled'}>Angebot senden</button></div>
     ${r && active.length ? `<div class="assign"><select id="assignSel" aria-label="Kunde"><option value="">Beim Kunden eintragen …</option>${active.map((c) => `<option value="${esc(c.id)}">${esc(c.name || c.email || c.telefon)}</option>`).join('')}</select><button class="ghost2" style="padding:0 14px" data-a="assign">Eintragen</button></div>` : ''}
@@ -1280,7 +1286,7 @@ function renderResult() {
       ${row(`+ ${r.mm} % Marge`, euro(cent(r.material - r.mitAusschuss)), 'sub')}
       ${row(`Maschine ${fmtN(r.stunden)} h × ${euro(r.satz)}`, euro(r.maschine))}
       ${row('Druck', euro(r.produkt), 's')}
-      ${r.rabatt > 0 ? row(`Mengenrabatt ${r.rabattP} %`, '− ' + euro(r.rabatt)) : ''}
+      ${r.rabatt > 0 ? row(r.sorten > 1 ? 'Mengenrabatt' : `Mengenrabatt ${r.rabattP} %`, '− ' + euro(r.rabatt)) : ''}
       ${r.pausch > 0 ? row('Bearbeitungspauschale', euro(r.pausch)) : ''}
       ${r.nacharbeit > 0 ? row(`Nacharbeit ${fmtN(r.nachMin)} min × ${euro(r.arbeitSatz)} / h`, euro(r.nacharbeit)) : ''}
       ${r.handling > 0 ? row(`Handling ${r.teile} × ${euro(r.handlingStk)}`, euro(r.handling)) : ''}
