@@ -60,3 +60,78 @@ Wenn eine Aufgabe beide Bereiche betrifft, im jeweils anderen Chat kurz übergeb
 - **Offene Punkte:** Wer muss was noch prüfen?
 
 **Hinweis:** Chats sind nicht live miteinander synchronisiert. Diese versionierte Datei dient als gemeinsame Referenz; der jeweils aktuelle Stand ist in GitHub zu lesen.
+
+
+## Verifizierter CRM-Integrationsstand (Quellcodeabgleich 2026-11-03; HUBSPOT-Chat)
+
+**Prüfumfang und Evidenz:** GitHub `main`: `api/_lib/hubspot.ts`, `api/kontakt.ts`, `api/anfrage.ts`; bereitgestellte Dateien `Code (1).gs` (1.184 Zeilen), `appsscript (1).json`, `Fahrten (1).gs` und die HubSpot-/Google-Übergabe vom 30.10.2026. Aussagen unten bedeuten **im Code implementiert bzw. in der Übergabe beschrieben**, nicht durch einen Live-API-Test bestätigt. Die Apps-Script-Dateien sind Upload-Snapshots, kein nachgewiesener aktiver Deploymentstand. Die produktive HubSpot-Feldkonfiguration wurde nicht live ausgelesen.
+
+### Gemeinsame CRM-Konstanten
+
+| Einstellung | Im Website-Code und Apps-Script-Snapshot | Hinweis |
+| --- | --- | --- |
+| HubSpot API | `https://api.hubapi.com` | Bearer-Token aus Secret-Store, niemals veröffentlichen |
+| Portal | `149524579` (EU1) | Deal-URL: `https://app-eu1.hubspot.com/contacts/149524579/record/0-3/{dealId}` |
+| Pipeline | `default` („LayerForm Aufträge“) | beide Codepfade |
+| Owner | `100897636` | beide Codepfade |
+| Neue Anfrage | `6212936899` | 10 % laut Übergabe |
+| Angebot gesendet | `6212936900` | 40 % |
+| Zusage – Rechnung gestellt | `6212936901` | 80 % |
+| Bezahlt – in Produktion | `6212936902` | 95 % |
+| Versendet/abgeholt – gewonnen | `6212936903` | 100 % |
+| Verloren | `6212936904` | 0 % |
+
+### Website → HubSpot: tatsächlicher Codepfad
+
+1. `POST /api/kontakt` (`api/kontakt.ts`): Kontaktformular; nur POST, Honeypot `website`, Pflicht `name`, `message` (mind. 10 Zeichen), bei `via=email` auch gültige `email`. Ohne gültige E-Mail bei `via=whatsapp` möglich. `topics` auf sieben Elemente begrenzt. Aus `topics` werden Leistungen ermittelt, Standard `3d_druck`. Über `legeLeadAn` wird zunächst CRM versucht; bei einem geworfenen Fehler wird via Resend eine E-Mail an `ANFRAGE_EMPFAENGER` (Standard `auftrag@layer-form.de`) gesendet. Bei `via=email` wird eine Eingangsbestätigung versucht, sofern nicht deaktiviert. Erfolgsantwort `{ok:true}` ohne Deal-ID.
+2. `POST /api/anfrage` (`api/anfrage.ts`): Preisrechner; Pflicht `name`, `street`, `zip`, `city`, gültige `email`. Akzeptiert bis zu 30 geprüfte öffentliche Vercel-Blob-Dateilinks sowie bis zu 50 `plates`. Erst CRM-Versuch; bei Misserfolg interne Resend-Mail samt Dateilinks/kleinen Anhängen; Eingangsbestätigung. Hinweis: eine Resend-Fehlermeldung kann hier trotz bereits erfolgreichem CRM-Eintrag zu HTTP 502 führen, weil die Kundenbestätigung und der Rückgabepfad gemeinsam im äußeren `try` liegen.
+3. `api/_lib/hubspot.ts`: `legeLeadAn(Lead)` sucht Kontakt nach E-Mail und danach normalisierter Telefon-Suchproperty, legt sonst Kontakt an, zählt bisherige Deals, legt **immer einen neuen Deal** in „Neue Anfrage“ an, hängt Notiz und ggf. private HubSpot-Dateien an. Anders als Apps Script wird ein offener Deal von diesem Pfad nicht für eine Folgenachricht wiederverwendet. Upload von maximal 20 Dateien; einzelne fehlgeschlagene Uploads werden in der Notiz vermerkt. `HUBSPOT_TOKEN` ist die serverseitige Authentifizierung.
+
+**Website-Feldmapping – Werte aus dem tatsächlich geprüften Code:**
+
+| Website-Payload / Herkunft | HubSpot-Eigenschaft / Verwendung | Typ / Hinweise |
+| --- | --- | --- |
+| `name`, ggf. `vorname`, `nachname` | Kontakt `firstname`, `lastname` | Splitting/Fallback auf Name |
+| `email`, `phone`, `company` | Kontakt `email`, `phone`, `company` | E-Mail kleingeschrieben; Telefon als Suchfallback |
+| `street`, `zip`, `city` | Kontakt `address`, `zip`, `city` | Standardfelder |
+| Server-Konstanten | Kontakt und Deal `hubspot_owner_id` | `100897636` |
+| `topics` (`/api/kontakt`) | Deal `lf_leistung` | `Giveaways→werbeartikel`, `CAD-Konstruktion→cad`, `Automatisierung→beratung`, **`IT-Service→beratung`** (Abweichung), sonst `3d_druck`; Semikolon-getrennte Mehrfachwerte |
+| Preisrechner | Deal `lf_leistung`, `lf_material` | `3d_druck`; Material aus `materialWert` (`pla/petg/asa/abs/tpu`, sonst `offen`) |
+| `type` | Deal `lf_kundentyp` | `unternehmen` oder `privat`; Preisrechner erzwingt `privat` |
+| `via` / Quellendpunkt | Deal `lf_kanal` | `whatsapp` bei `via=whatsapp`, sonst `website` |
+| `quantity` oder Platten-Summe | Deal `lf_stueckzahl` | nur Ziffern; Preisrechner summiert Item-Mengen |
+| `deadline`, `filament`, `farbe`, Themen, Druckparameter, `estimate` | Deal `lf_anforderungen`, Notiz/Volltext | **Nicht automatisch** `lf_wunschtermin`, `lf_farbe`, `lf_preis` bzw. `amount` |
+| `message`/`text`, Rechner-Details | Deal `description`, Notiz `hs_note_body` | Volltext HTML-escaped; Notiz an Deal und Kontakt |
+| Links aus Volltext | Deal `lf_links` | URLs dedupliziert; interne LayerForm-/Vercel-Storage-Links gefiltert |
+| `files` aus Preisrechner | Deal `lf_anhaenge`, Notiz `hs_attachment_ids` | Dateinamen; bis 20 private Dateien per HubSpot Files API |
+| bisherige Deals zum Kontakt | Deal `lf_stammkunde` | `true/false`; nicht auf abgeschlossene Aufträge begrenzt |
+| `titel` aus Endpunkt | Deal `dealname` | auf 120 Zeichen gekürzt; Pipeline `default`, Phase `6212936899` |
+
+**Weitere CRM-Eigenschaften aus dem Apps-Script-Snapshot/der Übergabe:** `lf_farbe`, `lf_wunschtermin`, `lf_anfrage_link`, `lf_rechnungsnummer`, `lf_preis`, `lf_versand`, `lf_sendungsnummer`, `lf_versandmail_am`, `lf_nachgefasst_am`, `lf_bewertung_angefragt` (Kontakt) sowie Standard-Deal-`amount`. Der Snapshot mappt `webdesign` und `it_service`, die Übergabe vom 30.10. meldet aber, dass diese Optionen in der live konfigurierten HubSpot-Mehrfachauswahl `lf_leistung` noch anzulegen sind. **Nicht ohne Prüfung als verfügbar voraussetzen.**
+
+### Gmail, Workspace Studio und Apps Script → CRM
+
+Die Übergabe nennt die Workspace-Studio-Flows `LayerForm Kunden-E-Mail Bewertung` und `LayerForm Rechnung → HubSpot`. Das hochgeladene `appsscript.json` definiert zwei aktive **Workflow-Elemente** (`leadInHubspot` / `rechnungInHubspot`), was allein nicht beweist, dass die Studio-Flows aktuell aktiv sind.
+
+| Funktion / Einstieg | Auslöser und Verhalten im Snapshot | Idempotenz / Risiko |
+| --- | --- | --- |
+| `onExecuteLead` → `verarbeiteLead` | Gemini-JSON + Absender/Betreff/optionaler Link; Kontakt per E-Mail/Telefon suchen oder anlegen, leere Felder ergänzen; `art=folge` / Re:/AW: wird als Notiz an Deal gehängt, sonst neuer Deal; ggf. Originalmail/Anhänge übernehmen | Bei mehreren offenen Deals Zuordnung zur neuesten Karte und Warn-Aufgabe; kein umfassender transaktionsübergreifender Dedupe-Nachweis |
+| `onExecuteRechnung` → `verarbeiteRechnung` | Lexware-BCC-Rechnungsmail; Rechnungsnummer aus Betreff, Empfänger ggf. aus Gmail ermitteln, geeigneten offenen Auftrag auf „Zusage – Rechnung gestellt“ setzen | Mehrdeutige/fehlende Zuordnung führt zu Warnung statt blindem Update; Details im Quellcode |
+| `angebotePruefen` → `angeboteErkennen_` | Laut `automatikEinrichten`: jede Minute; scannt gesendete Gmail-Angebote, erkennt Preis-Ausdrücke, schreibt `amount`/`lf_preis`, verschiebt vorwärts auf „Angebot gesendet“; importiert WhatsApp-Exporte | Verarbeitete Mail-ID in ScriptProperties; bei mehreren offenen Deals Warnung. Achtung: Kennzeichnung erfolgt schon vor erfolgreicher Deal-Zuordnung (möglicher verpasster Retry) |
+| `versandPruefen` | Laut `automatikEinrichten`: alle 10 Minuten; Preisabgleich, Bewertungsbitte, Nachfassen, Versandaufgaben und Versandmails | Zeitbasierte Automatiken und CRM-/Gmail-Zustände müssen live geprüft werden |
+| `bewertungenAnfragen_` | 5 Tage nach Eintritt in Versandphase, einmal je Kontakt (`lf_bewertung_angefragt`), Google-Bewertungslink | E-Mail wird vor dem Setzen des CRM-Merkers gesendet; Fehler dazwischen kann Wiederholung erzeugen |
+| `angeboteNachfassen_` | Nach 5 Tagen in Angebotsphase Aufgabe; nach 30 Tagen ohne erkannte Kundenantwort automatisch „Verloren“ | Automatik basiert auf Gmail-Antworterkennung; andere Kanäle gesondert beachten |
+| `fahrtenEinrichten` (`Fahrten (1).gs`) | Separates Google-Formular und Google-Sheet für Dienstfahrten, 0,30 €/km | **Keine** HubSpot-Integration |
+
+**Belegte Unterschiede der beiden Lead-Pfade:** Website legt pro erfolgreichem Formularaufruf immer neuen Deal an; Studio/Apps Script erkennt Folgenachrichten. Website-`lf_kanal` nennt bei gewähltem WhatsApp-Kontakt `whatsapp`, nicht zwingend einen tatsächlich über WhatsApp eingetroffenen Lead. Apps Script verwendet bereits `it_service`/`webdesign`, die Website (noch) nicht. Der E-Mail-Fallback kann bei Teilfehlern zu doppelten Leads führen. Die Website verarbeitet Dateianhänge im Rechnerpfad, nicht im allgemeinen Kontaktformularpfad.
+
+### Risiken, offene Verifikationen und Übergabe an WEBSITE
+
+- **Priorität 1 – Doppelanlage:** Gemeinsame Anfrage-ID, wiederholbare/idempotente Verarbeitung und Erkennung unvollständiger CRM-Transaktionen entwerfen. HubSpot-Kontakt, Deal und Notiz werden in aufeinanderfolgenden API-Calls erstellt; scheitert eine spätere Operation, kann der Resend-/Studio-Fallback zusätzlich einen Deal anlegen. **Keine produktive Logik ohne abgestimmten Test verändern.**
+- **Priorität 1 – Service-Mapping:** WEBSITE soll `IT-Service→beratung` bewerten; HUBSPOT soll die tatsächlichen zulässigen `lf_leistung`-Optionswerte `it_service`/`webdesign` live prüfen. Erst danach gemeinsam umstellen.
+- **Priorität 2 – Formularvollständigkeit:** WEBSITE und HUBSPOT sollen entscheiden, ob `deadline→lf_wunschtermin`, `farbe→lf_farbe`, `filament→lf_material`, `estimate→amount/lf_preis` und Unternehmenstyp beim Preisrechner übernommen werden sollen. Bis dahin sind diese Werte lediglich in `lf_anforderungen`/Notiz enthalten; Rechner-Richtpreis ist kein verbindliches Angebot.
+- **Priorität 2 – Feedback/Fehler:** `/api/anfrage`-Resend-Fehlerbehandlung und `/api/kontakt`-Bestätigungsfehler prüfen; API antwortet bei Erfolg nur `{ok:true}`, nicht mit Deal-ID. Bei Teilfehlern besteht mögliches Fehlersignal nach erfolgter Deal-Anlage.
+- **Priorität 2 – Versand/Follow-ups:** Live-Verfügbarkeit von Triggern, Studio-Flows, Script-Version, Properties, Resend-DNS, Berechtigungen und End-to-End-Test nicht bestätigt. Für WhatsApp-Antworten ist die Gmail-basierte 30-Tage-Abschlussregel besonders zu prüfen.
+- **Sicherheitscheck:** Quellcode enthält keine hier offengelegten Tokens; nur Secret-Namen dokumentieren. Bestehende Token-Rotationshinweise aus der Übergabe beachten.
+
+**Verantwortungsübergabe:** HUBSPOT betreut die CRM-Felder, Pipeline, Apps Script, Studio-Flows und Dedupe-Konzept; WEBSITE betreut Formularfelder, `api/kontakt.ts`, `api/anfrage.ts`, `api/_lib/hubspot.ts`, Resend, Vercel und Deployment. Änderungen gemeinsam über diese Datei abstimmen. **Status dieses Updates: dokumentiert; keine produktiven Laufzeit- oder Schnittstellenänderungen.**
