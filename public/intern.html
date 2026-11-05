@@ -1194,7 +1194,7 @@ function compute() {
   // Danach werden die Teile nur addiert, es gibt keinen Durchschnitt über verschiedene Teile.
   let rabatt = 0, minAufschlag = 0;
   const rabattStufen = [];
-  const positionen = items.map((x) => {
+  const basisPositionen = items.map((x) => {
     const mat = x.einkauf * (1 + P.ausschuss) * (1 + n.mm / 100);
     const masch = x.stunden * n.satz;
     const rP = P.rabatt.filter((r) => x.menge >= r.ab).reduce((a, r) => Math.max(a, r.p), 0);
@@ -1206,12 +1206,19 @@ function compute() {
     rabatt += rab; minAufschlag += minT;
     // Versand/Verpackung und auf Wunsch die Pauschale nach Stückzahl auf die Teile verteilen
     teil += zusatz * x.menge / teile + (pauschInPreis ? n.pausch * x.menge / teile : 0);
+    return { ...x, teil, rabattP: rP };
+  });
+  // Nacharbeit proportional zu den bisherigen Positionskosten verteilen,
+  // vor der einmaligen Rundung der Stückpreise. Fixpositionen bleiben separat.
+  const basisSumme = basisPositionen.reduce((a, x) => a + x.teil, 0);
+  const positionen = basisPositionen.map((x) => {
+    const anteil = basisSumme > 0 ? x.teil / basisSumme : x.menge / teile;
+    const teil = x.teil + nacharbeit * anteil;
     const einzel = Math.ceil(Math.round(teil / x.menge * 10000) / 100) / 100; // auf volle Cent aufrunden
-    return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge), rabattP: rP };
+    return { name: x.name, mats: x.mats, menge: x.menge, einzel, summe: cent(einzel * x.menge), rabattP: x.rabattP };
   });
   const rabattP = items.length === 1 ? positionen[0].rabattP : 0;
   if (!pauschInPreis && n.pausch > 0) positionen.push({ name: 'Bearbeitungspauschale', menge: 1, einzel: cent(n.pausch), summe: cent(n.pausch), fix: true });
-  if (nacharbeit > 0) positionen.push({ name: `Nacharbeit (${fmtN(n.nach)} min)`, menge: 1, einzel: cent(nacharbeit), summe: cent(nacharbeit), fix: true });
   if (cadK > 0) positionen.push({ name: `CAD-Konstruktion (${fmtN(n.cad)} min)`, menge: 1, einzel: cent(cadK), summe: cent(cadK), fix: true });
   // Endpreis = Summe der Positionen, damit die Rechnung exakt aufgeht
   const gesamt = cent(positionen.reduce((a, x) => a + x.summe, 0));
@@ -1332,7 +1339,7 @@ function renderKalk() {
       ${p.teile > 1 ? `<p class="note" style="margin-top:6px">Ältere Eingabe: ${p.teile} Teile pro Platte, wird mitgerechnet.</p>` : ''}</div>
   </section>`).join('')}
   <button class="dash cy" data-a="addPlate">+ Weiteres Teil hinzufügen</button>
-  <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit und Handling. Nacharbeit trägst du für den ganzen Auftrag ein.</p>
+  <p class="note" style="margin-top:-8px">Gewicht und Zeit für ein Stück eintragen. Die Menge multipliziert Material, Druckzeit und Handling. Nacharbeit trägst du für den ganzen Auftrag ein. Ihre Kosten werden anteilig nach Positionskosten in die Stückpreise eingerechnet.</p>
   <section class="box" id="posBox"></section>
   <div class="grid2">${field('Nacharbeit gesamt', 'nach', calc.nach, 'min', 'numeric')}${field('CAD-Konstruktion', 'cad', calc.cad, 'min', 'numeric')}</div>
   <p class="note" style="margin-top:-8px">CAD ${euro(P.cad)} pro Stunde. Mengenrabatt ab 25 Teilen 10 %, ab 100 Teilen 20 %.</p>
