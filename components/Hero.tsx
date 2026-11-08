@@ -38,96 +38,67 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
   const from = reduce ? false : 'hidden';
 
   return (
-    <section className="relative overflow-hidden hero-ambient">
-      {/* Tiefes Blau aus dem Würfel als Lichtquelle oben rechts */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(55% 60% at 80% 20%, rgba(8,36,111,.75), transparent 70%)' }}
-        aria-hidden="true"
-      />
-
-      <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl items-center gap-12 px-5 pb-16 pt-28 md:px-8 lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-24">
-        <div className="lg:col-span-7">
-          <motion.p
-            variants={item} initial={from} animate="show" custom={0}
-            className="flex items-center gap-2.5 text-sm text-fg-muted"
-          >
-            <span className="flex gap-0.5 text-cyan" aria-hidden="true">
-              {Array.from({ length: 5 }).map((_, i) => <Star key={i} size={14} weight="fill" />)}
-            </span>
-            <span><span className="font-semibold text-fg">{formatRating()}</span> bei Google, {REVIEW_COUNT} Bewertungen</span>
-          </motion.p>
-
-          <motion.h1
-            variants={item} initial={from} animate="show" custom={1}
-            className="mt-6 max-w-[14ch] text-[clamp(2.75rem,5.2vw,4.5rem)] font-semibold leading-[1.02] [text-wrap:balance]"
-          >
-            Ihre Idee.<br />
-            <span className="sm:whitespace-nowrap">Gedruckt &amp; <span className="text-cyan">geliefert.</span></span>
+    <section className="relative overflow-hidden border-b border-white/[.07]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(0,229,255,.09),transparent_55%)]" aria-hidden="true" />
+      <div className="relative mx-auto max-w-7xl px-5 pb-14 pt-32 md:px-8 md:pb-20 md:pt-40">
+        <motion.div variants={item} initial={from} animate="show" custom={0} className="mb-7 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[.18em] text-cyan">
+          <span className="h-2 w-2 rounded-full bg-cyan shadow-[0_0_14px_rgba(0,229,255,.65)]" aria-hidden="true" />
+          3D-Druckstudio &amp; digitale Lösungen
+          <span className="text-fg-subtle">/ Bargteheide</span>
+        </motion.div>
+        <div className="grid items-end gap-9 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:gap-16">
+          <motion.h1 variants={item} initial={from} animate="show" custom={1} className="max-w-[13ch] text-[clamp(3.8rem,9.2vw,8.8rem)] font-semibold leading-[.89] tracking-[-.075em]">
+            Ideen werden <span className="text-cyan">greifbar.</span>
           </motion.h1>
-
-          <motion.p
-            variants={item} initial={from} animate="show" custom={2}
-            className="mt-6 max-w-[34rem] text-lg leading-relaxed text-fg-muted md:text-xl"
-          >
-            3D-Druck und CAD-Konstruktion für Unternehmen und Privatkunden. Vom Ersatzteil bis zur Serie, in ganz Deutschland. Dazu IT-Service und Automatisierung für kleine Unternehmen.
-          </motion.p>
-
-          <motion.div
-            variants={item} initial={from} animate="show" custom={3}
-            className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4"
-          >
-            <button onClick={onInquiryClick} className="btn-primary">Projekt anfragen</button>
-            {onCalculatorClick && <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>}
-            <a href="#automatisierung" className="link-arrow text-[15px]">Abläufe automatisieren <span aria-hidden="true">→</span></a>
-          </motion.div>
-
-          <motion.div
-            variants={item} initial={from} animate="show" custom={4}
-            className="mt-10 grid max-w-[36rem] grid-cols-3 gap-2 sm:gap-3"
-            aria-label="Unsere Leistungen auf einen Blick"
-          >
-            {[
-              ['Einzelstück', 'bis Kleinserie'],
-              ['CAD', '& Konstruktion'],
-              ['Deutschlandweit', 'Versand möglich'],
-            ].map(([heading, detail]) => (
-              <div key={heading} className="hero-fact rounded-2xl border border-white/[.10] bg-white/[.035] px-3 py-4 sm:px-4">
-                <span className="block text-[13px] font-semibold leading-tight text-fg sm:text-[15px]">{heading}</span>
-                <span className="mt-1 block text-xs leading-snug text-fg-muted sm:text-sm">{detail}</span>
-              </div>
-            ))}
+          <motion.div variants={item} initial={from} animate="show" custom={2} className="pb-2">
+            <p className="max-w-[34ch] text-lg leading-relaxed text-fg-muted md:text-xl">
+              Von der ersten Skizze bis zum fertigen Bauteil. Wir konstruieren, drucken und automatisieren – für Unternehmen und Privatkunden.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button onClick={onInquiryClick} className="btn-primary">Projekt starten <span aria-hidden="true">↗</span></button>
+              {onCalculatorClick && <button onClick={onCalculatorClick} className="btn-ghost">Preis berechnen</button>}
+            </div>
+            <p className="mt-6 flex items-center gap-2 text-sm text-fg-muted">
+              <span className="flex text-cyan" aria-hidden="true">{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={14} weight="fill" />)}</span>
+              <span>{formatRating()} bei Google · {REVIEW_COUNT} Bewertungen</span>
+            </p>
           </motion.div>
         </div>
 
-        {/* Bildkomposition: großes Foto, kleines Foto überlappt */}
-        <div className="relative lg:col-span-5">
-          <div className="hero-photo-frame relative ml-auto w-full max-w-[34rem] pb-10 pl-10 sm:pl-16 lg:max-w-none lg:pl-12">
-            <PrintedPhoto
-              src="/projects/designlampe.webp"
-              alt="Gedruckte Leuchte mit Wellenstruktur, violett beleuchtet"
-              className="aspect-[4/5] w-full"
-              priority
-            />
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2.0, duration: 0.7, ease: EASE_OUT }}
-              className="absolute bottom-0 left-0 w-[46%] rounded-panel bg-bg p-1.5"
-            >
-              <img
-                src="/projects/stativ-adapter.webp"
-                alt="Gedruckter Stativ-Adapter für Messtechnik"
-                width={1200}
-                height={900}
-                loading="lazy"
-                className="aspect-square w-full rounded-[1.2rem] object-cover"
-              />
-            </motion.div>
+        <div className="mt-14 grid gap-4 md:mt-16 md:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] md:gap-5">
+          <motion.div initial={reduce ? false : { opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: EASE_OUT }} className="group relative min-h-[340px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[440px] md:min-h-[560px]">
+            <img src="/projects/designlampe.webp" alt="3D-gedruckte Designleuchte mit Wellenstruktur" width={1200} height={900} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#040B1D]/90 via-transparent to-transparent" aria-hidden="true" />
+            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-6 sm:p-9">
+              <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-cyan">01 / Design &amp; Fertigung</p><h2 className="mt-2 text-2xl font-semibold sm:text-4xl">Schicht für Schicht.<br />Einzigartig.</h2></div>
+              <button onClick={onInquiryClick} aria-label="Ähnliches Projekt anfragen" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/30 bg-bg/50 text-2xl text-fg backdrop-blur-md transition-colors hover:bg-cyan hover:text-ink">↗</button>
+            </div>
+          </motion.div>
+          <div className="grid grid-rows-[minmax(0,1fr)_auto] gap-4 md:gap-5">
+            <div className="group relative min-h-[260px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[330px]">
+              <img src="/projects/stativ-adapter.webp" alt="3D-gedruckter Stativadapter für Messtechnik" width={1200} height={900} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#040B1D]/90 via-transparent to-transparent" aria-hidden="true" />
+              <div className="absolute bottom-0 p-6 sm:p-8"><p className="text-xs font-semibold uppercase tracking-[.16em] text-cyan">02 / Technische Bauteile</p><h2 className="mt-2 text-2xl font-semibold">Präzise. Passgenau.</h2></div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 rounded-[1.75rem] border border-white/10 bg-white/[.035] px-4 py-6 sm:px-6">
+              {[
+                ['CAD', 'Konstruktion'],
+                ['3D', 'Druck & Serie'],
+                ['DE', 'Versandweit'],
+              ].map(([head, sub]) => (
+                <div key={head} className="min-w-0 border-r border-white/10 last:border-r-0 last:pr-0">
+                  <span className="block text-2xl font-semibold tracking-tight text-cyan sm:text-3xl">{head}</span>
+                  <span className="mt-1 block text-xs text-fg-muted sm:text-sm">{sub}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs font-semibold uppercase tracking-[.13em] text-fg-muted">
+          <span>Einzelstücke · Prototypen · Kleinserien</span>
+          <a href="#projekte" className="transition-colors hover:text-cyan">Arbeiten entdecken ↓</a>
+        </div>
       </div>
-
       <Marquee />
     </section>
   );
