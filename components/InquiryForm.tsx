@@ -67,6 +67,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | 'mailto' | null>(null);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [hp, setHp] = useState(''); // Spamschutz (verstecktes Feld)
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, []);
@@ -115,33 +116,35 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const subject = `Anfrage: ${topics[0] ?? 'Projekt'}${type === 'unternehmen' && form.company ? `, ${form.company}` : ''}`;
   const mailtoUrl = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
 
-  // Anfrage im Hintergrund direkt an LayerForm übertragen (landet automatisch in der Kundenverwaltung)
-  const transmit = (via: 'whatsapp' | 'email') =>
-    fetch('/api/kontakt', {
+  // Nur E-Mail-Anfragen direkt als HubSpot-Deal erfassen.
+  // Ein WhatsApp-Klick ist noch KEINE abgeschickte Nachricht.
+  const transmit = async () => {
+    const response = await fetch('/api/kontakt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({ via, ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
-    }).then((r) => r.ok);
+      body: JSON.stringify({ via: 'email', ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof payload.error === 'string' ? payload.error : 'Übertragung fehlgeschlagen.');
+  };
 
   const send = async (via: 'whatsapp' | 'email') => {
     if (!validate(via) || sending) return;
+    setSendError('');
     if (via === 'whatsapp') {
-      // WhatsApp sofort öffnen (sonst blockiert der Browser das Fenster), Übertragung läuft parallel
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
-      transmit('whatsapp').catch(() => {});
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
       setSentVia('whatsapp');
       return;
     }
     setSending(true);
-    const ok = await transmit('email').catch(() => false);
-    setSending(false);
-    if (ok) {
+    try {
+      await transmit();
       setSentVia('email');
-    } else {
-      // Rückfall: wie bisher im Mailprogramm vorbereiten
-      window.open(mailtoUrl, '_self');
-      setSentVia('mailto');
+    } catch (error) {
+      setSendError(error instanceof Error ? error.message : 'Anfrage konnte nicht übertragen werden.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -191,7 +194,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   <h2 className="mt-6 text-3xl font-semibold">{sentVia === 'email' ? 'Anfrage gesendet' : 'Fast geschafft'}</h2>
                   <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-fg-muted">
                     {sentVia === 'email'
-                      ? 'Vielen Dank! Ihre Anfrage ist bei uns angekommen. Sie erhalten gleich eine Bestätigung per E-Mail – Fotos oder Dateien können Sie einfach als Antwort darauf schicken.'
+                      ? 'Vielen Dank! Ihre Anfrage wurde erfolgreich übermittelt. Falls eine Bestätigung per E-Mail eintrifft, können Sie darauf Fotos oder Dateien antworten.'
                       : sentVia === 'whatsapp'
                         ? 'Ihre Nachricht ist in WhatsApp vorbereitet. Tippen Sie dort nur noch auf „Senden“.'
                         : 'Ihre E-Mail ist in Ihrem Mailprogramm vorbereitet. Klicken Sie dort nur noch auf „Senden“.'}
@@ -387,7 +390,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     className="absolute -left-[9999px] h-0 w-0 opacity-0"
                   />
 
-                  <div className="border-t border-white/10 pt-6">
+                  <div className="border-t border-white/10 pt-6">\n                    {sendError && (\n                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">\n                        <p>{sendError}</p>\n                        <a href={mailtoUrl} className="mt-2 inline-block font-semibold underline">Alternativ per E-Mail senden</a>\n                      </div>\n                    )}
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('email')} disabled={sending} className="btn-primary w-full disabled:opacity-60">
@@ -398,7 +401,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                       </button>
                     </div>
                     <p className="mt-3 text-sm text-fg-muted">
-                      Per E-Mail geht Ihre Anfrage direkt an uns. Bei WhatsApp wird die Nachricht vorbereitet – Sie tippen nur noch auf „Senden“.
+                      Per E-Mail wird Ihre Anfrage direkt an uns übermittelt. Bei WhatsApp wird eine Nachricht vorbereitet; erst nach Ihrem Klick auf „Senden“ in WhatsApp erreicht sie uns. Ein WhatsApp-Klick wird nicht als abgeschickte Anfrage gezählt.
                     </p>
                   </div>
                 </motion.form>
