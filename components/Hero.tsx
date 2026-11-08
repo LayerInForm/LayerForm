@@ -84,7 +84,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
               {[
                 ['CAD', 'Konstruktion'],
                 ['3D', 'Druck & Serie'],
-                ['DE', 'Versandweit'],
+                ['DE', 'Versand'],
               ].map(([head, sub]) => (
                 <div key={head} className="min-w-0 border-r border-white/10 last:border-r-0 last:pr-0">
                   <span className="block text-2xl font-semibold tracking-tight text-cyan sm:text-3xl">{head}</span>
