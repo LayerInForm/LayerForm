@@ -25,11 +25,19 @@ export function makeToken(hours = 12) {
 }
 export function verifyToken(token: string | undefined | null): boolean {
   if (!token || !process.env.INTERN_PASSWORT) return false;
-  const [payload, sig] = token.split('.');
+  if (token.length > 2048) return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, sig] = parts;
   if (!payload || !sig) return false;
   const want = Buffer.from(sign(payload)), got = Buffer.from(sig);
   if (want.length !== got.length || !timingSafeEqual(want, got)) return false;
-  try { return JSON.parse(Buffer.from(payload, 'base64url').toString()).exp > Date.now(); } catch { return false; }
+  try {
+    const data: unknown = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    if (!data || typeof data !== 'object' || !('exp' in data)) return false;
+    const exp = (data as { exp: unknown }).exp;
+    return typeof exp === 'number' && Number.isFinite(exp) && exp > Date.now() && exp <= Date.now() + 12 * 3600_000;
+  } catch { return false; }
 }
 export function requireAuth(req: VercelRequest, res: VercelResponse): boolean {
   const h = String(req.headers.authorization || '');
