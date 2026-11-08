@@ -251,6 +251,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
                   <Field label="Ihre Nachricht" error={errors.message}>
                     <textarea
+                      aria-invalid={Boolean(errors.message)}
                       rows={5}
                       value={form.message}
                       onChange={set('message')}
@@ -300,10 +301,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Vorname" error={errors.vorname}>
-                      <input value={form.vorname} onChange={set('vorname')} autoComplete="given-name" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.vorname)} value={form.vorname} onChange={set('vorname')} autoComplete="given-name" className={inputCls} />
                     </Field>
                     <Field label="Nachname" error={errors.nachname}>
-                      <input value={form.nachname} onChange={set('nachname')} autoComplete="family-name" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.nachname)} value={form.nachname} onChange={set('nachname')} autoComplete="family-name" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' ? (
                       <Field label="Firma" optional>
@@ -315,7 +316,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                       </Field>
                     )}
                     <Field label="E-Mail" error={errors.email}>
-                      <input value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.email)} value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' && (
                       <Field label="Telefon" optional>
@@ -363,6 +364,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     <label className="flex items-start gap-3 text-[15px] leading-relaxed text-fg/80">
                       <input
                         type="checkbox"
+                        aria-invalid={Boolean(errors.consent)}
                         checked={consent}
                         onChange={(e) => setConsent(e.target.checked)}
                         className="mt-1 h-5 w-5 shrink-0 accent-[#00E5FF]"
@@ -391,6 +393,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   />
 
                   <div className="border-t border-white/10 pt-6">
+                    {Object.keys(errors).length > 0 && (
+                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
+                        Bitte prüfen Sie die markierten Pflichtfelder und den Datenschutzhinweis.
+                      </div>
+                    )}
                     {sendError && (
                       <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
                         <p>{sendError}</p>
