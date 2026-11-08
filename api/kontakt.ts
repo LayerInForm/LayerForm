@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { Redis } from '@upstash/redis';
+import { createHash } from 'node:crypto';
 import { hubspotAktiv, legeLeadAn, type Lead } from './_lib/hubspot.js';
 
 /**
@@ -28,6 +30,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (email && !/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: 'E-Mail ungültig' });
   if (via === 'email' && !email) return res.status(400).json({ error: 'E-Mail fehlt' });
 
+  // Duplikatsicherung vor jeder externen Schreiboperation: identische Anfragen
+  // innerhalb einer Stunde nur einmal bearbeiten (auch bei mehreren Serverinstanzen).
+  const redisUrl = process.env.KV_REST_API_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN;
+  if (!redisUrl || !redisToken) {
+    console.error('Anfrage: Redis-Duplikatsicherung nicht konfiguriert');
+    return res.status(503).json({ error: 'Anfrage momentan nicht verfügbar. Bitte schreiben Sie an auftrag@layer-form.de.' });
+  }
+  const redis = new Redis({ url: redisUrl, token: redisToken });
+  const signature = JSON.stringify({
+    name: name.toLowerCase(), email: email.toLowerCase(), phone: phone.replace(/\\s+/g, ''),
+    message: message.trim(), type: kundentyp, company: company.toLowerCase(),
+    quantity: clip(b.quantity, 20), topics, via,
+  });
+  const dedupeKey = 'lf:anfrage:v2:' + createHash('sha256').update(signature).digest('hex');
+  try {
+    const existing = await redis.get<string>(dedupeKey);
+    if (existing === 'sent') return res.status(200).json({ ok: true, duplicate: true });
+    if (existing) return res.status(409).json({ error: 'Diese Anfrage wird bereits verarbeitet. Bitte einen Moment warten.' });
+    const acquired = await redis.set(dedupeKey, 'processing', { nx: true, ex: 120 });
+    if (acquired !== 'OK') return res.status(409).json({ error: 'Diese Anfrage wird bereits verarbeitet. Bitte einen Moment warten.' });
+  } catch (e) {
+    console.error('Redis-Duplikatsicherung fehlgeschlagen', e);
+    return res.status(503).json({ error: 'Anfrage momentan nicht verfügbar. Bitte schreiben Sie an auftrag@layer-form.de.' });
+  }
+
+  let delivered = false;
+  try {
   // 1. Direkt in HubSpot
   let inHubspot = false;
   if (hubspotAktiv()) {
@@ -60,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // 2. Ersatzweg, falls HubSpot nicht erreichbar war
   if (!inHubspot) {
-    if (!resend) return res.status(503).json({ error: 'Übertragung ist noch nicht eingerichtet' });
+    if (!resend) throw new Error('Weder HubSpot noch E-Mail-Versand verfügbar');
     try {
       const body = `${text || message}\n\n—\nGesendet über das Anfrageformular auf layer-form.de${via === 'whatsapp' ? ' (Kunde hat WhatsApp gewählt)' : ''}.`;
       const { error } = await resend.emails.send({
@@ -72,10 +102,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (error) throw new Error(error.message);
     } catch (e) {
       console.error('Versand fehlgeschlagen', e);
-      return res.status(502).json({ error: 'Versand fehlgeschlagen' });
+      throw new Error('Ersatzversand fehlgeschlagen');
     }
   }
 
+  delivered = true;
   // 3. Eingangsbestätigung an den Kunden (nur bei E-Mail; Fehler blockieren nichts)
   if (resend && via === 'email' && process.env.ANFRAGE_BESTAETIGUNG !== 'aus') {
     const ctext = [
@@ -86,13 +117,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'Viele Grüße', 'Benjamin Ridel', 'LayerForm · www.layer-form.de · WhatsApp +49 176 85922649',
     ].join('\n');
     try {
-      await resend.emails.send({
+      const confirmation = await resend.emails.send({
         from, to: email, replyTo: to, subject: `Re: ${subject}`, text: ctext,
         html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px;line-height:1.5;white-space:pre-wrap">${esc(ctext)}</div>`,
       });
+      if (confirmation.error) throw new Error(confirmation.error.message);
     } catch (e) {
       console.error('Bestätigung fehlgeschlagen', e);
     }
   }
-  return res.status(200).json({ ok: true });
+  await redis.set(dedupeKey, 'sent', { ex: 3600 }).catch((e) => console.error('Anfrage-Status konnte nicht gespeichert werden', e));
+  return res.status(200).json({ ok: true, destination: inHubspot ? 'hubspot' : 'email' });
+  } catch (e) {
+    console.error('Anfrage nicht zustellbar', e);
+    if (!delivered) await redis.del(dedupeKey).catch(() => {});
+    return res.status(502).json({ error: 'Die Anfrage konnte nicht zugestellt werden. Bitte schreiben Sie direkt an auftrag@layer-form.de.' });
+  }
 }
