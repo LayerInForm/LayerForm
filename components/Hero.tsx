@@ -38,7 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
   const from = reduce ? false : 'hidden';
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden hero-ambient">
       {/* Tiefes Blau aus dem Würfel als Lichtquelle oben rechts */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -60,7 +60,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
 
           <motion.h1
             variants={item} initial={from} animate="show" custom={1}
-            className="mt-6 text-[clamp(2.75rem,5.2vw,4.5rem)] font-semibold leading-[1.02] [text-wrap:wrap]"
+            className="mt-6 max-w-[14ch] text-[clamp(2.75rem,5.2vw,4.5rem)] font-semibold leading-[1.02] [text-wrap:balance]"
           >
             Ihre Idee.<br />
             <span className="sm:whitespace-nowrap">Gedruckt &amp; <span className="text-cyan">geliefert.</span></span>
@@ -81,11 +81,28 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
             {onCalculatorClick && <button onClick={onCalculatorClick} className="btn-ghost">Preis für Ihre Datei berechnen</button>}
             <a href="#automatisierung" className="link-arrow text-[15px]">Abläufe automatisieren <span aria-hidden="true">→</span></a>
           </motion.div>
+
+          <motion.div
+            variants={item} initial={from} animate="show" custom={4}
+            className="mt-10 grid max-w-[36rem] grid-cols-3 gap-2 sm:gap-3"
+            aria-label="Unsere Leistungen auf einen Blick"
+          >
+            {[
+              ['Einzelstück', 'bis Kleinserie'],
+              ['CAD', '& Konstruktion'],
+              ['Deutschlandweit', 'Versand möglich'],
+            ].map(([heading, detail]) => (
+              <div key={heading} className="hero-fact rounded-2xl border border-white/[.10] bg-white/[.035] px-3 py-4 sm:px-4">
+                <span className="block text-[13px] font-semibold leading-tight text-fg sm:text-[15px]">{heading}</span>
+                <span className="mt-1 block text-xs leading-snug text-fg-muted sm:text-sm">{detail}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* Bildkomposition: großes Foto, kleines Foto überlappt */}
         <div className="relative lg:col-span-5">
-          <div className="relative ml-auto w-full max-w-[34rem] pb-10 pl-10 sm:pl-16 lg:max-w-none lg:pl-12">
+          <div className="hero-photo-frame relative ml-auto w-full max-w-[34rem] pb-10 pl-10 sm:pl-16 lg:max-w-none lg:pl-12">
             <PrintedPhoto
               src="/projects/designlampe.webp"
               alt="Gedruckte Leuchte mit Wellenstruktur, violett beleuchtet"
