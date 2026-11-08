@@ -69,6 +69,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(503).json({ error: 'Anfrage momentan nicht verfügbar. Bitte schreiben Sie an auftrag@layer-form.de.' });
   }
   const redis = new Redis({ url: redisUrl, token: redisToken });
+
+  // IP-basierte Begrenzung gegen automatisierte Massenanfragen.
+  // Keine Kundendaten in Redis-Schlüsseln speichern; nur einen Hash der IP.
+  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  const rateKey = 'lf:anfrage:rate:v1:' + createHash('sha256').update(ip).digest('hex');
+  try {
+    const attempts = await redis.incr(rateKey);
+    if (attempts === 1) await redis.expire(rateKey, 900);
+    if (attempts > 20) {
+      res.setHeader('Retry-After', '900');
+      return res.status(429).json({ error: 'Zu viele Anfragen. Bitte versuchen Sie es später erneut oder schreiben Sie an auftrag@layer-form.de.' });
+    }
+  } catch (error) {
+    // Redis-Ausfall wird anschließend durch die zwingende Duplikatsicherung behandelt.
+    console.error('Anfrage: Ratenbegrenzung fehlgeschlagen', error);
+  }
+
   const signature = JSON.stringify({
     name: name.toLowerCase(), email: email.toLowerCase(), phone: phone.replace(/\s+/g, ''),
     message: message.trim(), type: kundentyp, company: company.toLowerCase(),
