@@ -12,14 +12,14 @@ import { Automation } from './components/Automation';
 import { CadShowcase } from './components/CadShowcase';
 import { Projects } from './components/Projects';
 import { ConsultationHub } from './components/ConsultationHub';
-import { Impressum, AGB, Datenschutz } from './components/LegalPages';
+import { Impressum, AGB, Datenschutz, Widerruf } from './components/LegalPages';
 
 // Preisrechner wird erst geladen, wenn er geöffnet wird (3D-Bibliothek ist groß)
 const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculator'));
 // Interne Umgebung liegt unter layer-form.de/intern (public/intern.html, nicht verlinkt)
 const InternRedirect = lazy(() => import('./components/internal/InternRedirect'));
 
-export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'rechner' | 'kalkulation';
+export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'widerruf' | 'rechner' | 'kalkulation';
 
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
 // #intern, #kalk und #kalkulation leiten zu layer-form.de/intern weiter
@@ -30,7 +30,7 @@ const HASH_VIEW: Record<string, View> = {
 // Seitenaufrufe für Vercel Web Analytics (ohne Cookies). Die Ansichten heißen dort wie eigene Seiten.
 const VIEW_PATH: Partial<Record<View, string>> = {
   home: '/', rechner: '/preisrechner', inquiry: '/anfrage', contact: '/kontakt',
-  impressum: '/impressum', agb: '/agb', datenschutz: '/datenschutz',
+  impressum: '/impressum', agb: '/agb', datenschutz: '/datenschutz', widerruf: '/widerruf',
 };
 const VIEW_HASH: Partial<Record<View, string>> = { rechner: '#preisrechner', kalkulation: '#intern' };
 
@@ -136,6 +136,7 @@ const App: React.FC = () => {
         {currentView === 'impressum' && <div className="legal pt-28"><Impressum /></div>}
         {currentView === 'agb' && <div className="legal pt-28"><AGB /></div>}
         {currentView === 'datenschutz' && <div className="legal pt-28"><Datenschutz /></div>}
+        {currentView === 'widerruf' && <div className="legal pt-28"><Widerruf /></div>}
       </main>
 
       <Footer setView={setCurrentView} />
