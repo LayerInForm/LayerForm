@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const redis = new Redis({ url: redisUrl, token: redisToken });
   const signature = JSON.stringify({
-    name: name.toLowerCase(), email: email.toLowerCase(), phone: phone.replace(/\\s+/g, ''),
+    name: name.toLowerCase(), email: email.toLowerCase(), phone: phone.replace(/\s+/g, ''),
     message: message.trim(), type: kundentyp, company: company.toLowerCase(),
     quantity: clip(b.quantity, 20), topics, via,
   });
