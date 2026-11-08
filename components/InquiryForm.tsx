@@ -252,6 +252,8 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   <Field label="Ihre Nachricht" error={errors.message}>
                     <textarea
                       aria-invalid={Boolean(errors.message)}
+                      maxLength={5000}
+                      required
                       rows={5}
                       value={form.message}
                       onChange={set('message')}
@@ -301,26 +303,26 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Vorname" error={errors.vorname}>
-                      <input aria-invalid={Boolean(errors.vorname)} value={form.vorname} onChange={set('vorname')} autoComplete="given-name" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.vorname)} maxLength={80} required value={form.vorname} onChange={set('vorname')} autoComplete="given-name" className={inputCls} />
                     </Field>
                     <Field label="Nachname" error={errors.nachname}>
-                      <input aria-invalid={Boolean(errors.nachname)} value={form.nachname} onChange={set('nachname')} autoComplete="family-name" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.nachname)} maxLength={80} required value={form.nachname} onChange={set('nachname')} autoComplete="family-name" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' ? (
                       <Field label="Firma" optional>
-                        <input value={form.company} onChange={set('company')} autoComplete="organization" className={inputCls} />
+                        <input maxLength={160} value={form.company} onChange={set('company')} autoComplete="organization" className={inputCls} />
                       </Field>
                     ) : (
                       <Field label="Telefon" optional>
-                        <input value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
+                        <input maxLength={60} value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
                       </Field>
                     )}
                     <Field label="E-Mail" error={errors.email}>
-                      <input aria-invalid={Boolean(errors.email)} value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
+                      <input aria-invalid={Boolean(errors.email)} maxLength={200} required value={form.email} onChange={set('email')} type="email" autoComplete="email" className={inputCls} />
                     </Field>
                     {type === 'unternehmen' && (
                       <Field label="Telefon" optional>
-                        <input value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
+                        <input maxLength={60} value={form.phone} onChange={set('phone')} type="tel" autoComplete="tel" className={inputCls} />
                       </Field>
                     )}
                   </div>
@@ -341,6 +343,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                         className={`${inputCls} col-span-6`}
                       />
                       <input
+                        maxLength={20}
                         value={form.zip}
                         onChange={set('zip')}
                         autoComplete="postal-code"
