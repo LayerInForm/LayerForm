@@ -3,8 +3,8 @@ import { CONTACT_EMAIL, CONTACT_PHONE } from '../src/constants';
 
 const LegalLayout: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <section className="max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28 animate-fade-in">
-    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-10 text-slate-900">{title}</h1>
-    <div className="space-y-8 text-slate-600 leading-relaxed font-normal text-sm md:text-base">
+    <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight mb-10 text-fg">{title}</h1>
+    <div className="space-y-8 text-fg-muted leading-relaxed font-normal text-sm md:text-base">
       {children}
     </div>
   </section>
@@ -105,11 +105,11 @@ const AGB_TEILE: { titel: string; hinweis?: string; punkte: AgbItem[] }[] = [
         'Ist der Kunde Unternehmer, geht die Gefahr mit Übergabe der Ware an das Versandunternehmen auf ihn über.',
       ] },
       { t: 'A 4 Widerrufsrecht', c: [
-        'Verbrauchern steht ein Widerrufsrecht nach Maßgabe der Widerrufsbelehrung zu. Bei Waren, die nach Kundenspezifikation angefertigt oder eindeutig auf die persönlichen Bedürfnisse zugeschnitten sind, besteht kein Widerrufsrecht (§ 312g Abs. 2 Nr. 1 BGB). Dies betrifft den überwiegenden Teil der angebotenen Leistungen.',
+        'Bei Fernabsatzverträgen mit Verbrauchern gelten die gesetzlichen Widerrufsregeln. Die gesonderte Widerrufsbelehrung informiert über Voraussetzungen und Ausnahmen, insbesondere bei eindeutig personalisierten Waren gemäß § 312g Abs. 2 Nr. 1 BGB. Nicht jede auf Bestellung produzierte Ware ist automatisch vom Widerruf ausgeschlossen.',
       ] },
       { t: 'A 5 Gewährleistung', c: [
         'Es gelten die gesetzlichen Mängelrechte. Fertigungstypische Merkmale des 3D-Drucks, insbesondere sichtbare Schichtlinien, leichte Farb- und Maßabweichungen im Rahmen üblicher Toleranzen sowie Spuren von Stützstrukturen, stellen keinen Mangel dar.',
-        'Gegenüber Unternehmern beträgt die Verjährungsfrist für Mängelansprüche ein Jahr ab Ablieferung. Unternehmer haben offensichtliche Mängel unverzüglich, spätestens innerhalb von 7 Tagen nach Erhalt, in Textform anzuzeigen (§ 377 HGB bleibt unberührt).',
+        'Es gelten die gesetzlichen Verjährungs- und Untersuchungspflichten. Soweit anwendbar, bleibt § 377 HGB unberührt.',
       ] },
       { t: 'A 6 CAD-Dateien und digitale Inhalte', c: [
         'Erstellte CAD- und Druckdateien darf der Kunde für den vereinbarten Zweck nutzen. Eine Weitergabe oder ein Weiterverkauf der Dateien ist nur mit ausdrücklicher Zustimmung von LayerForm gestattet, sofern nichts anderes vereinbart ist.',
@@ -123,7 +123,7 @@ const AGB_TEILE: { titel: string; hinweis?: string; punkte: AgbItem[] }[] = [
       { t: 'B 1 Leistungsumfang und Vertragsart', c: [
         'LayerForm erbringt Beratung, IT-Service und die Einrichtung von Automatisierungen (z. B. Workflows, Schnittstellen zwischen Programmen, CRM-Einrichtung, Einführung von KI-Werkzeugen) sowie deren laufende Betreuung.',
         'Ziele, Maßnahmen und Umfang werden vor Beginn im Angebot bzw. in einer Leistungsbeschreibung festgelegt. Nach der Umsetzung erhält der Kunde eine Beschreibung der umgesetzten Lösung und ihrer Funktionsweise.',
-        'Die Leistungen werden als Dienstleistungen im Sinne der §§ 611 ff. BGB erbracht. LayerForm schuldet die fachgerechte Durchführung der vereinbarten Tätigkeiten, jedoch keinen bestimmten wirtschaftlichen oder technischen Erfolg, insbesondere keine bestimmte Zeitersparnis, Umsatzsteigerung oder dauerhafte Funktionsfähigkeit in Systemen Dritter. Eine Erfolgshaftung oder Mängelhaftung nach Werkvertragsrecht besteht nicht, sofern nicht ausdrücklich in Textform etwas anderes vereinbart ist.',
+        'Ob ein Dienst- oder Werkvertrag vorliegt, richtet sich nach dem konkret vereinbarten Leistungsinhalt und den gesetzlichen Vorschriften. Ein bestimmter wirtschaftlicher Erfolg, etwa eine Umsatzsteigerung, wird nur geschuldet, wenn dies ausdrücklich vereinbart wurde.',
       ] },
       { t: 'B 2 Mitwirkung des Kunden', c: [
         'Der Kunde stellt rechtzeitig und kostenfrei alle für die Leistung erforderlichen Informationen, Zugänge, Berechtigungen und Ansprechpartner zur Verfügung und benennt einen verantwortlichen Ansprechpartner.',
@@ -132,7 +132,7 @@ const AGB_TEILE: { titel: string; hinweis?: string; punkte: AgbItem[] }[] = [
       ] },
       { t: 'B 3 Übergabe und Freigabe', c: [
         'Nach Abschluss einer Umsetzung übergibt LayerForm die Lösung mit Beschreibung an den Kunden. Der Kunde prüft die Lösung innerhalb von 7 Tagen. Hinweise, die innerhalb dieser Frist in Textform eingehen und den vereinbarten Leistungsumfang betreffen, berücksichtigt LayerForm im Rahmen des Auftrags.',
-        'Nach Ablauf dieser Frist oder mit Nutzung der Lösung im laufenden Betrieb gilt die Leistung als vollständig erbracht. Spätere Anpassungen, Erweiterungen oder Fehlerbehebungen sind gesondert zu beauftragen und werden nach Aufwand berechnet, sofern sie nicht in einer vereinbarten Betreuung enthalten sind.',
+        'Nach der Übergabe stimmen die Parteien gegebenenfalls erforderliche Korrekturen ab. Gesetzliche Mängelrechte und vertraglich vereinbarte Ansprüche bleiben unberührt. Zusätzliche Erweiterungen außerhalb des vereinbarten Leistungsumfangs werden gesondert angeboten.',
         'Der Betrieb, die Prüfung der Ergebnisse im Alltag und die Entscheidung über den Einsatz der Lösung liegen beim Kunden.',
       ] },
       { t: 'B 4 Programme und Dienste Dritter', c: [
@@ -150,7 +150,7 @@ const AGB_TEILE: { titel: string; hinweis?: string; punkte: AgbItem[] }[] = [
       { t: 'B 7 Haftung', c: [
         'Ergänzend zu § 4 gilt für Leistungen nach Teil B: Bei leichter Fahrlässigkeit haftet LayerForm nur bei Verletzung wesentlicher Vertragspflichten und der Höhe nach begrenzt auf die Vergütung des betroffenen Auftrags, bei laufender Betreuung auf die Vergütung der letzten drei Monate.',
         'Soweit gesetzlich zulässig, ist die Haftung ausgeschlossen für entgangenen Gewinn, mittelbare Schäden und Folgeschäden, für Schäden durch Ausfälle oder Änderungen von Diensten Dritter sowie für den Verlust von Daten, soweit dieser durch eine ordnungsgemäße Datensicherung des Kunden vermeidbar gewesen wäre.',
-        'Ansprüche des Kunden verjähren innerhalb eines Jahres ab Erbringung der jeweiligen Leistung.',
+        
         'Die Haftung bei Vorsatz und grober Fahrlässigkeit, bei Verletzung des Lebens, des Körpers oder der Gesundheit, nach dem Produkthaftungsgesetz und aus einer Garantie bleibt unberührt.',
       ] },
       { t: 'B 8 Nutzungsrechte', c: [
@@ -161,7 +161,7 @@ const AGB_TEILE: { titel: string; hinweis?: string; punkte: AgbItem[] }[] = [
         'Beide Parteien behandeln vertrauliche Informationen der jeweils anderen Partei, insbesondere Zugangsdaten und Geschäftsgeheimnisse, vertraulich. Zugangsdaten werden nur für die Durchführung des Auftrags verwendet. Der Kunde sollte Zugänge nach Abschluss des Auftrags ändern oder entziehen.',
       ] },
       { t: 'B 10 Referenzen', c: [
-        'LayerForm darf den Kunden mit Firmennamen und Logo als Referenz nennen, sofern der Kunde dem nicht in Textform widerspricht.',
+        'LayerForm nennt Firmennamen, Logos oder Projektinhalte nur nach vorheriger ausdrücklicher Zustimmung des Kunden als Referenz.',
       ] },
     ],
   },
