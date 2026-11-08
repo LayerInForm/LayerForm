@@ -94,3 +94,36 @@
 .calc-range::-moz-range-track { height: 6px; border-radius: 99px; background: linear-gradient(to right, #00E5FF var(--p, 10%), rgba(232, 241, 247, 0.12) var(--p, 10%)); }
 .calc-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 50%; background: #E8F1F7; box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.25); }
 .calc-range::-moz-range-thumb { width: 24px; height: 24px; border: 0; border-radius: 50%; background: #E8F1F7; box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.25); }
+
+/* LayerForm Design-Polish: ruhige Tiefenwirkung und klarere Produktpräsentation. */
+.hero-ambient::before {
+  content: '';
+  position: absolute;
+  width: min(48rem, 75vw);
+  aspect-ratio: 1;
+  right: -18%;
+  top: -18%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0, 229, 255, .075), transparent 68%);
+}
+.hero-photo-frame::before {
+  content: '';
+  position: absolute;
+  inset: 7% 0 12% 13%;
+  border: 1px solid rgba(0, 229, 255, .17);
+  border-radius: 1.75rem;
+  transform: translate(1rem, -1rem);
+  pointer-events: none;
+}
+.hero-fact {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+@media (max-width: 639px) {
+  .hero-photo-frame::before { transform: translate(.5rem, -.5rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary, .btn-ghost, .link-arrow { transition: none; }
+}
