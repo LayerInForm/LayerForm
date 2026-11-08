@@ -127,3 +127,20 @@
 @media (prefers-reduced-motion: reduce) {
   .btn-primary, .btn-ghost, .link-arrow { transition: none; }
 }
+
+/* Studio-Designsystem: konsistente Radien, lesbare Typografie und dezente Interaktionen */
+@layer components {
+  .btn-primary, .btn-ghost { border-radius: .7rem; }
+}
+@media (max-width: 767px) {
+  h1, h2, h3 { overflow-wrap: break-word; }
+  .btn-primary, .btn-ghost { white-space: normal; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
