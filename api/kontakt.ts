@@ -17,8 +17,23 @@ const LEISTUNG: Record<string, Lead['leistungen'][number]> = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Nur POST erlaubt' });
-  const b = (req.body ?? {}) as Record<string, unknown>;
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ error: 'Nur POST erlaubt' });
+  }
+  const contentType = String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+  if (contentType !== 'application/json') return res.status(415).json({ error: 'JSON erforderlich' });
+  const contentLength = Number(req.headers['content-length'] || 0);
+  if (contentLength > 24_000) return res.status(413).json({ error: 'Anfrage zu groß' });
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ error: 'Ungültige Anfrage' });
+  }
+  const b = req.body as Record<string, unknown>;
+  if (JSON.stringify(b).length > 24_000) return res.status(413).json({ error: 'Anfrage zu groß' });
+  // WhatsApp wird nur im Browser geöffnet, niemals als zugestellte Anfrage verbucht.
+  if (b.via !== 'email') return res.status(400).json({ error: 'Ungültiger Versandweg' });
   if (b.website) return res.status(200).json({ ok: true }); // Spamschutz
 
   const via = b.via === 'whatsapp' ? 'whatsapp' : 'email';
