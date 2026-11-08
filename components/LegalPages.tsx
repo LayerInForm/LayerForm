@@ -217,3 +217,39 @@ export const Datenschutz: React.FC = () => (
     </div>
   </LegalLayout>
 );
+
+/**
+ * Verbraucherinformationen für Fernabsatzverträge.
+ * Der genaue Widerrufstatbestand hängt von der Art der bestellten Leistung ab.
+ */
+export const Widerruf: React.FC = () => (
+  <LegalLayout title="Widerrufsbelehrung">
+    <div className="space-y-7 rounded-3xl bg-white p-8 text-slate-700 md:p-12">
+      <p className="font-semibold text-slate-900">Widerrufsrecht bei Warenlieferungen an Verbraucher</p>
+      <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter, der nicht der Beförderer ist, die Waren in Besitz genommen haben bzw. hat. Bei mehreren Waren, die im Rahmen einer einheitlichen Bestellung getrennt geliefert werden, beginnt die Frist mit Erhalt der letzten Ware.</p>
+      <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (LayerForm, Inhaber Benjamin Ridel, Ludwig-Bechstein-Weg 25a, 22941 Bargteheide, Deutschland, E-Mail: info@layer-form.de, Telefon: +49 176 85922649) mittels einer eindeutigen Erklärung (z. B. Brief oder E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das untenstehende Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+      <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+      <h2 className="text-xl font-semibold text-slate-900">Folgen des Widerrufs</h2>
+      <p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Lieferkosten (mit Ausnahme zusätzlicher Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart. In keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
+      <p>Wir können die Rückzahlung verweigern, bis wir die Waren wieder zurückerhalten haben oder bis Sie den Nachweis erbracht haben, dass Sie die Waren zurückgesandt haben, je nachdem, welches der frühere Zeitpunkt ist.</p>
+      <p>Sie haben die Waren unverzüglich und in jedem Fall spätestens binnen vierzehn Tagen ab dem Tag, an dem Sie uns über den Widerruf unterrichten, an uns zurückzusenden oder zu übergeben. Die Frist ist gewahrt, wenn Sie die Waren vor Ablauf der Frist von vierzehn Tagen absenden. Sie tragen die unmittelbaren Kosten der Rücksendung der Waren.</p>
+      <p>Sie müssen für einen etwaigen Wertverlust der Waren nur aufkommen, wenn dieser Wertverlust auf einen zur Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise der Waren nicht notwendigen Umgang mit ihnen zurückzuführen ist.</p>
+      <h2 className="text-xl font-semibold text-slate-900">Ausnahmen</h2>
+      <p>Ein Widerrufsrecht besteht insbesondere nicht bei Verträgen zur Lieferung von Waren, die nicht vorgefertigt sind und für deren Herstellung eine individuelle Auswahl oder Bestimmung durch den Verbraucher maßgeblich ist oder die eindeutig auf die persönlichen Bedürfnisse des Verbrauchers zugeschnitten sind (§ 312g Abs. 2 Nr. 1 BGB). Die Ausnahme ist für den konkreten Auftrag zu prüfen; eine bloße Fertigung erst nach Bestellung genügt nicht immer.</p>
+      <h2 className="text-xl font-semibold text-slate-900">Muster-Widerrufsformular</h2>
+      <p>Wenn Sie den Vertrag widerrufen wollen, können Sie folgenden Text an info@layer-form.de senden:</p>
+      <div className="whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm">{`An LayerForm, Inhaber Benjamin Ridel, Ludwig-Bechstein-Weg 25a, 22941 Bargteheide, info@layer-form.de
+
+Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren (*):
+
+Bestellt am (*) / erhalten am (*):
+Name des/der Verbraucher(s):
+Anschrift des/der Verbraucher(s):
+Unterschrift (nur bei Mitteilung auf Papier):
+Datum:
+
+(*) Unzutreffendes streichen.`}</div>
+      <p className="text-sm text-slate-500">Hinweis: Diese Belehrung bezieht sich auf Warenlieferungen. Für Dienstleistungen und digitale Inhalte können abweichende Regeln und Informationspflichten gelten. Die Belehrung muss vor einem konkreten Vertragsabschluss zur jeweiligen Leistung passen.</p>
+    </div>
+  </LegalLayout>
+);
