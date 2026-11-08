@@ -23,6 +23,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Nur POST erlaubt' });
   }
+  // Browser dürfen das Formular nur von der eigenen Website absenden.
+  // Anfragen ohne Origin bleiben für kompatible Server-Clients erlaubt.
+  const requestOrigin = req.headers.origin;
+  if (requestOrigin) {
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim().toLowerCase();
+    let originHost = '';
+    try {
+      const parsed = new URL(String(requestOrigin));
+      if (parsed.protocol !== 'https:') return res.status(403).json({ error: 'Herkunft nicht erlaubt' });
+      originHost = parsed.host.toLowerCase();
+    } catch {
+      return res.status(403).json({ error: 'Herkunft nicht erlaubt' });
+    }
+    if (!host || originHost !== host) return res.status(403).json({ error: 'Herkunft nicht erlaubt' });
+  }
   const contentType = String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
   if (contentType !== 'application/json') return res.status(415).json({ error: 'JSON erforderlich' });
   const contentLength = Number(req.headers['content-length'] || 0);
