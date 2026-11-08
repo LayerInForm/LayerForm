@@ -23,33 +23,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const redis = db();
+  if (!redis) return fail(res, 503, 'rate_limit_unavailable', 'Anmeldung vorübergehend nicht verfügbar');
+
   const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   const key = 'lf:intern:login:fail:' + createHash('sha256').update(ip).digest('hex');
-  if (redis) {
-    try {
-      const failures = Number(await redis.get(key) || 0);
-      if (failures >= 10) {
-        res.setHeader('Retry-After', '900');
-        return fail(res, 429, 'rate_limited', 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.');
-      }
-    } catch (error) {
-      console.error('Login-Schutz: Redis-Abfrage fehlgeschlagen', error);
-    }
+  let attempts: number;
+  try {
+    // Atomar vor der Passwortprüfung zählen, damit parallele Versuche die Sperre nicht umgehen.
+    attempts = await redis.incr(key);
+    if (attempts === 1) await redis.expire(key, 900);
+  } catch (error) {
+    console.error('Login-Schutz: Redis nicht erreichbar', error);
+    return fail(res, 503, 'rate_limit_unavailable', 'Anmeldung vorübergehend nicht verfügbar');
+  }
+  if (attempts > 10) {
+    res.setHeader('Retry-After', '900');
+    return fail(res, 429, 'rate_limited', 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.');
   }
 
   if (!passwordMatches(pw)) {
-    if (redis) {
-      try {
-        const count = await redis.incr(key);
-        if (count === 1) await redis.expire(key, 900);
-      } catch (error) {
-        console.error('Login-Schutz: Redis-Zähler fehlgeschlagen', error);
-      }
-    }
     await new Promise((resolve) => setTimeout(resolve, 800));
     return fail(res, 401, 'wrong_password', 'Falsches Passwort');
   }
 
-  if (redis) await redis.del(key).catch((error) => console.error('Login-Schutz: Zähler konnte nicht gelöscht werden', error));
+  try {
+    await redis.del(key);
+  } catch (error) {
+    console.error('Login-Schutz: Zähler konnte nicht gelöscht werden', error);
+  }
   return res.status(200).json({ token: makeToken() });
 }
