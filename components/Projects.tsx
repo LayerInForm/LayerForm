@@ -78,7 +78,7 @@ const ProjectCard: React.FC<{ p: Project; big?: boolean; onInquiry: (topic?: str
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />
-        <span className="pointer-events-none absolute inset-0 rounded-panel shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]" />
+        <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]" />
       </span>
       <figcaption className="mt-3 flex items-start justify-between gap-3">
         <span>
@@ -97,7 +97,7 @@ const ProjectCard: React.FC<{ p: Project; big?: boolean; onInquiry: (topic?: str
 );
 
 export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
-  const [group, setGroup] = useState<Group>('privat');
+  const [group, setGroup] = useState<Group>('unternehmen');
   const reduce = useReducedMotion();
   const g = GROUPS[group];
 
@@ -105,16 +105,16 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
     <section id="projekte" className="relative">
       <div className="mx-auto max-w-7xl px-5 py-24 md:px-8 md:py-32">
         <Reveal>
-          <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] md:text-6xl">
-            Ein Ersatzteil oder hundert Giveaways.
+          <h2 className="max-w-4xl text-[clamp(3rem,6vw,6rem)] font-semibold leading-[.98] tracking-[-.06em]">
+            Nicht nur gedruckt. Gelöst.
           </h2>
           <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-fg-muted">
-            Projekte aus beiden Welten. Tippen Sie auf ein Bild, um etwas Ähnliches anzufragen.
+            Ausgewählte Arbeiten aus Konstruktion und Fertigung. Jedes Projekt beginnt mit einer konkreten Aufgabe.
           </p>
 
           {/* Umschalter mit gleitendem Hintergrund */}
           <div
-            className="mt-10 inline-flex w-full rounded-full border border-white/10 bg-surface p-1.5 sm:w-auto"
+            className="mt-10 inline-flex w-full border-b border-white/20 pb-2 sm:w-auto"
             role="tablist"
             aria-label="Kundengruppe"
           >
@@ -128,13 +128,13 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
                   aria-selected={on}
                   onClick={() => setGroup(key)}
                   className={`relative flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:px-5 sm:text-[15px] ${
-                    on ? 'text-ink' : 'text-fg-muted hover:text-fg'
+                    on ? 'text-cyan' : 'text-fg-muted hover:text-fg'
                   }`}
                 >
                   {on && (
                     <motion.span
                       layoutId="group-pill"
-                      className="absolute inset-0 rounded-full bg-cyan"
+                      className="absolute inset-x-0 bottom-0 h-[2px] bg-cyan"
                       transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36 }}
                     />
                   )}
@@ -153,7 +153,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.3, ease: EASE_OUT }}
-            className="mt-14 grid gap-12 lg:grid-cols-12 lg:gap-10"
+            className="mt-14 grid gap-12 lg:grid-cols-12 lg:gap-14"
             role="tabpanel"
           >
             <div className="lg:sticky lg:top-28 lg:col-span-4 lg:self-start">
