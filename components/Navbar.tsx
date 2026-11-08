@@ -33,7 +33,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Automatisierung', anchor: 'automatisierung' },
   ...(PREISRECHNER_AKTIV ? [{ label: 'Preisrechner', view: 'rechner' as View }] : []),
   { label: 'Etsy-Shop', href: ETSY_URL },
-  { label: 'Kontakt', anchor: 'kontakt' },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
@@ -81,15 +80,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   const solid = scrolled || currentView !== 'home' || open;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-nav px-3 pt-[max(.75rem,env(safe-area-inset-top))] md:px-6">
+    <header className="fixed inset-x-0 top-0 z-nav border-b border-white/10 bg-bg/90 backdrop-blur-xl">
       <div
-        className={`mx-auto max-w-7xl rounded-panel border transition-[background-color,border-color] duration-300 ${
+        className={`mx-auto max-w-7xl transition-[background-color,border-color] duration-300 ${
           solid
-            ? 'border-white/[.08] bg-bg/80 shadow-[inset_0_1px_0_rgba(255,255,255,.06)] backdrop-blur-xl'
-            : 'border-transparent bg-transparent'
+            ? 'bg-transparent'
+            : 'bg-transparent'
         } ${open ? 'bg-bg/[.97]' : ''}`}
       >
-        <nav className="flex h-16 items-center justify-between pl-4 pr-2 md:pl-5" aria-label="Hauptnavigation">
+        <nav className="flex h-[4.75rem] items-center justify-between px-5 md:px-8" aria-label="Hauptnavigation">
           <button onClick={() => { setOpen(false); setView('home'); }} aria-label="LayerForm, zur Startseite">
             <BrandLogo />
           </button>
@@ -118,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                   {(active === item.anchor || (item.view && item.view === currentView)) && (
                     <motion.span
                       layoutId="nav-active"
-                      className="absolute inset-0 rounded-full bg-white/[.07]"
+                      className="absolute inset-x-3 bottom-0 h-[2px] bg-cyan"
                       transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36 }}
                     />
                   )}
@@ -126,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                 </button>
               )
             )}
-            <button onClick={() => setView('inquiry')} className="btn-primary ml-2 !px-5 !py-2.5">
+            <button onClick={() => setView('inquiry')} className="btn-primary ml-2 !rounded-lg !px-5 !py-2.5">
               Projekt anfragen
             </button>
           </div>
