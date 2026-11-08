@@ -137,13 +137,18 @@ export async function legeLeadAn(l: Lead): Promise<{ dealId: string; url: string
     hubspot_owner_id: OWNER_ID,
   };
   if (ids.length) notiz.hs_attachment_ids = ids.join(';');
-  await hs('POST', '/crm/v3/objects/notes', {
+  try {
+    await hs('POST', '/crm/v3/objects/notes', {
     properties: notiz,
     associations: [
       { to: { id: deal.id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 214 }] },
       { to: { id: kontaktId }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] },
     ],
-  });
+    });
+  } catch (e) {
+    // Deal ist bereits angelegt! Kein erneuter Versand / Zweitanlage auslösen.
+    console.error('HubSpot-Deal wurde erstellt, aber die Notiz konnte nicht gespeichert werden', e);
+  }
 
   return { dealId: deal.id, url: `https://app-eu1.hubspot.com/contacts/${PORTAL_ID}/record/0-3/${deal.id}` };
 }
