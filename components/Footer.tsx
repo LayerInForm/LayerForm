@@ -13,6 +13,7 @@ const LINKS: { label: string; view: View }[] = [
   { label: 'Impressum', view: 'impressum' },
   { label: 'AGB', view: 'agb' },
   { label: 'Datenschutz', view: 'datenschutz' },
+  { label: 'Widerruf', view: 'widerruf' },
 ];
 
 export const Footer: React.FC<FooterProps> = ({ setView }) => (
