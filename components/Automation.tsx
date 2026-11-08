@@ -13,7 +13,7 @@ const USE_CASES = [
   {
     icon: Funnel,
     title: 'Anfragen & Leads',
-    text: 'Kontaktformular, E-Mail oder WhatsApp: Jede Anfrage landet automatisch im CRM, der Kunde bekommt eine Bestätigung, Sie eine Aufgabe.',
+    text: 'Anfragen aus Formularen und Postfächern gezielt erfassen, prüfen und ins CRM übernehmen – mit klaren Regeln statt unnötiger Duplikate.',
   },
   {
     icon: Receipt,
@@ -61,17 +61,17 @@ const IT_SERVICES = [
 const TOOLS = ['Google Workspace', 'Microsoft 365', 'Power Automate', 'n8n', 'HubSpot', 'Lexware', 'Gemini', 'ChatGPT', 'Claude'];
 
 /* Beispiel-Ablauf, so wie er bei LayerForm selbst läuft */
-const FLOW = ['Anfrage kommt rein', 'KI erkennt Kundenmail', 'Lead im CRM', 'Bestätigung an Kunden', 'Aufgabe für Sie'];
+const FLOW = ['Anfrage eingehen', 'Inhalt prüfen', 'CRM-Eintrag anlegen', 'Eingang bestätigen', 'Aufgabe zuweisen'];
 
 export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
   <section id="automatisierung" className="relative overflow-hidden">
-    <div className="layer-lines pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true" />
     <div className="relative mx-auto max-w-7xl px-5 py-24 md:px-8 md:py-32">
       <Reveal>
-        <span className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/10 px-3.5 py-1.5 text-sm font-semibold text-cyan">
+        <span className="inline-flex items-center gap-2 border-b border-cyan pb-2 text-xs font-semibold uppercase tracking-[.18em] text-cyan">
           Automatisierung &amp; IT-Service
         </span>
-        <h2 className="mt-5 max-w-[16ch] text-4xl font-semibold leading-[1.05] md:text-6xl">
+        <h2 className="mt-7 max-w-[16ch] text-[clamp(3rem,6vw,6rem)] font-semibold leading-[.98] tracking-[-.06em]">
           Abläufe, die von selbst laufen.
         </h2>
         <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-fg-muted">
@@ -83,7 +83,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
       {/* Beispiel-Ablauf */}
       <Reveal delay={0.05}>
         <div className="mt-12 rounded-panel bg-gradient-to-br from-deep to-surface p-6 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] md:p-8">
-          <p className="text-sm font-semibold text-fg-muted">So läuft es bei uns selbst, jeden Tag:</p>
+          <p className="text-sm font-semibold text-fg-muted">Beispiel für einen strukturierten Anfrageprozess:</p>
           <ol className="mt-5 flex flex-col gap-2 md:flex-row md:items-center md:gap-0">
             {FLOW.map((step, i) => (
               <li key={step} className="flex items-center gap-2 md:flex-1 md:gap-0">
@@ -98,16 +98,16 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
             ))}
           </ol>
           <p className="mt-5 text-[15px] leading-relaxed text-fg/75">
-            Ohne dass jemand eine Mail abtippt oder eine Liste pflegt. Genau solche Abläufe bauen wir auch für Ihr Unternehmen.
+            Ein möglicher Ablauf – die einzelnen Schritte stimmen wir auf Ihre Programme und Anforderungen ab.
           </p>
         </div>
       </Reveal>
 
       {/* Einsatzbereiche */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
+      <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
         {USE_CASES.map(({ icon: Icon, title, text }, i) => (
           <Reveal key={title} delay={0.04 * i}>
-            <article className="flex h-full flex-col rounded-panel border border-white/[.07] bg-surface p-7">
+            <article className="flex h-full flex-col bg-bg p-7 md:p-9">
               <Icon size={28} className="text-cyan" aria-hidden="true" />
               <h3 className="mt-5 text-xl font-semibold">{title}</h3>
               <p className="mt-2 leading-relaxed text-fg-muted">{text}</p>
