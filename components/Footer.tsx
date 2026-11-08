@@ -16,7 +16,14 @@ const LINKS: { label: string; view: View }[] = [
 ];
 
 export const Footer: React.FC<FooterProps> = ({ setView }) => (
-  <footer className="border-t border-white/[.07] pb-[env(safe-area-inset-bottom)]">
+  <footer className="border-t border-white/[.07] bg-[#070F21] pb-[env(safe-area-inset-bottom)]">
+    <div className="mx-auto max-w-7xl border-b border-white/10 px-5 pb-12 pt-20 md:px-8 md:pb-16 md:pt-24">
+      <p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan">Sie haben eine Idee?</p>
+      <button onClick={() => setView('inquiry')} className="group mt-5 flex w-full items-end justify-between gap-4 text-left">
+        <span className="text-[clamp(2.9rem,8vw,7.5rem)] font-semibold leading-[.95] tracking-[-.07em] text-fg transition-colors group-hover:text-cyan">Machen wir was draus.</span>
+        <span aria-hidden="true" className="mb-2 text-4xl text-cyan transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 md:text-6xl">↗</span>
+      </button>
+    </div>
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-5">
         <BrandLogo size="sm" />
