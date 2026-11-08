@@ -390,7 +390,13 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     className="absolute -left-[9999px] h-0 w-0 opacity-0"
                   />
 
-                  <div className="border-t border-white/10 pt-6">\n                    {sendError && (\n                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">\n                        <p>{sendError}</p>\n                        <a href={mailtoUrl} className="mt-2 inline-block font-semibold underline">Alternativ per E-Mail senden</a>\n                      </div>\n                    )}
+                  <div className="border-t border-white/10 pt-6">
+                    {sendError && (
+                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
+                        <p>{sendError}</p>
+                        <a href={mailtoUrl} className="mt-2 inline-block font-semibold underline">Alternativ per E-Mail senden</a>
+                      </div>
+                    )}
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('email')} disabled={sending} className="btn-primary w-full disabled:opacity-60">
