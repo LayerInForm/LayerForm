@@ -2,7 +2,7 @@
 
 > **Stand:** 2026-11-09 · **Zugriff:** Dieses Repository ist **öffentlich**. Keine personenbezogenen Auftragsdetails, Finanzkennzahlen, Secrets oder internen Sicherheitsinformationen veröffentlichen.
 
-Diese Dateien beschreiben LayerForm übergreifend. Für operative Vorgänge ist **immer das jeweilige Live-System** maßgeblich: HubSpot für CRM, GitHub für Website-Code, Vercel für Deployments, Lexware Office für Buchhaltung und DHL für Versand. **Miro ist die visuelle Übersicht, kein automatisch synchronisierter Datenbestand.**
+Diese Dateien beschreiben LayerForm übergreifend. Für operative Vorgänge ist **immer das jeweilige Live-System** maßgeblich: HubSpot für CRM, GitHub für Website-Code, Vercel für Deployments, Lexware Office für Buchhaltung und DHL für Versand. **Die GitHub-Dokumentation ist die zentrale, versionierte Wissensbasis für alle Chats.**
 
 ## Schnellnavigation
 
@@ -34,7 +34,7 @@ flowchart LR
     F --> LX["Lexware Office"]
     F --> DHL["DHL"]
     A --> HS
-    D --> MI["Miro"]
+    D --> GH
 ```
 
 ## Integrationsgrundsätze
@@ -48,4 +48,4 @@ flowchart LR
 
 **Bei jeder Aufgabe:** [Regeln](regeln.md) lesen → relevante Fachdatei lesen → Live-System prüfen → Auswirkungen prüfen → nach nötiger Freigabe umsetzen → Ergebnis testen → passende Datei und [Status](status.md) aktualisieren. Chats sind nicht automatisch miteinander synchronisiert.
 
-**Miro:** [LayerForm-Unternehmensübersicht](https://miro.com/app/board/uXjVEQXa8OM=/). Die Miro-Mindmap zeigt Zusammenhänge; diese Markdown-Dateien sind die wartbare textuelle Referenz.
+**Zentraler Einstieg:** `docs/README.md`. Ergänzungen erfolgen in den verlinkten Fachdateien, ohne parallele Wissensbasen anzulegen.
