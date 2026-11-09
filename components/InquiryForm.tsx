@@ -1,3 +1,4 @@
+import { useSpamProtection } from './SpamProtection';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowLeft, Buildings, CheckCircle, EnvelopeSimple, Paperclip, User, WhatsappLogo } from '@phosphor-icons/react';
@@ -38,6 +39,7 @@ const Field: React.FC<{ label: string; optional?: boolean; error?: string; child
 
 export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization, onBack, onPrivacy }) => {
   const reduce = useReducedMotion();
+  const spam = useSpamProtection();
 
   // Themen aus dem vorausgefüllten Text erkennen
   const preset = `${initialProduct ?? ''} ${initialPersonalization ?? ''}`;
@@ -122,10 +124,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const transmit = async () => {
     const signature = JSON.stringify({ form, type, topics });
     if (inquiry.current.signature !== signature) inquiry.current = { signature, id: crypto.randomUUID() };
+    const turnstileToken = await spam.verify();
     const response = await fetch('/api/kontakt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requestId: inquiry.current.id, via: 'email', ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
+      body: JSON.stringify({ turnstileToken, requestId: inquiry.current.id, via: 'email', ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(typeof payload.error === 'string' ? payload.error : 'Übertragung fehlgeschlagen.');
@@ -184,6 +187,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
           {/* Formular */}
           <div className="rounded-panel border border-white/[.07] bg-surface p-6 md:p-10">
+            {spam.challenge}
             <AnimatePresence mode="wait" initial={false}>
               {sentVia ? (
                 <motion.div

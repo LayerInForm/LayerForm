@@ -14,13 +14,26 @@ function fixture() {
     async get(k) { return values.get(k) ?? null; }
     async set(k, v, options) { if (options?.nx && values.has(k)) return null; values.set(k, v); return 'OK'; }
     async eval(script, keys, args) {
-      if (script.includes('INCR')) return 1;
+      if (script.includes('INCR')) { const n = (values.get(keys[0]) || 0) + 1; values.set(keys[0], n); return n; }
+      if (script.includes('SCARD')) {
+        const ids = values.get(keys[0]) || new Set();
+        if (ids.has(args[0])) return ids.size;
+        if (ids.size >= 5) return 6;
+        ids.add(args[0]); values.set(keys[0], ids); return ids.size;
+      }
       if (values.get(keys[0]) === args[0]) values.delete(keys[0]);
       return 1;
     }
   }
-  const env = { HUBSPOT_TOKEN: 'fake', KV_REST_API_URL: 'https://fake', KV_REST_API_TOKEN: 'fake', RESEND_API_KEY: 'fake' };
+  const env = { TURNSTILE_SECRET_KEY: 'test-secret', HUBSPOT_TOKEN: 'fake', KV_REST_API_URL: 'https://fake', KV_REST_API_TOKEN: 'fake', RESEND_API_KEY: 'fake' };
   const fetch = async (url, options = {}) => {
+    if (url === 'https://challenges.cloudflare.com/turnstile/v0/siteverify') {
+      if (failure === 'turnstile-network') throw new Error('offline');
+      return { ok: true, json: async () => ({
+        success: failure !== 'turnstile-invalid', hostname: failure === 'turnstile-host' ? 'evil.example' : 'layer-form.de',
+        action: failure === 'turnstile-action' ? 'login' : 'website_inquiry',
+      }) };
+    }
     const body = options.body ? JSON.parse(options.body) : null;
     calls.push({ url, method: options.method, body });
     let data = {}, status = 200;
@@ -55,7 +68,7 @@ function fixture() {
     return module.exports;
   }
   const requestId = '11111111-1111-4111-8111-111111111111';
-  const body = { requestId, via: 'email', name: 'TEST Integration', email: 'TEST@example.com', message: 'TEST Anfrage ohne echte Kundendaten', text: 'TEST Anfrage', street: 'Testweg 1', zip: '12345', city: 'Teststadt' };
+  const body = { turnstileToken: 'fake-token', requestId, via: 'email', name: 'TEST Integration', email: 'TEST@example.com', message: 'TEST Anfrage ohne echte Kundendaten', text: 'TEST Anfrage', street: 'Testweg 1', zip: '12345', city: 'Teststadt' };
   const invoke = async (route = 'kontakt', overrides = {}, headers = {}) => {
     const res = { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.code = c; return this; }, json(data) { this.data = data; return this; } };
     await load('api/' + route + '.ts').default({ method: 'POST', headers: { 'content-type': 'application/json', host: 'layer-form.de', origin: 'https://layer-form.de', ...headers }, socket: {}, body: { ...body, ...overrides } }, res);
@@ -165,4 +178,34 @@ test('calculator material mapping remains unchanged', async () => {
   const f = fixture();
   assert.equal((await f.invoke('anfrage', { material: 'PETG HF' })).code, 200);
   assert.equal(f.calls.find(c => c.url.endsWith('/deals')).body.properties.lf_material, 'petg');
+});
+
+test('failed, missing or wrong-site Turnstile prevents every CRM write', async () => {
+  for (const failure of ['turnstile-invalid', 'turnstile-host', 'turnstile-action', 'turnstile-network']) {
+    const f = fixture(); f.fail(failure);
+    assert.equal((await f.invoke()).code, failure === 'turnstile-network' ? 503 : 400);
+    assert.equal(f.counts.dealsCreated, 0);
+    assert.equal(f.counts.contactsCreated, 0);
+    assert.equal(f.emails.length, 0);
+  }
+  const f = fixture();
+  assert.equal((await f.invoke('kontakt', { turnstileToken: '' })).code, 400);
+  delete f.env.TURNSTILE_SECRET_KEY;
+  assert.equal((await f.invoke()).code, 503);
+  assert.equal(f.counts.dealsCreated, 0);
+});
+test('five new inquiry IDs allowed, sixth blocked, same-ID retry still succeeds', async () => {
+  const f = fixture();
+  for (let i = 1; i <= 5; i++) {
+    assert.equal((await f.invoke('kontakt', { requestId: String(i).repeat(8) + '-1111-4111-8111-111111111111' })).code, 200);
+  }
+  assert.equal((await f.invoke('kontakt', { requestId: '66666666-1111-4111-8111-111111111111' })).code, 429);
+  assert.equal((await f.invoke('kontakt', { requestId: '11111111-1111-4111-8111-111111111111' })).code, 200);
+  assert.equal(f.counts.dealsCreated, 5);
+});
+test('fresh challenge tokens do not change the persisted inquiry fingerprint', async () => {
+  const f = fixture();
+  assert.equal((await f.invoke('kontakt', { turnstileToken: 'first' })).code, 200);
+  assert.equal((await f.invoke('kontakt', { turnstileToken: 'second' })).data.duplicate, true);
+  assert.equal(f.counts.dealsCreated, 1);
 });
