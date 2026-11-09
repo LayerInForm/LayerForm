@@ -8,7 +8,7 @@
 2. **GitHub-Code am konkreten Commit** als Beleg für implementierte Logik.
 3. **`docs/integrations.md`** als bestehende Integrationsreferenz. Ihr Abschnitt „Produktive Umstellung vom 09.11.2026“ geht älteren Snapshots in derselben Datei vor.
 4. **Mitgeteilte Unternehmensangaben** als Kontext, keine automatisch live verifizierten Fakten.
-5. **Miro-Mindmap** zur visuellen Einordnung; nicht automatisch synchronisiert.
+5. **Fachliche Projektangaben** nur nach Abgleich mit den oben genannten Quellen übernehmen.
 
 ## Bekannte Unsicherheiten / Widersprüche
 
