@@ -54,6 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => (
               {l.label}
             </button>
           ))}
+          <button type="button" onClick={() => window.dispatchEvent(new Event('layerform:open-consent'))} className="transition-colors hover:text-fg">Cookie-Einstellungen</button>
         </nav>
       </div>
     </div>
