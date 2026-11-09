@@ -1,6 +1,6 @@
 # Arbeitsregeln für alle LayerForm-Chats und Agenten
 
-> Diese Datei dient als gemeinsame Arbeitsanweisung. **Sie ist kein automatischer Chat-Kontext:** Ein Chat muss die Datei aktiv lesen können. Zugang zu GitHub allein erlaubt nicht automatisch Zugriff auf HubSpot, Lexware, DHL oder Miro.
+> Diese Datei dient als gemeinsame Arbeitsanweisung. **Sie ist kein automatischer Chat-Kontext:** Ein Chat muss die Datei aktiv lesen können. Zugang zu GitHub allein erlaubt nicht automatisch Zugriff auf HubSpot, Lexware oder DHL.
 
 ## Einstieg in jede relevante Aufgabe
 
@@ -23,7 +23,6 @@
 | Labels und Sendungsverfolgung | DHL |
 | Geschäftskommunikation | Google Workspace |
 | Unternehmens-Wissensdokumentation | `docs/` in GitHub |
-| Grafische Mindmap | Miro |
 
 ## Verbindliche Sicherheitsregeln
 
