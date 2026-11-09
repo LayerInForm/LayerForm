@@ -177,3 +177,9 @@ Die Übergabe nennt die Workspace-Studio-Flows `LayerForm Kunden-E-Mail Bewertun
 **Abgrenzung:** Die Website-Formulare `/api/kontakt` und `/api/anfrage` übertragen serverseitig an HubSpot und sollen unverändert bleiben. Keine Marketing-Einwilligung aus Kontaktanfragen ableiten. Keine bestehenden CRM-Automationen ohne gesonderte Prüfung ändern.
 
 **Status:** Abstimmung angefordert, HubSpot-Banner-Aktivierung und End-to-End-Test noch **nicht bestätigt**. Keine Umstellung des produktiven Consent-Mechanismus in diesem Schritt.
+
+## Materialübernahme aus dem Kontaktformular (09.11.2026)
+
+Das ausgewählte Filament wird beim Deal-POST zusätzlich in `lf_material` übernommen. Der vorhandene normalisierte Lead-Payload enthält die Auswahl bereits als `Filament: …` in `anforderungen`; die zentrale HubSpot-Schreiblogik liest diesen begrenzten Abschnitt über `materialWert`. Dadurch bleiben Request-Payload und bestehende Idempotenz-Fingerprints unverändert. Keine Materialableitung aus Nachrichtentext, Farbe oder Kundennamen.
+
+Werte: PLA→`pla`, PETG→`petg`, ASA→`asa`, ABS→`abs`, TPU→`tpu`; fehlende/unbekannte Auswahl und „Auf Anfrage“→`offen`. HubSpot-Enum live geprüft. Preisrechner behält sein bereits explizit gesetztes Material. Neun isolierte Zuordnungsprüfungen bestanden; zusätzliche Routentests für Material und Retry ergänzt, wegen ausgefallener Ausführungsumgebung hier nicht gestartet. Produktivstatus separat am Deployment prüfen.
