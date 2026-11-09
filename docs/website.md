@@ -72,3 +72,7 @@ Gemessene Vollfarb-Kontraste: Schwarz/Gelb 15,34:1; Schwarz/Lila 5,27:1; Schwarz
 ## Farbentscheidung korrigiert (09.11.2026)
 
 Die helle gelb-lila Variante aus PR #9 wurde vom Nutzer verworfen. Darstellung auf den Stand vor PR #9 zurückgesetzt: #030407 als Grund, #1558C9 für blaue Flächen, #D4FF24 für Highlights. Der zuvor veröffentlichte Design-Feinschliff bleibt enthalten. Keine Integrations- oder Spamschutzlogik zurückgesetzt.
+
+## Aktuelle Farbentscheidung: Logo-Palette (09.11.2026)
+
+Auf ausdrücklichen Nutzerwunsch gelten wieder die ursprünglichen Logo-Farben: Marineblau #040B1D, Cyan #00E5FF, helle Schrift. Betroffene Farbdateien exakt aus dem bereits geprüften Stand nach PR #7 (a8116ce2a4e3a9590d7484a48aa60c0a7beb7341) wiederhergestellt. Frühere Schwarz/Blau/Limette- und Gelb/Lila-Experimente sind verworfen. Design-Feinschliff aus PR #7 sowie Formular-, Material- und Spamschutzfunktionen bleiben erhalten.
