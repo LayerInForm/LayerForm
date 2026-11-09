@@ -4,7 +4,7 @@
 
 ## Einstieg in jede relevante Aufgabe
 
-1. `docs/README.md` lesen und den passenden Fachbereich öffnen.
+1. `docs/README.md` und `docs/chat-uebergabe.md` lesen und den passenden Fachbereich öffnen.
 2. Für Schnittstellenänderungen zuerst `docs/integrations.md` lesen, besonders die neueste, ausdrücklich als produktiv bezeichnete Aktualisierung.
 3. Den **Live-Stand** der betroffenen Anwendung lesen; Snapshot und Live-Daten auseinanderhalten.
 4. Den möglichen Effekt auf Kunden, Datenschutz, Kosten, Rechnungen, Versand und Automationen untersuchen.
