@@ -14,7 +14,7 @@
 
 | Thema | Entscheidung / Sachstand | Weiterarbeit |
 | --- | --- | --- |
-| Dokumentation | **GitHub `docs/` ist die einzige zentrale LayerForm-Wissensbasis**. Frühere visuelle Board-Lösungen wurden verworfen. | Keine separate parallele Unternehmensdatenbank ohne Auftrag. |
+| Dokumentation & Visualisierung | **GitHub `docs/` ist die einzige zentrale, versionierte Wissensbasis.** Ergänzend wird ein [Miro-Board](https://miro.com/app/board/uXjVEQXa8OM=/) als grafische Prozess- und Software-Landkarte genutzt (*MITGETEILT; aktueller Board-Inhalt nicht erneut live geprüft*). | Miro ist Navigationshilfe, keine zweite Wissensdatenbank oder Quelle für CRM-/Rechnungs-/Versanddaten. Entscheidungen und Änderungen in GitHub pflegen. |
 | GitHub-Änderungen | Dokumentationsänderungen zunächst im Branch und PR überprüfen; Website nicht nebenbei umgestalten. | PR prüfen, dann nach `main` übernehmen. |
 | HubSpot Phase 1.1 | Vier im CRM bestätigte `hs_next_step`-Aktualisierungen wurden ausgeführt und zurückgelesen. | Nicht erneut oder ungeprüft überschreiben. |
 | HubSpot Phase 1.2 | Vier Deal-Ansichten, drei Aufgabenansichten und ein einheitliches Layout wurden **freigegeben, aber nicht technisch erstellt**. | In HubSpot-Oberfläche Bestand prüfen; erst dann konfigurieren. |
@@ -26,6 +26,16 @@
 | Social | Bestehende Instagram-/TikTok-Bio soll nicht ungefragt verändert werden. | Content-Arbeit separat vom CRM halten. |
 | Etsy | Erst kleines Sortiment mit etwa drei serienfähigen Produkten testen. | Ideen validieren, nicht als fertig vermarkten. |
 | Steuer/Consent | Änderungen an Umsatzsteuer und Cookie-Verwaltung waren Planung bzw. strittiger Zustand. | Kein automatisch angenommener Rechts- oder Deploymentstatus. |
+
+
+## Fachchat-Übergabe: visuelle LayerForm-Systemlandkarte (09.11.2026)
+
+- **MITGETEILT / in diesem Chat bearbeitet:** Das bestehende [Miro-Board](https://miro.com/app/board/uXjVEQXa8OM=/) wurde um eine breite, farblich gegliederte Unternehmens-Mindmap ergänzt. Es soll einen Einstieg nach Geschäftsprozess und verantwortlicher Software bieten, nicht operative Datensätze speichern.
+- **Bereiche:** Marketing und Vertrieb; Anfrageeingang und CRM; Angebot, CAD und 3D-Druck; Rechnungen und Zahlungen; Versand; Website und IT; KI und Dokumentation; Automatisierungen, Regeln und offene Prüfungen.
+- **Zuständigkeitsprinzip:** HubSpot = CRM, Lexware Office = Rechnung/Buchhaltung, DHL = Label/Tracking, Google Workspace/Gmail = Kommunikation, Google Apps Script = externe Integrations- und Versandfeld-Helfer, GitHub = Code und Dokumentation, Vercel = Hosting/Runtime, Miro = visuelle Darstellung. ChatGPT/Gemini sind Assistenzwerkzeuge, **keine** führenden Datenquellen; tatsächliche Gemini-Nutzung ist offen.
+- **Software-Schnellzugriff:** In der Mindmap wurden nach früherem Bearbeitungsstand anklickbare Links unter anderem zu HubSpot, Lexware, DHL, Gmail, Apps Script, ChatGPT, Gemini, GitHub und Vercel ergänzt. Exakte Zieladressen/Board-Anordnung sind bei Bedarf direkt in Miro zu überprüfen; nicht alle Links zeigen nachweislich auf projektspezifische Unterseiten.
+- **Sicherheit:** Keine benannten Kunden, Einzelaufträge, vertraulichen Kundendaten, Zugangsdaten oder internen Finanzdetails in die öffentliche GitHub-Dokumentation oder in frei geteilte Miro-Grafiken übertragen. Frühere Miro-Inhalte können dennoch alte Kundeneinträge enthalten und müssen separat geprüft werden.
+- **Status:** `UMGESETZT` nach früherem Miro-Schreib-/Leseabgleich; **kein aktuelles `LIVE-VERIFIZIERT`**, da die Miro-Verbindung beim Abgleich am 09.11.2026 ihr tägliches Tool-Limit erreichte. Der Board-Zustand ist nicht automatisch mit `docs/` synchronisiert.
 
 ## Was dieser Chat überprüft hat
 
