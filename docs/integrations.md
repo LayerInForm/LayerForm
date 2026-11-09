@@ -159,3 +159,21 @@ Die Übergabe nennt die Workspace-Studio-Flows `LayerForm Kunden-E-Mail Bewertun
 - **Sicherheitscheck:** Quellcode enthält keine hier offengelegten Tokens; nur Secret-Namen dokumentieren. Bestehende Token-Rotationshinweise aus der Übergabe beachten.
 
 **Verantwortungsübergabe:** HUBSPOT betreut die CRM-Felder, Pipeline, Apps Script, Studio-Flows und Dedupe-Konzept; WEBSITE betreut Formularfelder, `api/kontakt.ts`, `api/anfrage.ts`, `api/_lib/hubspot.ts`, Resend, Vercel und Deployment. Änderungen gemeinsam über diese Datei abstimmen. **Status dieses Updates: dokumentiert; keine produktiven Laufzeit- oder Schnittstellenänderungen.**
+
+
+## Übergabe WEBSITE → HUBSPOT: zentrale Cookie-Verwaltung (09.11.2026)
+
+**Nutzerentscheidung:** Cookie-Banner, Einwilligungsverwaltung und Widerruf sollen künftig vollständig über HubSpot erfolgen; keine doppelte Website-eigene Consent-Oberfläche.
+
+**Aktueller Website-Stand:** In `index.html` wird HubSpot-Tracking `https://js-eu1.hs-scripts.com/149524579.js` bisher nur nach Zustimmung im eigenen LayerForm-Banner geladen. Speicherung in `localStorage` unter `layerform:hubspot-consent:v1`. Der eigene Einstellungsbutton hatte einen Reopen-Bug; Korrektur Commit `afafe1fb`. Der Nutzer hat im Inkognito-Test nach „Ablehnen“ keine HubSpot-Network-Requests gesehen. Vollständige Cookie- und Tracking-Inventur ist **nicht** abgeschlossen.
+
+**Auftrag an HUBSPOT-Chat:**
+1. HubSpot-Portal 149524579 / EU1 prüfen: Existiert eine aktive Cookie-Consent-Richtlinie für `www.layer-form.de` und `layer-form.de`? Richtlinie, Banner-Sprache Deutsch, Kategorien, Widerrufsmöglichkeit und tatsächliche Veröffentlichung verifizieren. Falls über Connector nicht administrierbar, genaue nötige Benutzeraktion benennen; **nicht als eingerichtet behaupten**.
+2. Prüfen, wie HubSpot-Cookie-Banner/Consent-API auf externer Website technisch eingebunden wird und wie das HubSpot-Script vor erforderlicher Zustimmung rechtssicher betrieben wird. Insbesondere Unterschied zwischen HubSpot-Tracking-Script, Cookie-Banner und optionalen Nicht-HubSpot-Trackern beachten.
+3. Mit WEBSITE abstimmen, wann das bisherige Banner und der `localStorage`-Mechanismus entfernt werden können. Erst umstellen, wenn HubSpot-Banner und Widerruf tatsächlich funktionieren; keinen Tracking-Gap erzeugen.
+4. Erforderliche Änderungen an Datenschutzerklärung und etwaige HubSpot-DPA-/Drittanbieterprüfungen festhalten. Keine pauschale DSGVO-Konformität behaupten.
+5. Ergebnisse, konkrete Einstellungen und offene Punkte **hier** dokumentieren, damit WEBSITE den Code entsprechend umstellt und den Live-Test durchführt.
+
+**Abgrenzung:** Die Website-Formulare `/api/kontakt` und `/api/anfrage` übertragen serverseitig an HubSpot und sollen unverändert bleiben. Keine Marketing-Einwilligung aus Kontaktanfragen ableiten. Keine bestehenden CRM-Automationen ohne gesonderte Prüfung ändern.
+
+**Status:** Abstimmung angefordert, HubSpot-Banner-Aktivierung und End-to-End-Test noch **nicht bestätigt**. Keine Umstellung des produktiven Consent-Mechanismus in diesem Schritt.
