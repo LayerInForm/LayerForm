@@ -68,7 +68,7 @@
         settings.textContent = 'HubSpot-Einstellungen';
         settings.setAttribute('aria-label', 'HubSpot-Datenschutzeinstellungen öffnen');
         settings.style.cssText = 'position:fixed;z-index:9998;bottom:8px;left:8px;border:1px solid #3b5872;border-radius:999px;padding:7px 11px;background:#08182d;color:#e7f5ff;font:12px system-ui,sans-serif;cursor:pointer';
-        settings.addEventListener('click', () => { banner.hidden = false; settings.hidden = true; banner.querySelector('[data-choice="reject"]').focus(); });
+        settings.addEventListener('click', () => { settings.remove(); banner.hidden = false; document.body.appendChild(banner); banner.querySelector('[data-choice="reject"]').focus(); });
         banner.querySelector('[data-choice="reject"]').addEventListener('click', () => {
           const previouslyAccepted = readConsent() === 'accepted';
           saveConsent('rejected'); banner.remove(); document.body.appendChild(settings);
