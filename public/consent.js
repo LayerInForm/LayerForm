@@ -1,13 +1,12 @@
 /* LayerForm Consent Manager v2 – optionale Dienste werden erst nach Zustimmung geladen. */
 (() => {
   'use strict';
-  const KEY = 'layerform:privacy:v2';
-  const VERSION = 2;
+  const KEY = 'layerform:privacy:v3';
+  const VERSION = 3;
   const MAX_AGE = 180 * 86400000;
   let current = null;
   let panel = null;
   let manageButton = null;
-  let reloading = false;
 
   function read() {
     try {
@@ -34,16 +33,65 @@
     document.body.appendChild(el);
   }
 
-  function save(analytics, hubspot) {
+  // Server-confirmed consent receipt: no address, IP, name, form data or user-agent
+  // is deliberately attached by the frontend. Redis stores a pseudonymous event.
+  let saving = false;
+  let statusNotice = null;
+
+  async function save(analytics, hubspot) {
+    if (saving) return;
+    saving = true;
     const old = current;
-    current = { version: VERSION, timestamp: Date.now(), analytics: Boolean(analytics), hubspot: Boolean(hubspot) };
+    const accepted = Boolean(analytics || hubspot);
+    const receiptId = (crypto && typeof crypto.randomUUID === 'function')
+      ? crypto.randomUUID()
+      : null;
+    if (statusNotice) statusNotice.textContent = 'Auswahl wird gespeichert …';
+    const data = {
+      version: VERSION,
+      timestamp: Date.now(),
+      analytics: Boolean(analytics),
+      hubspot: Boolean(hubspot),
+      receiptId
+    };
+    try {
+      if (!receiptId) throw new Error('UUID nicht verfügbar');
+      const response = await fetch('/api/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({
+          receiptId,
+          previousReceiptId: old && old.receiptId ? old.receiptId : null,
+          version: VERSION,
+          analytics: data.analytics,
+          hubspot: data.hubspot,
+          action: old ? 'update' : 'initial'
+        })
+      });
+      if (!response.ok) throw new Error('Protokollierung derzeit nicht verfügbar');
+      const result = await response.json();
+      if (result.receiptId !== receiptId) throw new Error('Nachweis konnte nicht geprüft werden');
+      data.timestamp = result.timestamp;
+    } catch (error) {
+      // Ein technischer Fehler darf eine Ablehnung nicht verhindern. Bei positiver
+      // Einwilligung werden die Dienste jedoch erst nach erfolgreichem Nachweis geladen.
+      if (accepted) {
+        if (statusNotice) statusNotice.textContent = 'Speichern gerade nicht möglich. Optionale Dienste bleiben deaktiviert. Bitte erneut versuchen oder alle ablehnen.';
+        saving = false;
+        return;
+      }
+      data.receiptId = null;
+      if (statusNotice) statusNotice.textContent = 'Ihre Ablehnung gilt. Ein zentraler Nachweis konnte gerade nicht gespeichert werden.';
+    }
+    current = data;
     try { localStorage.setItem(KEY, JSON.stringify(current)); } catch (_) {}
     if (panel) { panel.remove(); panel = null; }
     manageButton.hidden = false;
     notify(current);
-    // Ein einmal geladenes Drittanbieter-Skript lässt sich nicht zuverlässig vollständig entladen.
+    saving = false;
+    // Geladene Drittanbieter-Ressourcen lassen sich nicht vollständig entladen.
     if (old && old.hubspot && !current.hubspot) {
-      reloading = true;
       location.reload();
       return;
     }
@@ -126,6 +174,11 @@
     action('Auswahl speichern', '', () => save(analytics.checked, hubspot.checked));
     action('Alle akzeptieren', 'lf-primary', () => save(true, true));
     panel.appendChild(actions);
+    statusNotice = document.createElement('p');
+    statusNotice.setAttribute('role','status');
+    statusNotice.style.marginTop = '12px';
+    statusNotice.style.fontSize = '13px';
+    panel.appendChild(statusNotice);
     document.body.appendChild(panel);
     manageButton.hidden = true;
     panel.querySelector('button').focus();
