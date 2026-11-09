@@ -69,6 +69,8 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
   const [filesMissing, setFilesMissing] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const nextId = useRef(1);
+  const inquiry = useRef({ signature: '', id: '', payload: '' });
+  const submitting = useRef(false);
   const formRef = useRef<HTMLElement>(null);
 
   /* ---------- abgeleitete Werte ---------- */
@@ -180,6 +182,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
 
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
+    if (submitting.current) return;
     const req = ['name', 'email', 'street', 'zip', 'city'] as const;
     const bad: Record<string, boolean> = {};
     req.forEach((k) => { bad[k] = !form[k].trim() || (k === 'email' && !/^\S+@\S+\.\S+$/.test(form.email.trim())); });
@@ -187,45 +190,50 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
     if (Object.values(bad).some(Boolean)) { setFormErr('Bitte füllen Sie alle Pflichtfelder aus.'); return; }
     if (!privacy) { setFormErr('Bitte stimmen Sie der Verarbeitung Ihrer Angaben zu.'); return; }
     setFormErr('');
+    submitting.current = true;
+    const signature = JSON.stringify({ form, entries, material: mat?.name, q, infill, parts: parts.map(p => p.id) });
+    if (inquiry.current.signature !== signature) inquiry.current = { signature, id: crypto.randomUUID(), payload: '' };
 
     try {
-      // 1. Dateien hochladen (jede Originaldatei nur einmal)
-      const { upload } = await import('@vercel/blob/client');
-      const files = [...new Set(parts.map((p) => p.file).filter((f): f is File => !!f))];
-      const uploaded: { name: string; url: string; size: number }[] = [];
-      let uploadFailed = false;
-      for (let i = 0; i < files.length; i++) {
-        setSend({ kind: 'sending', text: `Dateien werden hochgeladen (${i + 1} von ${files.length}) …` });
-        const f = files[i];
-        const safe = f.name.replace(/[^\w.\-]+/g, '_');
-        try {
-          const blob = await upload(`anfragen/${Date.now()}-${safe}`, f, { access: 'public', handleUploadUrl: '/api/upload' });
-          uploaded.push({ name: f.name, url: blob.url, size: f.size });
-        } catch { uploadFailed = true; } // Anfrage trotzdem senden, Dateien reicht der Kunde nach
+      if (!inquiry.current.payload) {
+        // 1. Dateien hochladen (jede Originaldatei nur einmal)
+        const { upload } = await import('@vercel/blob/client');
+        const files = [...new Set(parts.map((p) => p.file).filter((f): f is File => !!f))];
+        const uploaded: { name: string; url: string; size: number }[] = [];
+        let uploadFailed = false;
+        for (let i = 0; i < files.length; i++) {
+          setSend({ kind: 'sending', text: `Dateien werden hochgeladen (${i + 1} von ${files.length}) …` });
+          const f = files[i];
+          const safe = f.name.replace(/[^\w.\-]+/g, '_');
+          try {
+            const blob = await upload(`anfragen/${Date.now()}-${safe}`, f, { access: 'public', handleUploadUrl: '/api/upload' });
+            uploaded.push({ name: f.name, url: blob.url, size: f.size });
+          } catch { uploadFailed = true; } // Anfrage trotzdem senden, Dateien reicht der Kunde nach
+        }
+        // 2. Anfrage verschicken
+        setSend({ kind: 'sending', text: 'Anfrage wird gesendet …' });
+        inquiry.current.payload = JSON.stringify({
+            requestId: inquiry.current.id,
+            ...form,
+            material: mat?.name, quality: `${mm(q.lh)} mm (${q.label})`, infill,
+            estimate: mat?.onRequest ? 'auf Anfrage (TPU)' : price != null ? euro(price) : '–',
+            plates: Array.from({ length: plateCount }, (_, i) => ({
+              plate: i + 1,
+              items: entries.filter((e) => e.plate === i).map((e) => ({ name: parts.find((p) => p.id === e.part)?.name, qty: e.qty })),
+            })).filter((p) => p.items.length),
+            files: uploaded,
+          });
+        setFilesMissing(uploadFailed);
       }
-      // 2. Anfrage verschicken
       setSend({ kind: 'sending', text: 'Anfrage wird gesendet …' });
-      const res = await fetch('/api/anfrage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          material: mat?.name, quality: `${mm(q.lh)} mm (${q.label})`, infill,
-          estimate: mat?.onRequest ? 'auf Anfrage (TPU)' : price != null ? euro(price) : '–',
-          plates: Array.from({ length: plateCount }, (_, i) => ({
-            plate: i + 1,
-            items: entries.filter((e) => e.plate === i).map((e) => ({ name: parts.find((p) => p.id === e.part)?.name, qty: e.qty })),
-          })).filter((p) => p.items.length),
-          files: uploaded,
-        }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      setFilesMissing(uploadFailed);
+      const res = await fetch('/api/anfrage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: inquiry.current.payload });
+      const response = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof response.error === 'string' ? response.error : 'Übertragung fehlgeschlagen.');
       setSend({ kind: 'sent' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
-      setSend({ kind: 'failed', text: 'Die Anfrage konnte gerade nicht automatisch gesendet werden. Bitte schicken Sie sie per E-Mail oder WhatsApp, Ihre Angaben sind schon eingetragen. Die Dateien hängen Sie bitte selbst an.' });
-    }
+    } catch (error) {
+      setSend({ kind: 'failed', text: error instanceof Error ? error.message : 'Die Anfrage konnte gerade nicht automatisch gesendet werden. Bitte versuchen Sie es später erneut.' });
+    } finally { submitting.current = false; }
   };
 
   const mailto = `mailto:${EMAIL}?subject=${encodeURIComponent(`Druckanfrage von ${form.name}`)}&body=${encodeURIComponent(summaryText())}`;

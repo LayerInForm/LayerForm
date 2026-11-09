@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowLeft, Buildings, CheckCircle, EnvelopeSimple, Paperclip, User, WhatsappLogo } from '@phosphor-icons/react';
 
@@ -66,6 +66,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | 'mailto' | null>(null);
+  const inquiry = useRef({ signature: '', id: '' });
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [hp, setHp] = useState(''); // Spamschutz (verstecktes Feld)
@@ -119,10 +120,12 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   // Nur E-Mail-Anfragen direkt als HubSpot-Deal erfassen.
   // Ein WhatsApp-Klick ist noch KEINE abgeschickte Nachricht.
   const transmit = async () => {
+    const signature = JSON.stringify({ form, type, topics });
+    if (inquiry.current.signature !== signature) inquiry.current = { signature, id: crypto.randomUUID() };
     const response = await fetch('/api/kontakt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ via: 'email', ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
+      body: JSON.stringify({ requestId: inquiry.current.id, via: 'email', ...form, name: `${form.vorname.trim()} ${form.nachname.trim()}`, type, topics, text, subject, website: hp }),
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(typeof payload.error === 'string' ? payload.error : 'Übertragung fehlgeschlagen.');
@@ -410,14 +413,14 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('email')} disabled={sending} className="btn-primary w-full disabled:opacity-60">
-                        <EnvelopeSimple size={20} aria-hidden="true" /> {sending ? 'Wird gesendet …' : 'E-Mail'}
+                        <EnvelopeSimple size={20} aria-hidden="true" /> {sending ? 'Wird gesendet …' : 'Anfrage senden'}
                       </button>
                       <button type="button" onClick={() => send('whatsapp')} className="btn-ghost w-full">
                         <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
                       </button>
                     </div>
                     <p className="mt-3 text-sm text-fg-muted">
-                      Per E-Mail wird Ihre Anfrage direkt an uns übermittelt. Bei WhatsApp wird eine Nachricht vorbereitet; erst nach Ihrem Klick auf „Senden“ in WhatsApp erreicht sie uns. Ein WhatsApp-Klick wird nicht als abgeschickte Anfrage gezählt.
+                      Das Formular überträgt Ihre Anfrage direkt in unsere Kundenverwaltung. Bei WhatsApp wird eine Nachricht vorbereitet; erst nach Ihrem Klick auf „Senden“ in WhatsApp erreicht sie uns. Ein WhatsApp-Klick wird nicht als abgeschickte Anfrage gezählt.
                     </p>
                   </div>
                 </motion.form>

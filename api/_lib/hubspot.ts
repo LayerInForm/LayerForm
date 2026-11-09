@@ -1,3 +1,4 @@
+import { deliverOnce, hash } from './inquiries.js';
 /**
  * Direkte HubSpot-Anbindung der Website.
  * Legt Kontakt + Deal in der Pipeline „LayerForm Aufträge“ → „Neue Anfrage“ an,
@@ -17,29 +18,24 @@ async function hs(method: string, path: string, body?: unknown) {
     method,
     headers: { Authorization: `Bearer ${process.env.HUBSPOT_TOKEN}`, 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(15000),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`HubSpot ${res.status} bei ${path}: ${text.slice(0, 400)}`);
+  if (!res.ok) throw Object.assign(new Error(`HubSpot ${res.status}`), { status: res.status });
   return text ? JSON.parse(text) : {};
 }
 
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
-async function sucheKontakt(email?: string, telefon?: string): Promise<string | null> {
-  const versuche: { propertyName: string; operator: string; value: string }[] = [];
-  if (email) versuche.push({ propertyName: 'email', operator: 'EQ', value: email.toLowerCase() });
-  if (telefon) {
-    let d = telefon.replace(/\D/g, '');
-    if (d.startsWith('0049')) d = d.slice(4); else if (d.startsWith('49') && d.length > 11) d = d.slice(2); else if (d.startsWith('0')) d = d.slice(1);
-    if (d.length >= 6) versuche.push({ propertyName: 'hs_searchable_calculated_phone_number', operator: 'EQ', value: d });
+async function sucheKontakt(email?: string): Promise<string | null> {
+  if (!email) throw new Error('Email required');
+  try {
+    const contact = await hs('GET', '/crm/v3/objects/contacts/' + encodeURIComponent(email.trim().toLowerCase()) + '?idProperty=email');
+    return contact.id;
+  } catch (error) {
+    if ((error as { status?: number }).status === 404) return null;
+    throw error;
   }
-  for (const f of versuche) {
-    try {
-      const r = await hs('POST', '/crm/v3/objects/contacts/search', { filterGroups: [{ filters: [f] }], limit: 1, properties: ['email'] });
-      if (r.results?.length) return r.results[0].id;
-    } catch (e) { console.warn('Kontaktsuche', e); }
-  }
-  return null;
 }
 
 async function anzahlDeals(kontaktId: string): Promise<number> {
@@ -51,22 +47,24 @@ async function anzahlDeals(kontaktId: string): Promise<number> {
 
 async function ladeDateiHoch(url: string, name: string): Promise<string | null> {
   try {
-    const quelle = await fetch(url);
+    const quelle = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(15000) });
     if (!quelle.ok) return null;
     const form = new FormData();
     form.append('file', new Blob([await quelle.arrayBuffer()]), name);
     form.append('folderPath', '/LayerForm Anfragen');
     form.append('options', JSON.stringify({ access: 'PRIVATE', overwrite: false, duplicateValidationStrategy: 'NONE' }));
-    const res = await fetch(`${API}/files/v3/files`, { method: 'POST', headers: { Authorization: `Bearer ${process.env.HUBSPOT_TOKEN}` }, body: form });
-    if (!res.ok) { console.warn('Upload', res.status, (await res.text()).slice(0, 200)); return null; }
+    const res = await fetch(`${API}/files/v3/files`, { method: 'POST', headers: { Authorization: `Bearer ${process.env.HUBSPOT_TOKEN}` }, body: form, signal: AbortSignal.timeout(15000) });
+    if (!res.ok) { console.warn('Upload', res.status); return null; }
     return (await res.json()).id;
   } catch (e) {
-    console.warn('Upload-Fehler', e);
+    console.warn('Upload-Fehler');
     return null;
   }
 }
 
 export interface Lead {
+  requestId: string;
+  source: "kontakt" | "anfrage";
   titel: string;
   name: string;
   email?: string;
@@ -88,46 +86,56 @@ export interface Lead {
 
 const LINK = /https?:\/\/[^\s<>"')\]]+/gi;
 
-export async function legeLeadAn(l: Lead): Promise<{ dealId: string; url: string }> {
-  const [vn, ...rn] = l.name.trim().split(/\s+/);
-  const vorname = l.vorname?.trim() || vn;
-  const rest = l.nachname?.trim() ? [l.nachname.trim()] : rn;
-  let kontaktId = await sucheKontakt(l.email, l.telefon);
-  if (!kontaktId) {
+export async function legeLeadAn(l: Lead) {
+  // Server-normalized content binds the ID; a genuinely new inquiry gets a new UUID.
+  return deliverOnce(l.source + ':' + l.requestId, hash(JSON.stringify(l)), async (beforeWrite) => {
+
+    const [vn, ...rn] = l.name.trim().split(/\s+/);
+    const vorname = l.vorname?.trim() || vn;
+    const rest = l.nachname?.trim() ? [l.nachname.trim()] : rn;
+    let kontaktId = await sucheKontakt(l.email);
+    if (!kontaktId) {
+      const props: Record<string, string> = {
+        firstname: vorname || '', lastname: rest.join(' '), email: (l.email || '').toLowerCase(), phone: l.telefon || '',
+        company: l.firma || '', address: l.strasse || '', zip: l.plz || '', city: l.ort || '', hubspot_owner_id: OWNER_ID,
+      };
+      Object.keys(props).forEach((k) => { if (!props[k]) delete props[k]; });
+      try {
+        kontaktId = (await hs('POST', '/crm/v3/objects/contacts', { properties: props })).id as string;
+      } catch (error) {
+        if ((error as { status?: number }).status !== 409) throw error;
+        kontaktId = await sucheKontakt(l.email);
+        if (!kontaktId) throw error;
+      }
+    }
+    const frueher = await anzahlDeals(kontaktId);
+
+    const dateien = (l.dateien || []).slice(0, 20);
+    const ids = (await Promise.all(dateien.map((d) => ladeDateiHoch(d.url, d.name)))).filter(Boolean) as string[];
+    const links = Array.from(new Set(l.volltext.match(LINK) || [])).filter((u) => !/layer-form\.de|vercel-storage\.com/i.test(u));
+
     const props: Record<string, string> = {
-      firstname: vorname || '', lastname: rest.join(' '), email: (l.email || '').toLowerCase(), phone: l.telefon || '',
-      company: l.firma || '', address: l.strasse || '', zip: l.plz || '', city: l.ort || '', hubspot_owner_id: OWNER_ID,
+      dealname: l.titel.slice(0, 120),
+      pipeline: PIPELINE,
+      dealstage: STAGE_NEU,
+      hubspot_owner_id: OWNER_ID,
+      description: `Website-Anfrage-ID: ${l.requestId}\n` + (frueher ? `STAMMKUNDE – bisher ${frueher} Auftrag/Anfrage(n).\n` : '') + l.volltext + '\n' + dateien.map(d => d.name + ': ' + d.url).join('\n'),
+      lf_kanal: l.kanal,
+      lf_kundentyp: l.kundentyp,
+      lf_leistung: Array.from(new Set(l.leistungen)).join(';'),
+      lf_material: l.material || 'offen',
+      lf_stueckzahl: (l.stueckzahl || '').replace(/\D/g, ''),
+      lf_anforderungen: l.anforderungen || '',
+      lf_links: links.join('\n'),
+      lf_anhaenge: dateien.map((d) => d.name).join('\n'),
+      lf_stammkunde: frueher ? 'true' : 'false',
     };
     Object.keys(props).forEach((k) => { if (!props[k]) delete props[k]; });
-    kontaktId = (await hs('POST', '/crm/v3/objects/contacts', { properties: props })).id as string;
-  }
-  const frueher = await anzahlDeals(kontaktId);
 
-  const dateien = (l.dateien || []).slice(0, 20);
-  const ids = (await Promise.all(dateien.map((d) => ladeDateiHoch(d.url, d.name)))).filter(Boolean) as string[];
-  const links = Array.from(new Set(l.volltext.match(LINK) || [])).filter((u) => !/layer-form\.de|vercel-storage\.com/i.test(u));
-
-  const props: Record<string, string> = {
-    dealname: l.titel.slice(0, 120),
-    pipeline: PIPELINE,
-    dealstage: STAGE_NEU,
-    hubspot_owner_id: OWNER_ID,
-    description: (frueher ? `STAMMKUNDE – bisher ${frueher} Auftrag/Anfrage(n). ` : '') + l.beschreibung,
-    lf_kanal: l.kanal,
-    lf_kundentyp: l.kundentyp,
-    lf_leistung: Array.from(new Set(l.leistungen)).join(';'),
-    lf_material: l.material || 'offen',
-    lf_stueckzahl: (l.stueckzahl || '').replace(/\D/g, ''),
-    lf_anforderungen: l.anforderungen || '',
-    lf_links: links.join('\n'),
-    lf_anhaenge: dateien.map((d) => d.name).join('\n'),
-    lf_stammkunde: frueher ? 'true' : 'false',
-  };
-  Object.keys(props).forEach((k) => { if (!props[k]) delete props[k]; });
-
-  const deal = await hs('POST', '/crm/v3/objects/deals', {
-    properties: props,
-    associations: [{ to: { id: kontaktId }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] }],
+    await beforeWrite();
+    const deal = await hs('POST', '/crm/v3/objects/deals', {
+      properties: props,
+      associations: [{ to: { id: kontaktId }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] }],
   });
 
   const notiz: Record<string, string> = {
@@ -147,10 +155,11 @@ export async function legeLeadAn(l: Lead): Promise<{ dealId: string; url: string
     });
   } catch (e) {
     // Deal ist bereits angelegt! Kein erneuter Versand / Zweitanlage auslösen.
-    console.error('HubSpot-Deal wurde erstellt, aber die Notiz konnte nicht gespeichert werden', e);
+    console.error('HubSpot-Notiz fehlgeschlagen; Anfrage vollständig in Deal gespeichert', deal.id);
   }
 
   return { dealId: deal.id, url: `https://app-eu1.hubspot.com/contacts/${PORTAL_ID}/record/0-3/${deal.id}` };
+  });
 }
 
 /** HubSpot-Materialwerte aus einem Freitext (z. B. "PETG HF") */

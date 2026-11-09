@@ -1,5 +1,29 @@
 # LayerForm – Website & HubSpot: gemeinsame Integrationsdokumentation
 
+## Produktive Umstellung vom 09.11.2026 (ersetzt ältere Ablaufbeschreibungen unten)
+
+- Beide Website-Endpunkte `/api/kontakt` und `/api/anfrage` übertragen ausschließlich serverseitig an HubSpot. Kein Resend-Versand an das Geschäftspostfach, auch kein Fehler-Fallback. Resend dient optional nur zur Kundenbestätigung; deren Fehler ändern einen erfolgreichen CRM-Eingang nicht.
+- Kontakt wird direkt anhand normalisierter E-Mail gelesen (`idProperty=email`), nur bei HTTP 404 angelegt. Andere Lesefehler brechen ab. Bei paralleler Anlage wird HTTP 409 durch erneutes Lesen aufgelöst. Vorhandene Kontaktdaten werden nicht überschrieben. Keine Marketing-, Abonnement- oder Einwilligungsfelder werden geschrieben.
+- Jede neue Anfrage bekommt einen eigenen Deal mit Kontaktzuordnung. Pipeline `default` / Phase `6212936899` sowie alle verwendeten `lf_*`-Felder wurden über den HubSpot-Connector live lesend bestätigt. `it_service` ist weiterhin keine verfügbare Leistungsoption; deshalb bestehendes Mapping beibehalten, Originalthema bleibt im Text.
+- Browser erzeugt UUID v4 pro unverändertem Formularentwurf. Wiederholungen innerhalb desselben geöffneten Formulars verwenden dieselbe ID. Der Preisrechner hält zusätzlich den identischen übertragenen Payload einschließlich Upload-Links für einen erneuten Versuch vor. Neue Angaben ergeben eine neue Anfrage-ID. Neuladen/erneutes Öffnen des Formulars beginnt einen neuen Entwurf; keine pauschale Zusammenführung nach E-Mail oder identischem Inhalt, da dies echte neue Anfragen unterdrücken würde.
+- Redis-Journal `lf:website:request:v1:<kontakt|anfrage>:<UUID>` bindet die ID an einen SHA-256-Prüfwert des serverseitigen Lead-Payloads. Sperre per `SET NX EX 120`, Freigabe nur durch den Besitzer. Unmittelbar vor dem Deal-POST setzt ein zweites atomisches `SET NX` eine **dauerhafte** Schreibmarkierung. Dadurch darf auch nach Ablauf einer Sperre kein zweiter Worker denselben Deal erzeugen. Erfolgreicher Abschluss speichert Deal-ID und URL; Wiederholungen erhalten Erfolg ohne weiteren Deal oder weitere Bestätigung.
+- Journal enthält keine E-Mail-Adresse und keinen Nachrichtentext. Es hat absichtlich keine automatische Ablaufzeit: spätere Wiederholungen und unklare Schreibabbrüche dürfen keine Doppelanlage erzeugen. Bei administrativer Löschung einer Anfrage auch den zugehörigen Journalschlüssel entfernen. Redis muss die Schlüssel erhalten; Löschung/Eviction/Verlust des Journals hebt diese Wiederholungssicherung auf.
+- Vollständige Angaben, Anfrage-ID und sämtliche akzeptierte Dateilinks stehen bereits in der Deal-Beschreibung. Zusätzliche Notiz und private HubSpot-Dateikopien bleiben erhalten; Notizfehler erzeugen keinen zweiten Deal. Die bisherigen öffentlichen Vercel-Blob-Uploads des Preisrechners werden nicht umgestellt. Downloads folgen keinen Weiterleitungen und haben Zeitlimits.
+- WhatsApp bleibt ein separater Link: erst der Nutzer sendet in WhatsApp, kein paralleler Formular-POST und keine vorzeitige Deal-Anlage. Unabhängige E-Mail-/WhatsApp-Workflows außerhalb dieses Repositorys werden nicht verändert.
+- Sicherheitsprüfungen: nur POST/JSON, Größenlimits, Origin-Prüfung, Honeypot, UUID-Prüfung, Redis-Ratenlimit (20 Versuche/15 Minuten je gehashter IP); fehlende Redis-Konfiguration bricht vor CRM-Schreiboperationen ab.
+
+### Unklare Übertragungen abgleichen
+
+Bei Timeout, Fehler beim Deal-POST oder Ausfall beim abschließenden Journal-Schreiben bleibt `phase=writing` bestehen. Die Antwort zeigt einen Prüfhinweis mit Anfrage-ID, keine Erfolgsmeldung. Weitere Versuche erzeugen keinen Deal. In HubSpot nach `Website-Anfrage-ID: <UUID>` in der Deal-Beschreibung suchen und Kontaktzuordnung prüfen. Wird ein Deal eindeutig gefunden, den Journaleintrag mit unverändertem Fingerprint und `{phase:'done', result:{dealId, url}}` abschließen. Nur wenn sicher feststeht, dass kein Deal angelegt wurde und kein Worker mehr läuft, die Schreibmarkierung für einen erneuten Versuch entfernen. Niemals unklare Markierungen pauschal löschen.
+
+### Zugriffe, Secrets und Verifikation
+
+GitHub-Schreibzugriff und Vercel-Projekt `layerform` im Team `team_4ZbCkRIGcv01VAAwr3rgeke4` bestätigt. Secret-Namen (keine Werte gelesen): `HUBSPOT_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `RESEND_API_KEY` in Production und Preview vorhanden. Keine neuen Secrets nötig. Benötigte HubSpot-Rechte: Kontakte und Deals lesen/schreiben, Notizen schreiben sowie optional Files für Dateikopien. Vorhandensein eines Secrets bestätigt weder seine Gültigkeit noch seine API-Berechtigungen.
+
+`npm test` prüft die tatsächlichen TypeScript-Routen mit isolierten CRM-/Redis-/E-Mail-Doubles einschließlich Parallelität, Kontaktkonflikt, Wiederholungen, neuen Anfragen, Teilfehlern, fehlenden Secrets und ausbleibenden internen E-Mails. Zusätzlich `npm run lint`, `npm run check:api` und Produktionsbuild. Tests legen keine echten Kontakte oder Deals an und senden keine echten E-Mails. Ein vollständiger Live-Schreibtest mit dem Vercel-Service-Token ist dadurch nicht ersetzt.
+
+Anbieterreferenzen zur Datenschutzbeschreibung: [HubSpot DPA](https://legal.hubspot.com/dpa), [Resend Datenschutz](https://resend.com/legal/privacy-policy), [Resend DPA](https://resend.com/legal/dpa). Der konkrete Abschluss der Auftragsverarbeitungsverträge und die Kontokonfiguration wurden nicht geprüft.
+
 > Gemeinsame technische Referenz für die Chats **WEBSITE** und **HUBSPOT** im ChatGPT-Projekt LayerForm.
 > Stand: 2026-11-03. Diese Datei dokumentiert Zuständigkeiten und bekannte Konfigurationen, keine unbestätigten API-Verträge.
 
