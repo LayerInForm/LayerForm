@@ -39,7 +39,7 @@ Die Reihenfolge kann sich je Auftrag unterscheiden. **Niemals** Zahlung, Rechnun
 - **Lexware:** Rechnungs- und Buchhaltungsbelege.
 - **DHL:** Echte Versandlabels/Tracking.
 - **Google Apps Script:** Externe Trigger und Hilfsautomationen; Quellcode/Deployment separat prüfen.
-- **Miro / GitHub docs:** Erklären Beziehungen, ersetzen keine Live-Konfiguration.
+- **GitHub `docs/`:** Dokumentiert Zusammenhänge, ersetzt keine Live-Konfiguration.
 
 ## Sicherheitskritische Sonderfälle
 
