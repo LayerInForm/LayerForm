@@ -51,3 +51,32 @@ Wichtiger Mapping-Sonderfall: `IT-Service` wird derzeit auf `beratung` gemappt, 
 6. Testdeals nicht in echte Produktiv-Auswertungen einmischen.
 
 Kundendaten gehören nach HubSpot, nicht in dieses öffentliche GitHub-Repository.
+
+## CRM-Organisation: Umsetzung vom 09.11.2026
+
+**LIVE-VERIFIZIERT über HubSpot-Connector:** 13 eindeutig identifizierte System-/Benachrichtigungsabsender von `lead` auf `other` umklassifiziert. Keine Kontakte gelöscht. Dies ist eine Bestandsbereinigung, keine Korrektur des externen Eingangsfilters; erneute Erfassung oder Überschreibung bleibt möglich.
+
+Sieben offene echte Aufträge besitzen einen nächsten Schritt und `lf_naechster_schritt_am=2026-11-10`. Drei zuvor leere nächste Schritte ergänzt, vier vorhandene beibehalten. Acht interne TODO-Aufgaben mit Deal-Zuordnung, Owner und Fälligkeit 10.11.2026, 09:00 Europe/Berlin angelegt und zurückgelesen: sieben Wiedervorlagen und eine zusätzliche Konsistenzprüfung. Keine Kundennachrichten versendet. Keine abgeschlossenen Aufträge wieder geöffnet. Die Aufgabentermine sind interne Planung, keine zugesagten Liefertermine.
+
+### Neue Deal-Felder
+
+| Eigenschaft | Optionen / Bedeutung |
+| --- | --- |
+| `lf_rechnungsstatus` | `ungeprueft`, `nicht_gestellt`, `gestellt`, `storniert` |
+| `lf_zahlungsstatus` | `ungeprueft`, `offen`, `teilbezahlt`, `bezahlt`, `erstattet` |
+| `lf_naechster_schritt_am` | Datum der internen Wiedervorlage; kein Liefertermin |
+
+Felddefinitionen per Read-back bestätigt. Rechnungs-/Zahlungswerte wurden **nicht** aus Deal-Phasen oder alten Beschreibungen abgeleitet. Leer bedeutet noch nicht geprüft. Automatische Befüllung und Sichtbarkeit im Record-Layout sind **OFFEN**.
+
+### Noch ausstehende Umsetzung
+
+Browser-/Oberflächenzugriff war in diesem Schritt technisch nicht verfügbar. Folgende Änderungen sind **nicht umgesetzt**:
+
+- **Deal-Layout:** oben Ansprechpartner/Firmenzuordnung, `hs_next_step` und Wiedervorlagedatum; Auftragsbereich mit Leistung, Material, Menge, Anforderungen und Dateien; separater Bereich mit Preis, Rechnungsnummer, Rechnungsstatus, Zahlungsstatus und Versand.
+- **Ansichten:** aktive Aufträge ohne TEST; Wiedervorlagen heute/überfällig; separate Testansicht; abgeschlossene Aufträge. Bestehende Views zuerst prüfen.
+- **Kanban:** Bestehende Phasen/IDs unverändert. Gewünschte Ergänzung „Bereit zur Übergabe“ erst nach Live-Prüfung der externen Apps-Script-/Workspace-Trigger; bestehende Versand-/Abschlussautomationen dürfen nicht vorzeitig feuern.
+- **Eingangsautomation:** aktive Workspace-/Apps-Script-Version und Trigger lesen. Reine System-/Newsletter-Nachrichten nicht als Verkaufsleads erfassen; keine globale Domainsperre, die echte Geschäftskontakte unterdrückt. Nachvollziehbarer Ausschlussgrund und gesonderte Prüfung mehrdeutiger Nachrichten.
+- **Follow-ups:** automatische Verlustentscheidung nicht allein aus fehlender Gmail-Antwort ableiten; WhatsApp und manuelle Kommunikation prüfen. Versand-/Bewertungsmails mit erfolgreichem Versand und wiederholbarer Zustandsmarkierung absichern.
+- **Buchhaltung:** Rechnungsstatus erst nach eindeutigem Beleg-Matching, Zahlungsstatus nur nach unabhängigem Zahlungsnachweis befüllen.
+
+Operative Datensätze und individuelle Prüfdetails verbleiben in HubSpot.
