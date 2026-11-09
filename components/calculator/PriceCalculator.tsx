@@ -1,3 +1,4 @@
+import { useSpamProtection } from '../SpamProtection';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, EnvelopeSimple, Trash, UploadSimple, WhatsappLogo, X } from '@phosphor-icons/react';
 import {
@@ -50,6 +51,7 @@ const Step: React.FC<{ n: number; title: string; done?: boolean; locked?: boolea
 );
 
 export default function PriceCalculator({ onBack, onPrivacy }: Props) {
+  const spam = useSpamProtection();
   const [parts, setParts] = useState<PartData[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [plateCount, setPlateCount] = useState(1);
@@ -226,7 +228,8 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
         setFilesMissing(uploadFailed);
       }
       setSend({ kind: 'sending', text: 'Anfrage wird gesendet …' });
-      const res = await fetch('/api/anfrage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: inquiry.current.payload });
+      const turnstileToken = await spam.verify();
+      const res = await fetch('/api/anfrage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...JSON.parse(inquiry.current.payload), turnstileToken }) });
       const response = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(typeof response.error === 'string' ? response.error : 'Übertragung fehlgeschlagen.');
       setSend({ kind: 'sent' });
@@ -482,6 +485,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
               <Step n={5} title="Ihre Angaben" done={send.kind !== 'idle'}>
                 <p className="mt-1.5 text-fg-subtle sm:ml-10">Wir prüfen Ihre Dateien und schicken Ihnen den finalen Preis mit Rechnung per E-Mail.</p>
                 <form onSubmit={submit} noValidate className="mt-4 flex flex-col gap-3">
+                  {spam.challenge}
                   {([
                     ['name', 'Name', 'name', 'text'],
                     ['email', 'E-Mail', 'email', 'email'],

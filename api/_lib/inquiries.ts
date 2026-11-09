@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { validateTurnstile } from './antispam.js';
 import { Redis } from '@upstash/redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -36,6 +37,23 @@ export async function inquiryGuard(req: VercelRequest, res: VercelResponse) {
     const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
     const count = await store.eval("local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],900) end; return n", ['lf:website:rate:' + hash(ip)], []);
     if (Number(count) > 20) { res.setHeader('Retry-After', '900'); res.status(429).json({ error: 'Zu viele Anfragen. Bitte versuchen Sie es später erneut.' }); return false; }
+    const verification = await validateTurnstile(req);
+    if (verification !== 'ok') {
+      res.status(verification === 'invalid' ? 400 : 503).json({ error: verification === 'invalid'
+        ? 'Sicherheitsprüfung fehlgeschlagen. Bitte versuchen Sie es erneut.'
+        : 'Sicherheitsprüfung momentan nicht verfügbar. Bitte versuchen Sie es später erneut.' });
+      return false;
+    }
+    // Atomarer Zähler für neue Entwürfe; ein Retry derselben ID verbraucht keinen weiteren Platz.
+    const unique = await store.eval(
+      "if redis.call('SISMEMBER',KEYS[1],ARGV[1])==1 then return redis.call('SCARD',KEYS[1]) end; local n=redis.call('SCARD',KEYS[1]); if n>=5 then return 6 end; redis.call('SADD',KEYS[1],ARGV[1]); if n==0 then redis.call('EXPIRE',KEYS[1],900) end; return n+1",
+      ['lf:website:new-rate:v1:' + hash(ip)], [String(req.body.requestId)],
+    );
+    if (Number(unique) > 5) {
+      res.setHeader('Retry-After', '900');
+      res.status(429).json({ error: 'Zu viele neue Anfragen. Bitte versuchen Sie es in 15 Minuten erneut.' });
+      return false;
+    }
     return true;
   } catch (error) { deliveryError(res, error); return false; }
 }

@@ -43,3 +43,9 @@
 | 2026-11-09 | Frühere Miro-Mindmap-Arbeit mit GitHub-Zuständigkeitsmodell abgeglichen; Miro als optionale Visualisierung statt zweiter Wissensbasis dokumentiert. Bestehende Website und produktive Systeme nicht verändert; Miro-Live-Abgleich durch Tool-Limit blockiert. | `chat-uebergabe.md`, `betrieb.md`, `status.md` | **UMGESETZT** (GitHub-Branch/PR), Miro **OFFEN** |
 
 | 2026-11-09 | Materialauswahl des Kontaktformulars zusätzlich in Deal-Material übernehmen; bestehende Anfrage-Fingerprints erhalten. HubSpot-Enum und neun isolierte Zuordnungen geprüft; Routentests ergänzt, Ausführung blockiert. | `api/_lib/hubspot.ts`, `tests/inquiries.test.cjs`, `integrations.md` | Implementiert; Deployment separat prüfen |
+
+| 2026-11-09 | Turnstile für Kontaktformular und Rechner samt serverseitiger Host-/Action-Prüfung und Limit von fünf neuen Anfrage-IDs je IP/15 Minuten vorbereitet. Retry-Journal unverändert. | `api/_lib/antispam.ts`, `api/_lib/inquiries.ts`, `components/SpamProtection.tsx`, Formular-Komponenten, Tests, Datenschutz | VORBEREITET; Schlüssel fehlen, Production nicht geändert |
+
+| 2026-11-09 | Spamschutz-Preview mit expliziter Prüfkette erfolgreich: Frontend-/API-Typechecks, 21 Tests, Build. | PR #6, Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` | AUTOMATISIERT GETESTET; Cloudflare-Widget/Schlüssel und Browser-Live-Test OFFEN; Production unverändert |
+
+| 2026-11-09 | Turnstile-Variablen für Production per Metadaten bestätigt; Secret als Sensitive. Nutzer-Widget eingerichtet. Produktive Übernahme von PR #6 gestartet. | `integrations.md`, PR #6 | Konfiguration bestätigt; Deployment anschließend prüfen, Browser-/CRM-End-to-End-Test OFFEN |
