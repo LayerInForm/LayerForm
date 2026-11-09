@@ -91,7 +91,7 @@
     notify(current);
     saving = false;
     // Geladene Drittanbieter-Ressourcen lassen sich nicht vollständig entladen.
-    if (old && old.hubspot && !current.hubspot) {
+    if (old && ((old.hubspot && !current.hubspot) || (old.analytics && !current.analytics))) {
       location.reload();
       return;
     }
