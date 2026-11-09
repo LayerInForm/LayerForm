@@ -1,3 +1,4 @@
+import { dealTitel } from './deal-title.js';
 import { deliverOnce, hash } from './inquiries.js';
 /**
  * Direkte HubSpot-Anbindung der Website.
@@ -115,7 +116,7 @@ export async function legeLeadAn(l: Lead) {
     const links = Array.from(new Set(l.volltext.match(LINK) || [])).filter((u) => !/layer-form\.de|vercel-storage\.com/i.test(u));
 
     const props: Record<string, string> = {
-      dealname: l.titel.slice(0, 120),
+      dealname: dealTitel(l.source, l.titel, l.material),
       pipeline: PIPELINE,
       dealstage: STAGE_NEU,
       hubspot_owner_id: OWNER_ID,

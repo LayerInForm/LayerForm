@@ -41,3 +41,5 @@
 | 2026-11-09 | Dauerhafte Übergabe des wichtigen Chat-Wissens; zusätzliche Fachleitfäden und klare Einstiegsregeln | `chat-uebergabe.md`, `website.md`, `versand.md`, `marketing.md`, `betrieb.md`, `README.md` | Auf demselben Dokumentations-Branch; keine Änderung an Website-Code oder CRM |
 
 | 2026-11-09 | Frühere Miro-Mindmap-Arbeit mit GitHub-Zuständigkeitsmodell abgeglichen; Miro als optionale Visualisierung statt zweiter Wissensbasis dokumentiert. Bestehende Website und produktive Systeme nicht verändert; Miro-Live-Abgleich durch Tool-Limit blockiert. | `chat-uebergabe.md`, `betrieb.md`, `status.md` | **UMGESETZT** (GitHub-Branch/PR), Miro **OFFEN** |
+
+| 2026-11-09 | Einheitliche projektbezogene Deal-Titel ohne Personen-/Firmennamen oder „Anfrage“; CRM-Titel angepasst und zurückgelesen. Website-Titelvergabe zentralisiert, Retry-Payload unverändert. Zwei gezielte Titeltests bestanden; vollständige Suite/Build hier nicht ausgeführt. | `api/_lib/hubspot.ts`, `api/_lib/deal-title.ts`, `tests/deal-title.test.cjs`, `integrations.md` | CRM LIVE-VERIFIZIERT; Website im PR, Deployment offen; externe Mail-Automation offen |
