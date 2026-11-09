@@ -32,14 +32,14 @@ const Step: React.FC<{ n: number; title: string; done?: boolean; locked?: boolea
   <section
     id={id}
     aria-disabled={locked || undefined}
-    className={`rounded-panel bg-surface p-5 shadow-[inset_0_0_0_1px_rgba(23,23,23,.10)] transition-opacity duration-300 md:p-6 ${
+    className={`rounded-panel bg-surface p-5 shadow-[inset_0_0_0_1px_rgba(232,241,247,.08)] transition-opacity duration-300 md:p-6 ${
       locked ? 'pointer-events-none opacity-40' : ''
     }`}
   >
     <h2 className="flex items-center gap-3 text-xl font-semibold">
       <span
         className={`grid h-7 w-7 shrink-0 place-items-center rounded-[9px] text-sm font-semibold transition-colors ${
-          done ? 'bg-cyan text-ink' : 'bg-ink/[.07] text-fg-muted'
+          done ? 'bg-cyan text-ink' : 'bg-white/[.07] text-fg-muted'
         }`}
       >
         {n}
@@ -246,16 +246,16 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
   if (send.kind === 'sent') {
     return (
       <section className="mx-auto max-w-3xl px-5 pb-28 pt-10 md:px-8">
-        <div className="rounded-panel bg-gradient-to-br from-deep to-surface p-8 shadow-[inset_0_1px_0_rgba(23,23,23,.10)] md:p-12">
+        <div className="rounded-panel bg-gradient-to-br from-deep to-surface p-8 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] md:p-12">
           <h1 className="text-4xl font-semibold leading-tight md:text-5xl">Vielen Dank, Ihre Anfrage ist da.</h1>
           <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-fg/80">
             Wir prüfen Ihre Dateien und melden uns mit dem finalen Preis inklusive Versand und der Rechnung per E-Mail an {form.email}.
           </p>
           {filesMissing && (
-            <p className="mt-4 max-w-[52ch] rounded-media border border-ink/15 p-4 text-[15px] text-fg/85">
+            <p className="mt-4 max-w-[52ch] rounded-media border border-white/15 p-4 text-[15px] text-fg/85">
               Ihre Dateien konnten gerade nicht hochgeladen werden. Bitte schicken Sie sie kurz per{' '}
-              <a href={`https://wa.me/${WHATSAPP}`} className="text-fg underline">WhatsApp</a> oder an{' '}
-              <a href={`mailto:${EMAIL}`} className="text-fg underline">{EMAIL}</a>.
+              <a href={`https://wa.me/${WHATSAPP}`} className="text-cyan underline">WhatsApp</a> oder an{' '}
+              <a href={`mailto:${EMAIL}`} className="text-cyan underline">{EMAIL}</a>.
             </p>
           )}
           <button onClick={onBack} className="btn-primary mt-9">Zur Startseite</button>
@@ -278,10 +278,10 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
       <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
         {/* 3D-Ansicht */}
         <div
-          className={`relative aspect-[4/3.4] overflow-hidden rounded-panel bg-surface shadow-[inset_0_0_0_1px_rgba(23,23,23,.10)] lg:sticky lg:top-28 lg:aspect-auto lg:h-[min(76vh,680px)] ${
+          className={`relative aspect-[4/3.4] overflow-hidden rounded-panel bg-surface shadow-[inset_0_0_0_1px_rgba(232,241,247,.08)] lg:sticky lg:top-28 lg:aspect-auto lg:h-[min(76vh,680px)] ${
             dragOver ? 'ring-2 ring-cyan' : ''
           }`}
-          style={{ background: 'radial-gradient(70% 60% at 50% 25%,rgba(166,107,255,.15),transparent 70%),#FFF8AD' }}
+          style={{ background: 'radial-gradient(70% 60% at 50% 25%,rgba(8,36,111,.55),transparent 70%),repeating-linear-gradient(to bottom,rgba(232,241,247,.03) 0 1px,transparent 1px 7px),#0A1731' }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={(e) => { e.preventDefault(); setDragOver(false); readFiles(e.dataTransfer.files); }}
@@ -290,7 +290,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
 
           {!parts.length && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
-              <span className="grid h-[72px] w-[72px] place-items-center rounded-[22px] border border-dashed border-ink/25 text-fg">
+              <span className="grid h-[72px] w-[72px] place-items-center rounded-[22px] border border-dashed border-white/25 text-cyan">
                 <UploadSimple size={30} aria-hidden="true" />
               </span>
               <p className="max-w-[30ch] text-fg-muted">
@@ -309,13 +309,13 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                   aria-selected={i === active}
                   onClick={() => setActive(i)}
                   className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold backdrop-blur transition-colors ${
-                    i === active ? 'border-cyan bg-cyan text-ink' : s.ok ? 'border-ink/15 bg-bg/60 text-fg' : 'border-red-700 bg-bg/60 text-red-800'
+                    i === active ? 'border-cyan bg-cyan text-ink' : s.ok ? 'border-white/15 bg-bg/60 text-fg' : 'border-red-300 bg-bg/60 text-red-300'
                   }`}
                 >
                   Platte {i + 1}
                 </button>
               ))}
-              <button onClick={addPlate} aria-label="Platte hinzufügen" className="rounded-full border border-ink/15 bg-bg/60 px-3.5 py-1.5 text-sm font-semibold text-fg backdrop-blur">
+              <button onClick={addPlate} aria-label="Platte hinzufügen" className="rounded-full border border-white/15 bg-bg/60 px-3.5 py-1.5 text-sm font-semibold text-cyan backdrop-blur">
                 +
               </button>
             </div>
@@ -347,13 +347,13 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                   const list = entries.filter((e) => e.plate === i);
                   const n = list.reduce((a, e) => a + e.qty, 0);
                   return (
-                    <div key={i} className={`rounded-media border px-3.5 py-3 transition-colors ${!s.ok ? 'border-red-700' : i === active ? 'border-cyan/45' : 'border-ink/[.08]'}`}>
+                    <div key={i} className={`rounded-media border px-3.5 py-3 transition-colors ${!s.ok ? 'border-red-300' : i === active ? 'border-cyan/45' : 'border-white/[.08]'}`}>
                       <div className="flex items-center justify-between gap-2">
                         <button onClick={() => setActive(i)} className="font-semibold">
                           Platte {i + 1}<span className="ml-1.5 text-sm font-normal text-fg-subtle">{n} {n === 1 ? 'Teil' : 'Teile'}</span>
                         </button>
                         {plateCount > 1 && (
-                          <button onClick={() => removePlate(i)} aria-label={`Platte ${i + 1} entfernen`} className="grid h-8 w-8 place-items-center rounded-full text-fg-subtle hover:bg-ink/10 hover:text-fg">
+                          <button onClick={() => removePlate(i)} aria-label={`Platte ${i + 1} entfernen`} className="grid h-8 w-8 place-items-center rounded-full text-fg-subtle hover:bg-white/10 hover:text-fg">
                             <X size={15} />
                           </button>
                         )}
@@ -361,29 +361,29 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                       {list.length ? list.map((e) => {
                         const p = parts.find((x) => x.id === e.part)!;
                         return (
-                          <div key={e.part} className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-ink/[.08] pt-2.5 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+                          <div key={e.part} className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-white/[.08] pt-2.5 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
                             <span className="col-span-3 truncate text-[15px] sm:col-span-1" title={p.name}>{p.name}</span>
-                            <span className="flex items-center rounded-full border border-ink/15">
-                              <button onClick={() => changeQty(e.part, i, -1)} aria-label="Weniger" className="h-8 w-8 rounded-full active:bg-ink/10">−</button>
+                            <span className="flex items-center rounded-full border border-white/15">
+                              <button onClick={() => changeQty(e.part, i, -1)} aria-label="Weniger" className="h-8 w-8 rounded-full active:bg-white/10">−</button>
                               <span className="min-w-[2ch] text-center text-sm font-semibold tabular-nums">{e.qty}</span>
-                              <button onClick={() => changeQty(e.part, i, 1)} aria-label="Mehr" className="h-8 w-8 rounded-full active:bg-ink/10">+</button>
+                              <button onClick={() => changeQty(e.part, i, 1)} aria-label="Mehr" className="h-8 w-8 rounded-full active:bg-white/10">+</button>
                             </span>
                             <select
                               value={i}
                               onChange={(ev) => moveEntry(e.part, i, ev.target.value)}
                               aria-label="Auf Platte verschieben"
-                              className="justify-self-start rounded-full border border-ink/15 bg-surface-2 px-3 py-1.5 text-sm text-fg"
+                              className="justify-self-start rounded-full border border-white/15 bg-surface-2 px-3 py-1.5 text-sm text-fg"
                             >
                               {Array.from({ length: plateCount }, (_, k) => <option key={k} value={k}>Platte {k + 1}</option>)}
                               <option value="new">Neue Platte</option>
                             </select>
-                            <button onClick={() => removeEntry(e.part, i)} aria-label={`${p.name} entfernen`} className="grid h-8 w-8 place-items-center rounded-full text-fg-subtle hover:bg-ink/10 hover:text-fg">
+                            <button onClick={() => removeEntry(e.part, i)} aria-label={`${p.name} entfernen`} className="grid h-8 w-8 place-items-center rounded-full text-fg-subtle hover:bg-white/10 hover:text-fg">
                               <Trash size={16} />
                             </button>
                           </div>
                         );
                       }) : <p className="mt-2 text-sm text-fg-subtle">Noch leer. Teile über „Platte“ hierher verschieben.</p>}
-                      {!s.ok && <p className="mt-2 text-sm text-red-800">Passt nicht auf eine Platte. Verschieben Sie Teile oder verteilen Sie automatisch.</p>}
+                      {!s.ok && <p className="mt-2 text-sm text-red-300">Passt nicht auf eine Platte. Verschieben Sie Teile oder verteilen Sie automatisch.</p>}
                     </div>
                   );
                 })}
@@ -394,7 +394,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                 </div>
               </div>
             )}
-            {fileErr && <p role="alert" className="mt-3 text-red-800 sm:ml-10">{fileErr}</p>}
+            {fileErr && <p role="alert" className="mt-3 text-red-300 sm:ml-10">{fileErr}</p>}
           </Step>
 
           <Step n={2} title="Filament wählen" done={!!mat} locked={!parts.length}>
@@ -406,14 +406,14 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                   aria-checked={mat?.id === m.id}
                   onClick={() => setMat(m)}
                   className={`rounded-media border px-4 py-3.5 text-left transition-[border-color,background-color,transform] duration-200 active:scale-[.98] ${
-                    mat?.id === m.id ? 'border-cyan bg-cyan/[.07]' : 'border-ink/[.08] hover:border-ink/30'
+                    mat?.id === m.id ? 'border-cyan bg-cyan/[.07]' : 'border-white/[.08] hover:border-white/30'
                   }`}
                 >
                   <span className="flex items-center justify-between">
                     <span className="text-lg font-semibold">{m.name}</span>
-                    <span className={`text-xs font-medium ${m.recommended ? 'text-fg' : 'text-fg-subtle'}`}>{m.tag}</span>
+                    <span className={`text-xs font-medium ${m.recommended ? 'text-cyan' : 'text-fg-subtle'}`}>{m.tag}</span>
                   </span>
-                  <ul className="mt-2 list-disc space-y-0.5 pl-4 text-sm leading-snug text-fg-muted marker:text-fg">
+                  <ul className="mt-2 list-disc space-y-0.5 pl-4 text-sm leading-snug text-fg-muted marker:text-cyan">
                     {m.pros.map((p) => <li key={p}>{p}</li>)}
                   </ul>
                 </button>
@@ -431,7 +431,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                   aria-checked={x === q}
                   onClick={() => setQ(x)}
                   className={`rounded-media border px-1.5 py-3 text-center transition-[border-color,background-color,transform] duration-200 active:scale-[.97] ${
-                    x === q ? 'border-cyan bg-cyan/[.07]' : 'border-ink/[.08] hover:border-ink/30'
+                    x === q ? 'border-cyan bg-cyan/[.07]' : 'border-white/[.08] hover:border-white/30'
                   }`}
                 >
                   <span className="block whitespace-nowrap text-[clamp(.86rem,3.4vw,1.1rem)] font-semibold tabular-nums">{mm(x.lh)} mm</span>
@@ -461,7 +461,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
             </p>
           </Step>
 
-          <section aria-live="polite" className={`rounded-panel bg-gradient-to-br from-deep to-surface p-6 shadow-[inset_0_1px_0_rgba(23,23,23,.10)] transition-opacity ${ready ? '' : 'opacity-40'}`}>
+          <section aria-live="polite" className={`rounded-panel bg-gradient-to-br from-deep to-surface p-6 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] transition-opacity ${ready ? '' : 'opacity-40'}`}>
             <p className="text-[15px] text-fg-muted">Geschätzter Richtpreis</p>
             <p className="mt-1 text-[clamp(2.4rem,6vw,3.25rem)] font-semibold leading-none tracking-tight tabular-nums">{priceText}</p>
             {count > 0 && <p className="mt-2 text-[15px] text-fg-muted">{count} {count === 1 ? 'Teil' : 'Teile'} auf {usedPlates} {usedPlates === 1 ? 'Platte' : 'Platten'}</p>}
@@ -469,7 +469,7 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
               Unverbindlicher Richtwert, der um einige Euro abweichen kann. Den genauen Preis inklusive Versand erhalten Sie von uns mit der Rechnung. Gemäß § 19 UStG ohne Umsatzsteuer.
             </p>
             {parts.length > 0 && !allFit && (
-              <p role="alert" className="mt-3 text-red-800">Auf mindestens einer Platte ist zu wenig Platz. Bitte Teile verschieben oder „Automatisch verteilen“ wählen.</p>
+              <p role="alert" className="mt-3 text-red-300">Auf mindestens einer Platte ist zu wenig Platz. Bitte Teile verschieben oder „Automatisch verteilen“ wählen.</p>
             )}
             <button
               disabled={!(ready && allFit)}
@@ -521,16 +521,16 @@ export default function PriceCalculator({ onBack, onPrivacy }: Props) {
                   <input type="text" name="website" tabIndex={-1} autoComplete="off" value={form.website}
                     onChange={(e) => setForm({ ...form, website: e.target.value })} className="hidden" aria-hidden="true" />
                   <label className="flex cursor-pointer items-start gap-2.5 text-sm text-fg-muted">
-                    <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[#A66BFF]" />
+                    <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[#00E5FF]" />
                     <span>
                       Ich bin einverstanden, dass meine Angaben und Dateien zur Bearbeitung der Anfrage gespeichert werden. Mehr dazu in der{' '}
-                      <button type="button" onClick={onPrivacy} className="text-fg underline underline-offset-2">Datenschutzerklärung</button>.
+                      <button type="button" onClick={onPrivacy} className="text-cyan underline underline-offset-2">Datenschutzerklärung</button>.
                     </span>
                   </label>
-                  {formErr && <p role="alert" className="text-red-800">{formErr}</p>}
+                  {formErr && <p role="alert" className="text-red-300">{formErr}</p>}
 
                   {send.kind === 'failed' && (
-                    <div role="alert" className="rounded-media border border-red-700/60 p-4">
+                    <div role="alert" className="rounded-media border border-red-300/60 p-4">
                       <p className="text-[15px] text-fg/90">{send.text}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <a href={mailto} className="btn-ghost !px-4 !py-2 !text-sm"><EnvelopeSimple size={17} aria-hidden="true" /> Per E-Mail senden</a>

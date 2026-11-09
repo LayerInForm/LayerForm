@@ -19,7 +19,7 @@ export const BrandLogo: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => 
   <span className="flex items-center gap-2.5">
     <img src={LOGO_ICON_SRC} alt="" width={36} height={36} className={size === 'md' ? 'h-9 w-9' : 'h-7 w-7'} />
     <span className={`font-bold tracking-[-0.03em] ${size === 'md' ? 'text-xl' : 'text-lg'}`}>
-      <span className="text-fg">Layer</span>
+      <span className="text-cyan">Layer</span>
       <span className="text-fg">Form</span>
     </span>
   </span>
@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   const solid = scrolled || currentView !== 'home' || open;
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-nav border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${solid ? 'border-ink/10 bg-bg/95 shadow-[0_8px_30px_rgba(0,0,0,.12)]' : 'border-transparent bg-bg/75'}`}>
+    <header className={`fixed inset-x-0 top-0 z-nav border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${solid ? 'border-white/10 bg-bg/95 shadow-[0_8px_30px_rgba(0,0,0,.12)]' : 'border-transparent bg-bg/75'}`}>
       <div className="mx-auto max-w-7xl">
         <nav className="flex h-[4.5rem] items-center justify-between px-5 md:px-8" aria-label="Hauptnavigation">
           <button onClick={() => { setOpen(false); setView('home'); }} aria-label="LayerForm, zur Startseite">
@@ -125,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
           </div>
 
           <button
-            className="mr-1 rounded-full p-2.5 text-fg transition-colors hover:bg-ink/10 md:hidden"
+            className="mr-1 rounded-full p-2.5 text-fg transition-colors hover:bg-white/10 md:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="mobile-menu"
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-1.5 rounded-2xl px-4 py-3.5 text-lg font-medium text-fg active:bg-ink/10"
+                      className="flex w-full items-center gap-1.5 rounded-2xl px-4 py-3.5 text-lg font-medium text-fg active:bg-white/10"
                     >
                       {item.label} <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
                     </a>
@@ -162,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                     <button
                       key={item.label}
                       onClick={() => go(item)}
-                      className="block w-full rounded-2xl px-4 py-3.5 text-left text-lg font-medium text-fg active:bg-ink/10"
+                      className="block w-full rounded-2xl px-4 py-3.5 text-left text-lg font-medium text-fg active:bg-white/10"
                     >
                       {item.label}
                     </button>

@@ -78,7 +78,7 @@ const ProjectCard: React.FC<{ p: Project; big?: boolean; onInquiry: (topic?: str
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />
-        <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(23,23,23,.10)]" />
+        <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]" />
       </span>
       <figcaption className="mt-3 flex items-start justify-between gap-3">
         <span>
@@ -88,7 +88,7 @@ const ProjectCard: React.FC<{ p: Project; big?: boolean; onInquiry: (topic?: str
         <ArrowUpRight
           size={18}
           weight="bold"
-          className="mt-0.5 shrink-0 text-fg-subtle transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg"
+          className="mt-0.5 shrink-0 text-fg-subtle transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan"
           aria-hidden="true"
         />
       </figcaption>
@@ -114,7 +114,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
 
           {/* Umschalter mit gleitendem Hintergrund */}
           <div
-            className="mt-10 inline-flex w-full border-b border-ink/20 pb-2 sm:w-auto"
+            className="mt-10 inline-flex w-full border-b border-white/20 pb-2 sm:w-auto"
             role="tablist"
             aria-label="Kundengruppe"
           >
@@ -128,7 +128,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
                   aria-selected={on}
                   onClick={() => setGroup(key)}
                   className={`relative flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:px-5 sm:text-[15px] ${
-                    on ? 'text-fg' : 'text-fg-muted hover:text-fg'
+                    on ? 'text-cyan' : 'text-fg-muted hover:text-fg'
                   }`}
                 >
                   {on && (
@@ -162,7 +162,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
 
               <ul className="mt-6 flex flex-wrap gap-2">
                 {g.chips.map((c) => (
-                  <li key={c} className="rounded-full border border-ink/10 px-3.5 py-1.5 text-sm text-fg/85">
+                  <li key={c} className="rounded-full border border-white/10 px-3.5 py-1.5 text-sm text-fg/85">
                     {c}
                   </li>
                 ))}

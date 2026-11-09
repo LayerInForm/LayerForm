@@ -22,7 +22,7 @@ const TOPICS = ['Automatisierung', 'IT-Service', 'Ersatzteil', 'Prototyp', 'Give
 type CustomerType = 'privat' | 'unternehmen';
 
 const inputCls =
-  'w-full rounded-xl border border-ink/[.12] bg-bg/70 px-4 py-3 text-[16px] text-fg placeholder:text-fg-subtle outline-none transition-[border-color,box-shadow] duration-200 focus:border-ink focus:ring-4 focus:ring-cyan/15';
+  'w-full rounded-xl border border-white/[.12] bg-bg/70 px-4 py-3 text-[16px] text-fg placeholder:text-fg-subtle outline-none transition-[border-color,box-shadow] duration-200 focus:border-cyan focus:ring-4 focus:ring-cyan/15';
 
 const Field: React.FC<{ label: string; optional?: boolean; error?: string; children: React.ReactNode; className?: string }> = ({
   label, optional, error, children, className = '',
@@ -33,7 +33,7 @@ const Field: React.FC<{ label: string; optional?: boolean; error?: string; child
       {optional && <span className="text-xs font-normal text-fg-muted">optional</span>}
     </span>
     {children}
-    {error && <span className="mt-1.5 block text-sm text-red-800">{error}</span>}
+    {error && <span className="mt-1.5 block text-sm text-red-300">{error}</span>}
   </label>
 );
 
@@ -173,9 +173,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                 : 'Beschreiben Sie kurz, was Sie brauchen. Sie bekommen eine persönliche Rückmeldung mit Preis und Lieferzeit.'}
             </p>
             {!isIT && (
-            <div className="mt-8 rounded-panel border border-ink/[.07] bg-surface p-5">
+            <div className="mt-8 rounded-panel border border-white/[.07] bg-surface p-5">
               <p className="flex items-center gap-2 font-semibold">
-                <Paperclip size={17} className="text-fg" aria-hidden="true" /> Fotos oder Dateien?
+                <Paperclip size={17} className="text-cyan" aria-hidden="true" /> Fotos oder Dateien?
               </p>
               <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">
                 Senden Sie diese nach dem Absenden einfach in WhatsApp hinterher oder hängen Sie sie an die E-Mail an:
@@ -186,7 +186,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
           </div>
 
           {/* Formular */}
-          <div className="rounded-panel border border-ink/[.07] bg-surface p-6 md:p-10">
+          <div className="rounded-panel border border-white/[.07] bg-surface p-6 md:p-10">
             {spam.challenge}
             <AnimatePresence mode="wait" initial={false}>
               {sentVia ? (
@@ -197,7 +197,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   exit={{ opacity: 0 }}
                   className="py-10 text-center"
                 >
-                  <CheckCircle size={52} className="mx-auto text-fg" aria-hidden="true" />
+                  <CheckCircle size={52} className="mx-auto text-cyan" aria-hidden="true" />
                   <h2 className="mt-6 text-3xl font-semibold">{sentVia === 'email' ? 'Anfrage gesendet' : 'Fast geschafft'}</h2>
                   <p className="mx-auto mt-3 max-w-md text-lg leading-relaxed text-fg-muted">
                     {sentVia === 'email'
@@ -219,7 +219,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   </div>
                   <p className="mt-6 text-sm text-fg-muted">
                     Hat sich nichts geöffnet? Schreiben Sie direkt an{' '}
-                    <a href={`mailto:${EMAIL}`} className="font-semibold text-fg underline">{EMAIL}</a>.
+                    <a href={`mailto:${EMAIL}`} className="font-semibold text-cyan underline">{EMAIL}</a>.
                   </p>
                 </motion.div>
               ) : (
@@ -247,7 +247,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                           aria-checked={type === key}
                           onClick={() => setType(key)}
                           className={`flex items-center justify-center gap-2 rounded-xl border px-2 py-3 text-sm font-semibold min-[400px]:px-4 min-[400px]:text-base transition ${
-                            type === key ? 'border-cyan bg-cyan text-ink' : 'border-ink/10 text-fg-muted hover:border-ink/30 hover:text-fg'
+                            type === key ? 'border-cyan bg-cyan text-ink' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
                           }`}
                         >
                           <Icon size={18} className="hidden shrink-0 min-[400px]:block" aria-hidden="true" /> {label}
@@ -293,7 +293,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                             aria-checked={on}
                             onClick={() => setForm((x) => ({ ...x, filament: f }))}
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                              on ? 'border-cyan bg-cyan/15 text-fg' : 'border-ink/10 text-fg-muted hover:border-ink/30 hover:text-fg'
+                              on ? 'border-cyan bg-cyan/15 text-fg' : 'border-white/10 text-fg-muted hover:border-white/30 hover:text-fg'
                             }`}
                           >
                             {f}
@@ -377,18 +377,18 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                         aria-invalid={Boolean(errors.consent)}
                         checked={consent}
                         onChange={(e) => setConsent(e.target.checked)}
-                        className="mt-1 h-5 w-5 shrink-0 accent-[#A66BFF]"
+                        className="mt-1 h-5 w-5 shrink-0 accent-[#D4FF24]"
                       />
                       <span>
                         Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden.{' '}
                         {onPrivacy && (
-                          <button type="button" onClick={onPrivacy} className="font-semibold text-fg underline">
+                          <button type="button" onClick={onPrivacy} className="font-semibold text-cyan underline">
                             Datenschutzerklärung
                           </button>
                         )}
                       </span>
                     </label>
-                    {errors.consent && <span className="mt-1.5 block text-sm text-red-800">{errors.consent}</span>}
+                    {errors.consent && <span className="mt-1.5 block text-sm text-red-300">{errors.consent}</span>}
                   </div>
 
                   <input
@@ -402,14 +402,14 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     className="absolute -left-[9999px] h-0 w-0 opacity-0"
                   />
 
-                  <div className="border-t border-ink/10 pt-6">
+                  <div className="border-t border-white/10 pt-6">
                     {Object.keys(errors).length > 0 && (
-                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-900">
+                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
                         Bitte prüfen Sie die markierten Pflichtfelder und den Datenschutzhinweis.
                       </div>
                     )}
                     {sendError && (
-                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-900">
+                      <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
                         <p>{sendError}</p>
                         <a href={mailtoUrl} className="mt-2 inline-block font-semibold underline">Alternativ per E-Mail senden</a>
                       </div>
