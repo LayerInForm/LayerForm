@@ -20,7 +20,6 @@
 | Google Apps Script / Workspace Studio | Mögliche Mail-, Rechnungs-, Versand- und CRM-Automationen | `integrations.md` | Dokumentierte Snapshots; Live-Trigger ungeprüft |
 | Lexware Office | Rechnungen/Buchhaltung | https://www.lexware.de/ | Mitgeteilt; keine API-Integration bestätigt |
 | DHL | Versand, Label, Tracking | https://www.dhl.de/ | Sandbox-Vorarbeiten mitgeteilt; Produktionsstatus offen |
-| Miro | Visuelle Mindmap | https://miro.com/app/board/uXjVEQXa8OM=/ | Verlinktes Board, keine automatische Synchronisierung |
 | Ubuntu-Heimserver, Caddy, Tailscale | Private Zusatzinfrastruktur | kein öffentlicher Administrationslink | Mitgeteilt; laufende Dienste nicht vollständig verifiziert |
 
 ## Architektur: Website-Anfragen
