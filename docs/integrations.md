@@ -1,5 +1,11 @@
 # LayerForm – Website & HubSpot: gemeinsame Integrationsdokumentation
 
+## Einheitliche Deal-Titel (09.11.2026)
+
+Nutzerregel: Titel beschreiben knapp das Projekt oder die Leistung; kein Wort „Anfrage“, keine Personen- oder Firmennamen. Kunden gehören in die Kontakt-/Firmenverknüpfung. TEST-Kennzeichnung erhalten. Bestehende CRM-Titel wurden gezielt angepasst und zurückgelesen; keine individuellen Auftragsdaten hier dokumentieren.
+
+Website-Code: `api/_lib/deal-title.ts` vergibt beim Deal-POST ausschließlich freigegebene Leistungsthemen oder `3D-Druck`, beim Rechner optional mit validiertem Material. Keine Kontakt- oder Firmennamen und keine ungeprüften Freitext-/Dateinamen im automatisch erzeugten Titel. Eine konkrete Projektbezeichnung wird nach Sichtung ergänzt. Der bisherige Lead-Payload und dessen Idempotenz-Fingerprint bleiben unverändert. Deployment und Live-Test separat prüfen. Externe Apps-Script-/Workspace-Lead-Erstellung ist noch nicht angepasst; dort dieselbe Regel übernehmen, sobald aktiver Quellcode und Trigger vorliegen.
+
 ## Produktive Umstellung vom 09.11.2026 (ersetzt ältere Ablaufbeschreibungen unten)
 
 - Beide Website-Endpunkte `/api/kontakt` und `/api/anfrage` übertragen ausschließlich serverseitig an HubSpot. Kein Resend-Versand an das Geschäftspostfach, auch kein Fehler-Fallback. Resend dient optional nur zur Kundenbestätigung; deren Fehler ändern einen erfolgreichen CRM-Eingang nicht.
