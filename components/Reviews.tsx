@@ -65,20 +65,20 @@ const ReviewCard: React.FC<{ review: GoogleReview; delay: number }> = ({ review,
 
   return (
     <Reveal as="article" delay={delay} className="mb-4 break-inside-avoid rounded-panel bg-surface p-6 md:mb-5 md:p-7">
-      <Stars value={review.rating} size={15} className="text-cyan" />
+      <Stars value={review.rating} size={15} className="text-fg" />
       <p className={`mt-4 leading-relaxed text-fg/90 ${!expanded && long ? 'line-clamp-4' : ''}`}>
         „{review.text}“
       </p>
       {long && (
         <button
           onClick={() => setExpanded((e) => !e)}
-          className="mt-2 text-sm font-semibold text-cyan transition-colors hover:text-cyan-soft"
+          className="mt-2 text-sm font-semibold text-fg transition-colors hover:text-fg"
         >
           {expanded ? 'Weniger anzeigen' : 'Weiterlesen'}
         </button>
       )}
       <footer className="mt-5 flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[.06] text-sm font-semibold text-fg-muted">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink/[.06] text-sm font-semibold text-fg-muted">
           {initials}
         </span>
         <span>
@@ -100,7 +100,7 @@ export const Reviews: React.FC = () => (
         <div className="mt-8 flex items-end gap-4">
           <CountUp to={RATING} className="text-7xl font-semibold leading-none tracking-tight tabular-nums" />
           <div className="pb-1">
-            <Stars value={RATING} size={18} className="text-cyan" />
+            <Stars value={RATING} size={18} className="text-fg" />
             <p className="mt-1.5 text-[15px] text-fg-muted">{REVIEW_COUNT} Bewertungen bei Google</p>
           </div>
         </div>

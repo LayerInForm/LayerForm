@@ -53,3 +53,5 @@
 | 2026-11-09 | Dezente Website-Designpflege: Typografie, Kontrast, Hero-Bildhöhe, Navigation und Button-Zustände; bestehende Komponenten verwendet, keine neuen Abhängigkeiten. | `index.css`, `tailwind.config.js`, `Hero.tsx`, `Navbar.tsx`, `Projects.tsx`, `website.md` | Implementiert; automatisierte Prüfung folgt, visuelle Browserprüfung OFFEN |
 
 | 2026-11-09 | Nutzerpalette #030407 / #1558C9 / #D4FF24 in Theme, Hero, Kontakt, Formular und Footer übernommen; Vollfarb-Kontraste geprüft. | Theme/CSS und Darstellungs-Komponenten, `website.md` | Implementiert; Typechecks/Tests/Build folgen, visuelle Prüfung OFFEN |
+
+| 2026-11-09 | Helle Nutzerpalette Gelb #FFF21A, Schrift #171717, Elemente #A66BFF. Ehemalige Dark-Mode-Rahmen, Textakzente, Bildbeschriftungen und Fehlermeldungen angepasst. | Theme, CSS, Darstellungs-Komponenten, `website.md` | Implementiert; automatisierte Validierung folgt, visuelle Prüfung OFFEN |

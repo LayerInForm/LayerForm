@@ -47,7 +47,7 @@ export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiry }) => {
   const step = STEPS[active];
 
   return (
-    <section className="relative border-y border-white/[.07] bg-navy">
+    <section className="relative border-y border-ink/[.07] bg-navy">
       <div className="layer-lines pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
       <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-24 md:px-8 md:py-32 lg:grid-cols-12 lg:gap-10">
         <Reveal className="lg:col-span-5">
@@ -68,7 +68,7 @@ export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiry }) => {
                   className="group relative block w-full py-4 pl-6 text-left"
                 >
                   {/* Leiste links, füllt sich beim automatischen Wechsel */}
-                  <span className="absolute inset-y-0 left-0 w-[2px] rounded-full bg-white/10" aria-hidden="true" />
+                  <span className="absolute inset-y-0 left-0 w-[2px] rounded-full bg-ink/10" aria-hidden="true" />
                   {on && (
                     <motion.span
                       key={`bar-${active}-${auto}`}
@@ -97,7 +97,7 @@ export const CadShowcase: React.FC<CadShowcaseProps> = ({ onInquiry }) => {
 
         <Reveal delay={0.08} className="lg:col-span-7">
           <figure>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-panel bg-white shadow-[0_40px_80px_-40px_rgba(0,0,0,.6)]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-panel bg-white shadow-[0_40px_80px_-40px_rgba(23,23,23,.15)]">
               <AnimatePresence initial={false}>
                 <motion.img
                   key={step.key}
