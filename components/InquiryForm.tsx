@@ -377,7 +377,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                         aria-invalid={Boolean(errors.consent)}
                         checked={consent}
                         onChange={(e) => setConsent(e.target.checked)}
-                        className="mt-1 h-5 w-5 shrink-0 accent-[#00E5FF]"
+                        className="mt-1 h-5 w-5 shrink-0 accent-[#D4FF24]"
                       />
                       <span>
                         Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden.{' '}

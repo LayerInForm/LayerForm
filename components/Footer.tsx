@@ -17,7 +17,7 @@ const LINKS: { label: string; view: View }[] = [
 ];
 
 export const Footer: React.FC<FooterProps> = ({ setView }) => (
-  <footer className="border-t border-white/[.07] bg-[#070F21] pb-[env(safe-area-inset-bottom)]">
+  <footer className="border-t border-white/[.07] bg-surface pb-[env(safe-area-inset-bottom)]">
     <div className="mx-auto max-w-7xl border-b border-white/10 px-5 pb-12 pt-20 md:px-8 md:pb-16 md:pt-24">
       <p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan">Sie haben eine Idee?</p>
       <button onClick={() => setView('inquiry')} className="group mt-5 flex w-full items-end justify-between gap-4 text-left">

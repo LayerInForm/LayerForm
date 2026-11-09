@@ -11,7 +11,7 @@ const SERVICES = [
 ];
 
 export const CorporateServices: React.FC<CorporateServicesProps> = ({ onInquiryClick }) => (
-  <section id="leistungen" className="relative border-y border-white/[.07] bg-[#081126]">
+  <section id="leistungen" className="relative border-y border-white/[.07] bg-surface">
     <div className="mx-auto max-w-7xl px-5 py-24 md:px-8 md:py-32">
       <Reveal>
         <div className="flex flex-wrap items-end justify-between gap-8 border-b border-white/15 pb-10">
