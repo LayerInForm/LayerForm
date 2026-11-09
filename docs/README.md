@@ -16,6 +16,11 @@ Diese Dateien beschreiben LayerForm übergreifend. Für operative Vorgänge ist 
 | [Projekte & Roadmap](projekte.md) | Umgesetzte, geplante und noch zu prüfende Vorhaben | Je Projekt |
 | [Regeln für alle Chats](regeln.md) | Einheitliche Lesereihenfolge, Freigaben, Sicherheit, Pflege | Alle Chats |
 | [Quellen, Status & Änderungen](status.md) | Verifikationsstand, Widersprüche, Pflegeprotokoll | GitHub |
+| [Übergabe aus bisherigen Chats](chat-uebergabe.md) | Entscheidungen, Schutzregeln, was bereits erledigt und was offen ist | GitHub / Fachsysteme |
+| [Website & Deployment](website.md) | Codepfade, Feature-Schalter, Formulare und Prüfstrategie | GitHub / Vercel |
+| [Versand & DHL](versand.md) | Label-Workflow, CRM-Felder, Sandbox-Status und Freigaben | DHL / HubSpot |
+| [Marketing & Produktstrategie](marketing.md) | Kanäle, Etsy, Sortiment und Social Media | Kanaltools / GitHub |
+| [Betriebsorganisation](betrieb.md) | Zuständigkeiten und sichere bereichsübergreifende Änderungen | Fachsysteme |
 
 ## Organisationslandkarte
 
@@ -46,6 +51,6 @@ flowchart LR
 
 ## Zusammenarbeit mehrerer Chats
 
-**Bei jeder Aufgabe:** [Regeln](regeln.md) lesen → relevante Fachdatei lesen → Live-System prüfen → Auswirkungen prüfen → nach nötiger Freigabe umsetzen → Ergebnis testen → passende Datei und [Status](status.md) aktualisieren. Chats sind nicht automatisch miteinander synchronisiert.
+**Bei jeder Aufgabe:** [Regeln](regeln.md) und [Chat-Übergabe](chat-uebergabe.md) lesen → relevante Fachdatei lesen → Live-System prüfen → Auswirkungen prüfen → nach nötiger Freigabe umsetzen → Ergebnis testen → passende Datei und [Status](status.md) aktualisieren. Chats sind nicht automatisch miteinander synchronisiert.
 
 **Zentraler Einstieg:** `docs/README.md`. Ergänzungen erfolgen in den verlinkten Fachdateien, ohne parallele Wissensbasen anzulegen.
