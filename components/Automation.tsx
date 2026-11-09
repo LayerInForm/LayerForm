@@ -68,7 +68,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
     <div className="pointer-events-none absolute inset-0" aria-hidden="true" />
     <div className="relative mx-auto max-w-7xl px-5 py-24 md:px-8 md:py-32">
       <Reveal>
-        <span className="inline-flex items-center gap-2 border-b border-cyan pb-2 text-xs font-semibold uppercase tracking-[.18em] text-cyan">
+        <span className="inline-flex items-center gap-2 border-b border-cyan pb-2 text-xs font-semibold uppercase tracking-[.18em] text-fg">
           Automatisierung &amp; IT-Service
         </span>
         <h2 className="mt-7 max-w-[16ch] text-[clamp(3rem,6vw,6rem)] font-semibold leading-[.98] tracking-[-.06em]">
@@ -82,7 +82,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
 
       {/* Beispiel-Ablauf */}
       <Reveal delay={0.05}>
-        <div className="mt-12 rounded-panel bg-gradient-to-br from-deep to-surface p-6 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] md:p-8">
+        <div className="mt-12 rounded-panel bg-gradient-to-br from-deep to-surface p-6 shadow-[inset_0_1px_0_rgba(23,23,23,.10)] md:p-8">
           <p className="text-sm font-semibold text-fg-muted">Beispiel für einen strukturierten Anfrageprozess:</p>
           <ol className="mt-5 flex flex-col gap-2 md:flex-row md:items-center md:gap-0">
             {FLOW.map((step, i) => (
@@ -92,7 +92,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
                   {step}
                 </span>
                 {i < FLOW.length - 1 && (
-                  <ArrowRight size={18} className="hidden shrink-0 text-cyan md:mx-2 md:block" aria-hidden="true" />
+                  <ArrowRight size={18} className="hidden shrink-0 text-fg md:mx-2 md:block" aria-hidden="true" />
                 )}
               </li>
             ))}
@@ -104,11 +104,11 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
       </Reveal>
 
       {/* Einsatzbereiche */}
-      <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
         {USE_CASES.map(({ icon: Icon, title, text }, i) => (
           <Reveal key={title} delay={0.04 * i}>
             <article className="flex h-full flex-col bg-bg p-7 md:p-9">
-              <Icon size={28} className="text-cyan" aria-hidden="true" />
+              <Icon size={28} className="text-fg" aria-hidden="true" />
               <h3 className="mt-5 text-xl font-semibold">{title}</h3>
               <p className="mt-2 leading-relaxed text-fg-muted">{text}</p>
             </article>
@@ -119,12 +119,12 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
       {/* Ablauf und IT-Service */}
       <div className="mt-6 grid gap-4 lg:grid-cols-12 md:gap-5">
         <Reveal className="lg:col-span-7">
-          <article className="h-full rounded-panel border border-white/[.07] bg-surface p-7 md:p-9">
+          <article className="h-full rounded-panel border border-ink/[.07] bg-surface p-7 md:p-9">
             <h3 className="text-2xl font-semibold">So arbeiten wir</h3>
             <ol className="mt-6 space-y-5">
               {STEPS.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-cyan/15 text-sm font-bold text-cyan">{i + 1}</span>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-cyan/15 text-sm font-bold text-fg">{i + 1}</span>
                   <div>
                     <p className="font-semibold">{s.title}</p>
                     <p className="mt-1 leading-relaxed text-fg-muted">{s.text}</p>
@@ -137,7 +137,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
 
         <Reveal delay={0.06} className="lg:col-span-5">
           <article className="flex h-full flex-col rounded-panel bg-gradient-to-br from-deep to-surface p-7 md:p-9">
-            <Desktop size={28} className="text-cyan" aria-hidden="true" />
+            <Desktop size={28} className="text-fg" aria-hidden="true" />
             <h3 className="mt-5 text-2xl font-semibold">IT-Service</h3>
             <p className="mt-2 leading-relaxed text-fg/75">
               Keine eigene IT-Abteilung? Wir sind Ihr Ansprechpartner für die Technik im Hintergrund.
@@ -145,7 +145,7 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
             <ul className="mt-5 space-y-2.5">
               {IT_SERVICES.map((s) => (
                 <li key={s} className="flex items-start gap-2.5 leading-snug">
-                  <Check size={18} weight="bold" className="mt-0.5 shrink-0 text-cyan" aria-hidden="true" />
+                  <Check size={18} weight="bold" className="mt-0.5 shrink-0 text-fg" aria-hidden="true" />
                   {s}
                 </li>
               ))}
@@ -156,12 +156,12 @@ export const Automation: React.FC<AutomationProps> = ({ onInquiry }) => (
 
       {/* Werkzeuge und Abschluss */}
       <Reveal delay={0.04}>
-        <div className="mt-6 flex flex-col gap-6 rounded-panel border border-white/[.07] bg-surface p-7 md:flex-row md:items-center md:justify-between md:p-9">
+        <div className="mt-6 flex flex-col gap-6 rounded-panel border border-ink/[.07] bg-surface p-7 md:flex-row md:items-center md:justify-between md:p-9">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-fg-muted">Wir arbeiten mit den Programmen, die Sie schon nutzen:</p>
             <ul className="mt-3 flex flex-wrap gap-2">
               {TOOLS.map((t) => (
-                <li key={t} className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-fg/85">{t}</li>
+                <li key={t} className="rounded-full border border-ink/10 px-3 py-1.5 text-sm text-fg/85">{t}</li>
               ))}
             </ul>
           </div>

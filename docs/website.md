@@ -60,3 +60,11 @@ Validierung: Typechecks, bestehende Tests und Vercel-Build werden auf dem konkre
 Nutzerpalette: `#030407` für den Seitengrund, `#1558C9` für blaue Flächen und `#D4FF24` für primäre Aktionen, Fokus und Highlights. Abgeleitete dunkle Neutralflächen und helle Texttöne sichern die Lesbarkeit. Der bestehende Tokenname `cyan` ist aus Kompatibilitätsgründen ein Alias für Limette; `blue` und `deep` verwenden das gewünschte Blau. Hero-Faktenleiste und Kontaktfläche führen Blau sichtbar ein; Bildüberlagerungen, Formular-Akzente und CSS-Fokus wurden auf die Palette abgestimmt.
 
 Kontrastprüfung der Vollfarben: Limette/Schwarz 17,70:1; Weiß/Blau 6,42:1; Limette/Blau 5,54:1. Bestehendes Logo-Bild und Projektfotos bleiben Originale. Keine Anfrage-, Consent- oder Spamschutzlogik geändert. Visuelle Browserprüfung wegen nicht verfügbarer Browser-Verbindung weiterhin offen.
+
+## Helle Nutzerpalette Gelb / Schwarz / Lila (09.11.2026)
+
+Aktuelle Nutzerentscheidung ersetzt die dunkle Farbvariante: `#FFF21A` als Seitengrund, `#171717` für Schrift, `#A66BFF` für Buttons und Akzentflächen. Karten nutzen abgeleitete helle Gelbtöne; Kontakt- und Faktenflächen Lila. Alle Text-Akzente sind dunkel, damit Lila nicht als kontrastarme kleine Schrift auf Gelb erscheint. Fokus und wichtige Button-Rahmen sind dunkel.
+
+Umstellung umfasst Theme, CSS, Navigation, Hero-Bildbeschriftungen, Projekte, Leistungen, CAD, Automation, Bewertungen, Kontakt, Footer und Formular-/Rechner-Darstellung. Rechtstexte werden nur über CSS an helle Flächen angepasst, ihre Inhalte bleiben bestehen. Fotos und Logo-Datei bleiben Originale. Nicht aktive Rechneransicht bleibt deaktiviert.
+
+Gemessene Vollfarb-Kontraste: Schwarz/Gelb 15,34:1; Schwarz/Lila 5,27:1; Schwarz/helle Karte 16,46:1. Typechecks, bestehende Routentests und Build im Preview ausführen; echte Browser-/Mobilkontrolle bleibt wegen Browser-Ausfall offen. Keine Änderung an CRM-, Upload-, Consent- oder Turnstile-Verarbeitung.

@@ -4,19 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Schwarz / Blau / Limette: vom Nutzer gewählte Palette.
-        bg: '#030407',          // Seitengrund
-        surface: '#0D1017',     // Flächen, Karten
-        'surface-2': '#171C28', // gehobene Flächen, Hover
-        fg: '#F2F4F8',          // Fließtext hell
-        'fg-muted': '#B7BDCA',  // Nebentext
-        'fg-subtle': '#9EA6B7', // Hinweise, Labels
-        cyan: '#D4FF24',        // Legacy-Token: Limette für Aktionen und Highlights
-        'cyan-soft': '#E2FF70',
-        ink: '#030407',         // dunkler Text auf Limette
-        blue: '#1558C9',       // blaue Flächen und visuelle Führung
-        navy: '#0D172C',
-        deep: '#1558C9',
+        // Gelber Grund, dunkle Schrift, lila Bedienelemente: Nutzerpalette.
+        bg: '#FFF21A',          // Seitengrund
+        surface: '#FFF8AD',     // Flächen, Karten
+        'surface-2': '#F4E969', // gehobene Flächen, Hover
+        fg: '#171717',          // dunkle Schrift
+        'fg-muted': '#3D3929',  // Nebentext
+        'fg-subtle': '#5B543A', // Hinweise, Labels
+        cyan: '#A66BFF',        // Legacy-Token: Lila für Bedienelemente
+        'cyan-soft': '#BB8CFF',
+        ink: '#171717',         // dunkler Text auf Lila
+        blue: '#A66BFF',       // Legacy-Token: Lila für Akzentflächen
+        navy: '#D8BDFF',
+        deep: '#A66BFF',
       },
       fontFamily: {
         sans: ['"Outfit Variable"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
