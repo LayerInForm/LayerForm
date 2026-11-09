@@ -80,15 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   const solid = scrolled || currentView !== 'home' || open;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-nav border-b border-white/10 bg-bg/90 backdrop-blur-xl">
-      <div
-        className={`mx-auto max-w-7xl transition-[background-color,border-color] duration-300 ${
-          solid
-            ? 'bg-transparent'
-            : 'bg-transparent'
-        } ${open ? 'bg-bg/[.97]' : ''}`}
-      >
-        <nav className="flex h-[4.75rem] items-center justify-between px-5 md:px-8" aria-label="Hauptnavigation">
+    <header className={`fixed inset-x-0 top-0 z-nav border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${solid ? 'border-white/10 bg-bg/95 shadow-[0_8px_30px_rgba(0,0,0,.12)]' : 'border-transparent bg-bg/75'}`}>
+      <div className="mx-auto max-w-7xl">
+        <nav className="flex h-[4.5rem] items-center justify-between px-5 md:px-8" aria-label="Hauptnavigation">
           <button onClick={() => { setOpen(false); setView('home'); }} aria-label="LayerForm, zur Startseite">
             <BrandLogo />
           </button>
@@ -125,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                 </button>
               )
             )}
-            <button onClick={() => setView('inquiry')} className="btn-primary ml-2 !rounded-lg !px-5 !py-2.5">
+            <button onClick={() => setView('inquiry')} className="btn-primary ml-2 !min-h-11 !px-5 !py-2.5">
               Projekt anfragen
             </button>
           </div>

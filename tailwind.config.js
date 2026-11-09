@@ -9,19 +9,19 @@ export default {
         surface: '#0A1731',     // Flächen, Karten
         'surface-2': '#0F2044', // gehobene Flächen, Hover
         fg: '#E8F1F7',          // Fließtext hell
-        'fg-muted': '#9AABC2',  // Nebentext
-        'fg-subtle': '#72839C', // Hinweise, Labels
+        'fg-muted': '#AABAD0',  // Nebentext
+        'fg-subtle': '#91A2BA', // Hinweise, Labels
         cyan: '#00E5FF',        // einziger Akzent ("Layer" im Logo)
         'cyan-soft': '#8CF1FF',
         ink: '#001C47',         // Text auf Cyan
         navy: '#04112B',
-        deep: '#08246F',
+        deep: '#102C50',
       },
       fontFamily: {
         sans: ['"Outfit Variable"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
         mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      // Radius-System: Flächen 24px, Medien/Innenelemente 16px, Bedienelemente als Pille
+      // Radius-System: Flächen 24px, Medien 16px, Bedienelemente 12px
       borderRadius: {
         panel: '1.5rem',
         media: '1rem',

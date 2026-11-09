@@ -105,7 +105,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onInquiry }) => {
     <section id="projekte" className="relative">
       <div className="mx-auto max-w-7xl px-5 py-24 md:px-8 md:py-32">
         <Reveal>
-          <h2 className="max-w-4xl text-[clamp(3rem,6vw,6rem)] font-semibold leading-[.98] tracking-[-.06em]">
+          <h2 className="max-w-4xl text-[clamp(2.6rem,5.5vw,4.8rem)] font-semibold leading-[1.04] tracking-[-.045em]">
             Nicht nur gedruckt. Gelöst.
           </h2>
           <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-fg-muted">
