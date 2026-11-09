@@ -42,6 +42,27 @@ interface OrderSummary {
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(() => HASH_VIEW[window.location.hash] ?? 'home');
   const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
+  const [analyticsAllowed, setAnalyticsAllowed] = useState<boolean>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('layerform:privacy:v2') || 'null');
+      return saved?.version === 2 && saved.analytics === true &&
+        Date.now() - saved.timestamp < 180 * 86400000;
+    } catch { return false; }
+  });
+  useEffect(() => {
+    const onConsent = (event: Event) => {
+      const data = (event as CustomEvent<{ analytics: boolean }>).detail;
+      setAnalyticsAllowed(Boolean(data?.analytics));
+    };
+    window.addEventListener('layerform:consent-changed', onConsent);
+    return () => window.removeEventListener('layerform:consent-changed', onConsent);
+  }, []);
+  useEffect(() => {
+    const openPrivacy = () => setCurrentView('datenschutz');
+    window.addEventListener('layerform:open-privacy', openPrivacy);
+    return () => window.removeEventListener('layerform:open-privacy', openPrivacy);
+  }, []);
+
 
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
@@ -72,7 +93,7 @@ const App: React.FC = () => {
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
       {/* Besucherstatistik ohne Cookies; die interne Weiterleitung wird nicht gezählt */}
-      {VIEW_PATH[currentView] && <Analytics route={VIEW_PATH[currentView]} path={VIEW_PATH[currentView]} />}
+      {analyticsAllowed && VIEW_PATH[currentView] && <Analytics route={VIEW_PATH[currentView]} path={VIEW_PATH[currentView]} />}
       <a
         href="#main"
         className="sr-only z-nav rounded-full bg-cyan px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
