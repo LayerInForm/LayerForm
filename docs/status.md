@@ -57,3 +57,5 @@
 | 2026-11-09 | Helle Nutzerpalette Gelb #FFF21A, Schrift #171717, Elemente #A66BFF. Ehemalige Dark-Mode-Rahmen, Textakzente, Bildbeschriftungen und Fehlermeldungen angepasst. | Theme, CSS, Darstellungs-Komponenten, `website.md` | Implementiert; automatisierte Validierung folgt, visuelle Prüfung OFFEN |
 
 | 2026-11-09 | Gelb-lila Variante nach Nutzerablehnung zurückgenommen; Darstellung wieder auf Stand vor PR #9 (Schwarz/Blau/Limette). | Darstellungsdateien, `website.md` | Wiederherstellung; Deployment anschließend prüfen |
+
+| 2026-11-09 | Nutzer fordert ursprüngliche Logo-Palette zurück: Marineblau, Cyan, helle Schrift. Farbdateien aus geprüftem Stand nach PR #7 wiederhergestellt. | Theme/CSS und Farb-Komponenten, `website.md` | Wiederhergestellt; Produktionsdeployment anschließend prüfen |
