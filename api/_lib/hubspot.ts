@@ -123,7 +123,11 @@ export async function legeLeadAn(l: Lead) {
       lf_kanal: l.kanal,
       lf_kundentyp: l.kundentyp,
       lf_leistung: Array.from(new Set(l.leistungen)).join(';'),
-      lf_material: l.material || 'offen',
+      // Der bisherige Lead-Payload bleibt für laufende Retries unverändert.
+      // Das Kontaktformular überträgt seine Auswahl bereits als „Filament: …“.
+      lf_material: l.material || materialWert(l.source === 'kontakt'
+        ? l.anforderungen?.match(/(?:^| \| )Filament: ([^|]*)/)?.[1]
+        : undefined),
       lf_stueckzahl: (l.stueckzahl || '').replace(/\D/g, ''),
       lf_anforderungen: l.anforderungen || '',
       lf_links: links.join('\n'),

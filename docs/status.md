@@ -41,3 +41,5 @@
 | 2026-11-09 | Dauerhafte Übergabe des wichtigen Chat-Wissens; zusätzliche Fachleitfäden und klare Einstiegsregeln | `chat-uebergabe.md`, `website.md`, `versand.md`, `marketing.md`, `betrieb.md`, `README.md` | Auf demselben Dokumentations-Branch; keine Änderung an Website-Code oder CRM |
 
 | 2026-11-09 | Frühere Miro-Mindmap-Arbeit mit GitHub-Zuständigkeitsmodell abgeglichen; Miro als optionale Visualisierung statt zweiter Wissensbasis dokumentiert. Bestehende Website und produktive Systeme nicht verändert; Miro-Live-Abgleich durch Tool-Limit blockiert. | `chat-uebergabe.md`, `betrieb.md`, `status.md` | **UMGESETZT** (GitHub-Branch/PR), Miro **OFFEN** |
+
+| 2026-11-09 | Materialauswahl des Kontaktformulars zusätzlich in Deal-Material übernehmen; bestehende Anfrage-Fingerprints erhalten. HubSpot-Enum und neun isolierte Zuordnungen geprüft; Routentests ergänzt, Ausführung blockiert. | `api/_lib/hubspot.ts`, `tests/inquiries.test.cjs`, `integrations.md` | Implementiert; Deployment separat prüfen |

@@ -150,3 +150,19 @@ test('reject invalid ID, cross origin, WhatsApp backend submission and malformed
   assert.equal((await f.invoke('kontakt', { via: 'whatsapp' })).code, 400);
   assert.equal((await f.invoke('anfrage', { plates: [null, { items: [null] }] })).code, 200);
 });
+
+test('contact form maps selected filament to the dedicated deal material without duplicate retries', async () => {
+  for (const [filament, expected] of [['PLA', 'pla'], ['PETG', 'petg'], ['ASA', 'asa'], ['ABS', 'abs'], ['TPU', 'tpu'], ['Auf Anfrage', 'offen'], ['', 'offen'], ['Unbekannt', 'offen']]) {
+    const f = fixture();
+    assert.equal((await f.invoke('kontakt', { filament })).code, 200);
+    const deal = f.calls.find(c => c.url.endsWith('/deals'));
+    assert.equal(deal.body.properties.lf_material, expected);
+    assert.equal((await f.invoke('kontakt', { filament })).data.duplicate, true);
+    assert.equal(f.counts.dealsCreated, 1);
+  }
+});
+test('calculator material mapping remains unchanged', async () => {
+  const f = fixture();
+  assert.equal((await f.invoke('anfrage', { material: 'PETG HF' })).code, 200);
+  assert.equal(f.calls.find(c => c.url.endsWith('/deals')).body.properties.lf_material, 'petg');
+});
