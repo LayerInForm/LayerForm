@@ -44,8 +44,8 @@ const App: React.FC = () => {
   const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
   const [analyticsAllowed, setAnalyticsAllowed] = useState<boolean>(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem('layerform:privacy:v2') || 'null');
-      return saved?.version === 2 && saved.analytics === true &&
+      const saved = JSON.parse(localStorage.getItem('layerform:privacy:v3') || 'null');
+      return saved?.version === 3 && saved.analytics === true &&
         Date.now() - saved.timestamp < 180 * 86400000;
     } catch { return false; }
   });
