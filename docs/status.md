@@ -35,3 +35,4 @@
 | Datum | Änderung | Betroffene Dateien | Status |
 | --- | --- | --- | --- |
 | 2026-11-09 | Aufbau einer zusammenhängenden, öffentlichen LayerForm-Wissensbasis aus bestehender Integrationsdokumentation und Codeprüfung | `docs/README.md`, `unternehmen.md`, `systeme.md`, `hubspot.md`, `prozesse.md`, `projekte.md`, `regeln.md`, `status.md` | PR zur Prüfung; Website-Code bleibt unverändert |
+| 2026-11-09 | Dauerhafte Übergabe des wichtigen Chat-Wissens; zusätzliche Fachleitfäden und klare Einstiegsregeln | `chat-uebergabe.md`, `website.md`, `versand.md`, `marketing.md`, `betrieb.md`, `README.md` | Auf demselben Dokumentations-Branch; keine Änderung an Website-Code oder CRM |
