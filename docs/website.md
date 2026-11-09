@@ -54,3 +54,9 @@ Vorhandene dunkelblaue/Cyan-Identität, Outfit/Geist-Mono, echte Projektfotos un
 Formularübertragung, Materialmapping, Turnstile, Consent, Rechtstexte und Feature-Schalter sind nicht Gegenstand dieser Änderung. Vorhandene Reduced-Motion-Regeln und Tastatur-Fokus bleiben erhalten. Kein Komponentenimport aus 21st: CLI-/Katalogzugriff war in der ausgefallenen lokalen Umgebung nicht verfügbar. Designkontext wurde aus dem Repository gelesen; keine neue Designrichtung gewählt.
 
 Validierung: Typechecks, bestehende Tests und Vercel-Build werden auf dem konkreten Branch geprüft. Browserdarstellung und Mobilprüfung sind wegen Ausfall der Browser-Verbindung noch offen; ein erfolgreicher Build ist kein visueller Nachweis.
+
+## Farbpalette Schwarz / Blau / Limette (09.11.2026)
+
+Nutzerpalette: `#030407` für den Seitengrund, `#1558C9` für blaue Flächen und `#D4FF24` für primäre Aktionen, Fokus und Highlights. Abgeleitete dunkle Neutralflächen und helle Texttöne sichern die Lesbarkeit. Der bestehende Tokenname `cyan` ist aus Kompatibilitätsgründen ein Alias für Limette; `blue` und `deep` verwenden das gewünschte Blau. Hero-Faktenleiste und Kontaktfläche führen Blau sichtbar ein; Bildüberlagerungen, Formular-Akzente und CSS-Fokus wurden auf die Palette abgestimmt.
+
+Kontrastprüfung der Vollfarben: Limette/Schwarz 17,70:1; Weiß/Blau 6,42:1; Limette/Blau 5,54:1. Bestehendes Logo-Bild und Projektfotos bleiben Originale. Keine Anfrage-, Consent- oder Spamschutzlogik geändert. Visuelle Browserprüfung wegen nicht verfügbarer Browser-Verbindung weiterhin offen.

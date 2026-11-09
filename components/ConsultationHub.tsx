@@ -25,7 +25,7 @@ export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick
           <h2 className="max-w-[16ch] text-4xl font-semibold leading-[1.04] md:text-6xl">
             Erzählen Sie uns, was Sie brauchen.
           </h2>
-          <p className="mt-6 max-w-[44ch] text-lg leading-relaxed text-fg/75">
+          <p className="mt-6 max-w-[44ch] text-lg leading-relaxed text-fg">
             Eine kurze Beschreibung, ein Foto, eine Skizze oder eine Datei reicht für eine erste Einschätzung.
           </p>
           <button onClick={onInquiryClick} className="btn-primary mt-10">Projekt anfragen</button>
@@ -34,7 +34,7 @@ export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick
             href={MAPS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-10 flex items-center gap-2.5 text-[15px] text-fg-muted transition-colors hover:text-fg"
+            className="mt-10 flex items-center gap-2.5 text-[15px] text-fg transition-colors hover:text-fg"
           >
             <MapPin size={18} className="shrink-0 text-cyan" aria-hidden="true" />
             Werkstatt in Bargteheide, Versand in ganz Deutschland
@@ -53,13 +53,13 @@ export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick
                 >
                   <Icon size={24} className="shrink-0 text-cyan" aria-hidden="true" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-fg-muted">{label}</span>
+                    <span className="block text-sm text-fg">{label}</span>
                     <span className="block truncate text-lg font-medium">{value}</span>
                   </span>
                   <ArrowUpRight
                     size={18}
                     weight="bold"
-                    className="text-fg-muted transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan"
+                    className="text-fg transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan"
                     aria-hidden="true"
                   />
                 </a>

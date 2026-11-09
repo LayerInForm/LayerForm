@@ -51,3 +51,5 @@
 | 2026-11-09 | Turnstile-Variablen für Production per Metadaten bestätigt; Secret als Sensitive. Nutzer-Widget eingerichtet. Produktive Übernahme von PR #6 gestartet. | `integrations.md`, PR #6 | Konfiguration bestätigt; Deployment anschließend prüfen, Browser-/CRM-End-to-End-Test OFFEN |
 
 | 2026-11-09 | Dezente Website-Designpflege: Typografie, Kontrast, Hero-Bildhöhe, Navigation und Button-Zustände; bestehende Komponenten verwendet, keine neuen Abhängigkeiten. | `index.css`, `tailwind.config.js`, `Hero.tsx`, `Navbar.tsx`, `Projects.tsx`, `website.md` | Implementiert; automatisierte Prüfung folgt, visuelle Browserprüfung OFFEN |
+
+| 2026-11-09 | Nutzerpalette #030407 / #1558C9 / #D4FF24 in Theme, Hero, Kontakt, Formular und Footer übernommen; Vollfarb-Kontraste geprüft. | Theme/CSS und Darstellungs-Komponenten, `website.md` | Implementiert; Typechecks/Tests/Build folgen, visuelle Prüfung OFFEN |
