@@ -68,3 +68,7 @@ Aktuelle Nutzerentscheidung ersetzt die dunkle Farbvariante: `#FFF21A` als Seite
 Umstellung umfasst Theme, CSS, Navigation, Hero-Bildbeschriftungen, Projekte, Leistungen, CAD, Automation, Bewertungen, Kontakt, Footer und Formular-/Rechner-Darstellung. Rechtstexte werden nur über CSS an helle Flächen angepasst, ihre Inhalte bleiben bestehen. Fotos und Logo-Datei bleiben Originale. Nicht aktive Rechneransicht bleibt deaktiviert.
 
 Gemessene Vollfarb-Kontraste: Schwarz/Gelb 15,34:1; Schwarz/Lila 5,27:1; Schwarz/helle Karte 16,46:1. Typechecks, bestehende Routentests und Build im Preview ausführen; echte Browser-/Mobilkontrolle bleibt wegen Browser-Ausfall offen. Keine Änderung an CRM-, Upload-, Consent- oder Turnstile-Verarbeitung.
+
+## Farbentscheidung korrigiert (09.11.2026)
+
+Die helle gelb-lila Variante aus PR #9 wurde vom Nutzer verworfen. Darstellung auf den Stand vor PR #9 zurückgesetzt: #030407 als Grund, #1558C9 für blaue Flächen, #D4FF24 für Highlights. Der zuvor veröffentlichte Design-Feinschliff bleibt enthalten. Keine Integrations- oder Spamschutzlogik zurückgesetzt.
