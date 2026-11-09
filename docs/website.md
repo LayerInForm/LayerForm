@@ -46,3 +46,11 @@
 - GitHub-Änderung, Vercel-Buildstatus und Browserfunktion getrennt kontrollieren.
 - Bei Formularänderungen zuerst mit Mocks testen; kostenpflichtige oder echte Kundendaten erzeugende Live-Tests nur gezielt und freigegeben.
 - **Consent ist offen:** Eigener Banner/Receipt-Code existiert; der Wunsch, auf HubSpot-Verwaltung umzusteigen, ist dokumentiert, aber Umsetzung nicht bestätigt. Keine voreilige Abschaltung.
+
+## Dezente Designpflege (09.11.2026)
+
+Vorhandene dunkelblaue/Cyan-Identität, Outfit/Geist-Mono, echte Projektfotos und bestehende React-/Tailwind-Komponenten weiterverwendet. Anpassungen: kompaktere Hero-Typografie und Bildhöhe, weniger aggressive Laufweite, besser lesbare Nebentext-Tokens, ruhigerer Blauverlauf, zurückhaltenderes Filmkorn, einheitliche Button-Radien sowie explizite Hover-/Active-/Disabled-Zustände. Navigation setzt Hintergrund und Trennlinie abhängig vom Scroll-/Menüzustand. Keine neuen Abhängigkeiten oder Bilder.
+
+Formularübertragung, Materialmapping, Turnstile, Consent, Rechtstexte und Feature-Schalter sind nicht Gegenstand dieser Änderung. Vorhandene Reduced-Motion-Regeln und Tastatur-Fokus bleiben erhalten. Kein Komponentenimport aus 21st: CLI-/Katalogzugriff war in der ausgefallenen lokalen Umgebung nicht verfügbar. Designkontext wurde aus dem Repository gelesen; keine neue Designrichtung gewählt.
+
+Validierung: Typechecks, bestehende Tests und Vercel-Build werden auf dem konkreten Branch geprüft. Browserdarstellung und Mobilprüfung sind wegen Ausfall der Browser-Verbindung noch offen; ein erfolgreicher Build ist kein visueller Nachweis.

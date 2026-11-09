@@ -49,3 +49,5 @@
 | 2026-11-09 | Spamschutz-Preview mit expliziter Prüfkette erfolgreich: Frontend-/API-Typechecks, 21 Tests, Build. | PR #6, Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` | AUTOMATISIERT GETESTET; Cloudflare-Widget/Schlüssel und Browser-Live-Test OFFEN; Production unverändert |
 
 | 2026-11-09 | Turnstile-Variablen für Production per Metadaten bestätigt; Secret als Sensitive. Nutzer-Widget eingerichtet. Produktive Übernahme von PR #6 gestartet. | `integrations.md`, PR #6 | Konfiguration bestätigt; Deployment anschließend prüfen, Browser-/CRM-End-to-End-Test OFFEN |
+
+| 2026-11-09 | Dezente Website-Designpflege: Typografie, Kontrast, Hero-Bildhöhe, Navigation und Button-Zustände; bestehende Komponenten verwendet, keine neuen Abhängigkeiten. | `index.css`, `tailwind.config.js`, `Hero.tsx`, `Navbar.tsx`, `Projects.tsx`, `website.md` | Implementiert; automatisierte Prüfung folgt, visuelle Browserprüfung OFFEN |

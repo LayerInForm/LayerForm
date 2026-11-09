@@ -11,27 +11,8 @@ interface HeroProps {
 
 const item = {
   hidden: { opacity: 0, y: 16 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: 0.08 + i * 0.08, duration: 0.7, ease: EASE_OUT } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: 0.08 + i * 0.08, duration: 0.5, ease: EASE_OUT } }),
 };
-
-/** Foto, das beim Laden Schicht für Schicht "gedruckt" wird. */
-const PrintedPhoto: React.FC<{ src: string; alt: string; className?: string; priority?: boolean }> = ({
-  src, alt, className = '', priority,
-}) => (
-  <div className={`relative overflow-hidden rounded-panel bg-surface ${className}`}>
-    <div className="layer-lines absolute inset-0" aria-hidden="true" />
-    <img
-      src={src}
-      alt={alt}
-      width={1200}
-      height={900}
-      fetchPriority={priority ? 'high' : undefined}
-      className="print-in absolute inset-0 h-full w-full object-cover"
-    />
-    <span className="nozzle absolute inset-x-0 h-px bg-cyan shadow-[0_0_0_1px_rgba(0,229,255,.25)]" aria-hidden="true" />
-    <div className="pointer-events-none absolute inset-0 rounded-panel shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]" aria-hidden="true" />
-  </div>
-);
 
 export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick }) => {
   const reduce = useReducedMotion();
@@ -40,18 +21,18 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
   return (
     <section className="relative overflow-hidden border-b border-white/[.07]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(0,229,255,.09),transparent_55%)]" aria-hidden="true" />
-      <div className="relative mx-auto max-w-7xl px-5 pb-14 pt-32 md:px-8 md:pb-20 md:pt-40">
+      <div className="relative mx-auto max-w-7xl px-5 pb-14 pt-28 md:px-8 md:pb-20 md:pt-36">
         <motion.div variants={item} initial={from} animate="show" custom={0} className="mb-7 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[.18em] text-cyan">
           <span className="h-2 w-2 rounded-full bg-cyan shadow-[0_0_14px_rgba(0,229,255,.65)]" aria-hidden="true" />
           3D-Druckstudio &amp; digitale Lösungen
           <span className="text-fg-subtle">/ Bargteheide</span>
         </motion.div>
         <div className="grid items-end gap-9 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:gap-16">
-          <motion.h1 variants={item} initial={from} animate="show" custom={1} className="max-w-[13ch] text-[clamp(3.8rem,9.2vw,8.8rem)] font-semibold leading-[.89] tracking-[-.075em]">
+          <motion.h1 variants={item} initial={from} animate="show" custom={1} className="max-w-[13ch] text-[clamp(3.25rem,8.4vw,7.5rem)] font-semibold leading-[.98] tracking-[-.055em]">
             Ideen werden <span className="text-cyan">greifbar.</span>
           </motion.h1>
           <motion.div variants={item} initial={from} animate="show" custom={2} className="pb-2">
-            <p className="max-w-[34ch] text-lg leading-relaxed text-fg-muted md:text-xl">
+            <p className="max-w-[38ch] text-lg leading-relaxed text-fg-muted md:text-xl">
               Von der ersten Skizze bis zum fertigen Bauteil. Wir konstruieren, drucken und automatisieren – für Unternehmen und Privatkunden.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -66,12 +47,12 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
         </div>
 
         <div className="mt-14 grid gap-4 md:mt-16 md:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] md:gap-5">
-          <motion.div initial={reduce ? false : { opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: EASE_OUT }} className="group relative min-h-[340px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[440px] md:min-h-[560px]">
+          <motion.div initial={reduce ? false : { opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: EASE_OUT }} className="group relative min-h-[300px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[400px] md:min-h-[480px]">
             <img src="/projects/designlampe.webp" alt="3D-gedruckte Designleuchte mit Wellenstruktur" width={1200} height={900} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#040B1D]/90 via-transparent to-transparent" aria-hidden="true" />
             <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-6 sm:p-9">
               <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-cyan">01 / Design &amp; Fertigung</p><h2 className="mt-2 text-2xl font-semibold sm:text-4xl">Schicht für Schicht.<br />Einzigartig.</h2></div>
-              <button onClick={onInquiryClick} aria-label="Ähnliches Projekt anfragen" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/30 bg-bg/50 text-2xl text-fg backdrop-blur-md transition-colors hover:bg-cyan hover:text-ink">↗</button>
+              <button onClick={onInquiryClick} aria-label="Ähnliches Projekt anfragen" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/30 bg-bg/50 text-2xl text-fg backdrop-blur-md transition-colors hover:bg-cyan hover:text-ink">↗</button>
             </div>
           </motion.div>
           <div className="grid grid-rows-[minmax(0,1fr)_auto] gap-4 md:gap-5">
