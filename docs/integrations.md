@@ -193,3 +193,5 @@ Werte: PLA→`pla`, PETG→`petg`, ASA→`asa`, ABS→`abs`, TPU→`tpu`; fehlen
 - Datenschutzhinweis im Formular-/Website-Text ergänzt. Kontobezogene Anbietervereinbarungen und erforderliche Rechtsgrundlage vor Aktivierung prüfen; keine pauschale Compliance-Aussage.
 - Kein unscharfer Inhaltsfilter: Modell-Links und echte ungewöhnliche Projekte sollen nicht still unterdrückt werden.
 - Offene Prüfung: vollständige Typechecks/Routentests, Browserprüfung auf Mobil/Desktop, erfolgreiche und abgelehnte Siteverify-Antwort, Token-Erneuerung bei Retry sowie kontrollierter CRM-Live-Test nach Schlüsselkonfiguration. Vorher nicht nach Production übernehmen.
+
+**Validierung aktualisiert:** Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` für Code-Commit `eebf6665a387ed41fd5540560f470f2efc3901f2`: `npm run lint`, `npm run check:api`, `npm test` (21 bestanden, 0 fehlgeschlagen), `npm run build` erfolgreich. Live-Widget-/Browserprüfung und Aktivierung bleiben mangels Turnstile-Schlüsseln offen. Kein produktiver Merge.
