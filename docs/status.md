@@ -47,3 +47,5 @@
 | 2026-11-09 | Turnstile für Kontaktformular und Rechner samt serverseitiger Host-/Action-Prüfung und Limit von fünf neuen Anfrage-IDs je IP/15 Minuten vorbereitet. Retry-Journal unverändert. | `api/_lib/antispam.ts`, `api/_lib/inquiries.ts`, `components/SpamProtection.tsx`, Formular-Komponenten, Tests, Datenschutz | VORBEREITET; Schlüssel fehlen, Production nicht geändert |
 
 | 2026-11-09 | Spamschutz-Preview mit expliziter Prüfkette erfolgreich: Frontend-/API-Typechecks, 21 Tests, Build. | PR #6, Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` | AUTOMATISIERT GETESTET; Cloudflare-Widget/Schlüssel und Browser-Live-Test OFFEN; Production unverändert |
+
+| 2026-11-09 | Turnstile-Variablen für Production per Metadaten bestätigt; Secret als Sensitive. Nutzer-Widget eingerichtet. Produktive Übernahme von PR #6 gestartet. | `integrations.md`, PR #6 | Konfiguration bestätigt; Deployment anschließend prüfen, Browser-/CRM-End-to-End-Test OFFEN |
