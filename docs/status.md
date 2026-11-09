@@ -45,3 +45,5 @@
 | 2026-11-09 | Materialauswahl des Kontaktformulars zusätzlich in Deal-Material übernehmen; bestehende Anfrage-Fingerprints erhalten. HubSpot-Enum und neun isolierte Zuordnungen geprüft; Routentests ergänzt, Ausführung blockiert. | `api/_lib/hubspot.ts`, `tests/inquiries.test.cjs`, `integrations.md` | Implementiert; Deployment separat prüfen |
 
 | 2026-11-09 | Turnstile für Kontaktformular und Rechner samt serverseitiger Host-/Action-Prüfung und Limit von fünf neuen Anfrage-IDs je IP/15 Minuten vorbereitet. Retry-Journal unverändert. | `api/_lib/antispam.ts`, `api/_lib/inquiries.ts`, `components/SpamProtection.tsx`, Formular-Komponenten, Tests, Datenschutz | VORBEREITET; Schlüssel fehlen, Production nicht geändert |
+
+| 2026-11-09 | Spamschutz-Preview mit expliziter Prüfkette erfolgreich: Frontend-/API-Typechecks, 21 Tests, Build. | PR #6, Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` | AUTOMATISIERT GETESTET; Cloudflare-Widget/Schlüssel und Browser-Live-Test OFFEN; Production unverändert |
