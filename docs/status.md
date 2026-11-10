@@ -63,4 +63,10 @@
 ## 10.11.2026 – SEO und KI-Suche
 
 - **CODE-VERIFIZIERT / lokal geprüft:** Statisches Prerendering, drei eigene Leistungsseiten, crawlbare Links, individuelle Metadaten, Organization-/Service-Daten und generierte Sitemap. Details und offene Erfolgsmessung in [website.md](website.md).
-- Kein Zugriff auf Search-Console-Leistungsdaten; Indexierung und mehr qualifizierte Anfragen sind noch nicht nachgewiesen. Produktionsstatus separat am Deployment prüfen.
+- Search Console inzwischen über OpenSEO angebunden; Sitemap/Indexierungsanträge laut Nutzer eingereicht. Indexierung der neuen Seiten und mehr qualifizierte Anfragen sind noch nicht nachgewiesen.
+
+## 10.11.2026 – Materialberatung und weitere Suchmaschinen
+
+- Materialvergleich und kontextbezogene CAD-/Druck-Verweise ergänzt; Bewertungszahl mit öffentlichem Google-Profil abgeglichen (15 Rezensionen, 5,0).
+- IndexNow-Verifikationsdatei vorbereitet, um geänderte öffentliche Seiten zusätzlich an unterstützende Suchmaschinen zu melden. Keine neue CRM-Automation und keine Tracking-Änderung.
+- Technische und fachliche Details, Grenzen sowie Prüfstatus in [website.md](website.md). Produktionsdeployment separat prüfen.

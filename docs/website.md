@@ -90,6 +90,16 @@ Auf ausdrücklichen Nutzerwunsch gelten wieder die ursprünglichen Logo-Farben: 
 
 **Prüfungen:** `npm run lint`, `npm run check:api`, bestehende 21 Tests und `npm run build`. Der Build prüft zusätzlich die tatsächlichen HTML-Ausgaben: eindeutige Titel, genau eine H1, Canonicals, JSON-LD, interne Links, referenzierte Assets und Sitemap. Browser- und produktive URL-Prüfung separat dokumentieren; ein erfolgreicher Build allein bestätigt keinen Live-Status.
 
-**OFFEN / Erfolgsmessung:** Kein Zugriff auf Google Search Console oder Bing Webmaster Tools, keine bestätigte Indexierung und keine belastbare vorher/nachher-Auswertung. Sitemap dort einreichen und Seiten nach Veröffentlichung prüfen. Suchbegriffe, Klicks, Impressionen und tatsächlich eingegangene qualifizierte Anfragen getrennt auswerten. Keine neue CRM-Aufgabe und kein zusätzliches Tracking angelegt. Bestehende Consent-Regeln bleiben erhalten.
+**Aktualisierung 10.11.2026 / Erfolgsmessung:** Search Console ist inzwischen über OpenSEO angebunden. Sitemap und Indexierungsanträge wurden laut Nutzer eingereicht. Das bestätigt noch keine Indexierung der Leistungsseiten oder einen Anfragezuwachs. Suchbegriffe, Klicks, Impressionen und tatsächlich eingegangene qualifizierte Anfragen getrennt auswerten. Keine neue CRM-Aufgabe und kein zusätzliches Tracking angelegt. Bestehende Consent-Regeln bleiben erhalten.
+
+### Weitere Inhaltsverbesserung und IndexNow (10.11.2026)
+
+- `/3d-druck`: sichtbarer Materialvergleich für PLA, PETG, ASA, ABS und TPU mit Anwendungen und Auswahlgrenzen; technische Orientierung am verlinkten Bambu-Lab-Leitfaden. Keine garantierten Bauteileigenschaften oder pauschalen Temperaturgrenzen. Tabelle ist auch im statischen HTML vorhanden und auf kleinen Bildschirmen innerhalb ihres Bereichs scrollbar.
+- Gegenseitige kontextbezogene Verweise zwischen CAD-Konstruktion und 3D-Druck helfen Interessenten mit und ohne fertige Datei.
+- Google-Gesamtzahl von 12 auf 15 Rezensionen aktualisiert, Bewertung weiter 5,0; öffentliches Unternehmensprofil am 10.11.2026 geprüft. Vorhandene Rezensionstexte unverändert. Keine selbstbezogenen Bewertungs-Rich-Results hinzugefügt.
+- Öffentliche IndexNow-Verifikationsdatei im Website-Root vorbereitet. Dieser Verifikationswert ist absichtlich öffentlich und kein API-Secret. Nach Deployment neue/geänderte Seiten melden; Google nutzt IndexNow nicht. Eine erfolgreiche Annahme bestätigt keine Indexierung.
+- Google-Unternehmensprofil: Beschreibung und HTTPS-Link gespeichert; sechs Dienstleistungen mit Beschreibungen eingereicht, Freigabe zuletzt ausstehend. Vorhandener abgelehnter WhatsApp-Änderungsvorschlag bleibt offen. Keine Account-/Sessiondaten in Git dokumentieren.
+
+Validierung: Frontend- und API-Typechecks, 21 bestehende Tests sowie Build einschließlich SEO-HTML-Prüfungen bestanden. Produktionsstatus separat am Deployment nachweisen. 21st-CLI ist in dieser Umgebung nicht installiert; bestehende Website-Komponenten und Tokens wiederverwendet.
 
 Grundlagen: [Google KI-Funktionen](https://developers.google.com/search/docs/appearance/ai-features), [JavaScript-SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), [crawlbare Links](https://developers.google.com/search/docs/crawling-indexing/links-crawlable), [OpenAI Publisher-FAQ](https://help.openai.com/de-de/articles/12627856-publisher-und-entwickler-faq). GEO wird hier als bessere Zugänglichkeit, eindeutige Fakten und hilfreiche Inhalte umgesetzt; keine spezielle Datei garantiert Aufnahme in KI-Antworten.
