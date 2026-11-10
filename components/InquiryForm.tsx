@@ -16,7 +16,14 @@ interface InquiryFormProps {
 const WHATSAPP_NUMBER = '4917685922649';
 const EMAIL = 'auftrag@layer-form.de';
 
-const FILAMENTE = ['PLA', 'PETG', 'ASA', 'ABS', 'TPU', 'Auf Anfrage'];
+const FILAMENTE = ['PLA', 'PETG', 'ASA', 'ABS', 'TPU'];
+const FILAMENT_BESCHREIBUNG: Record<string, string> = {
+  PLA: 'Für Deko, Anschauungsmodelle und Prototypen im Innenbereich. Steif und detailreich, für Wärme weniger geeignet.',
+  PETG: 'Für funktionale Alltagsteile wie Halterungen und Gehäuse. Zäher als PLA und vielseitig einsetzbar.',
+  ASA: 'Für Bauteile im Außenbereich. UV- und witterungsbeständig, zum Beispiel für Abdeckungen und Halterungen.',
+  ABS: 'Für technische Gehäuse und funktionale Bauteile. Wärmebeständiger als PLA.',
+  TPU: 'Für flexible Puffer, Schutzteile und Auflagen. Elastisch statt starr.',
+};
 const TOPICS = ['Automatisierung', 'IT-Service', 'Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
 
 type CustomerType = 'privat' | 'unternehmen';
@@ -53,7 +60,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const [form, setForm] = useState({
     vorname: '',
     nachname: '',
-    filament: 'Auf Anfrage',
+    filament: '',
     farbe: '',
     company: '',
     email: '',
@@ -287,7 +294,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   {/* Filament und Farbe */}
                   <div>
                     <span className="mb-2 block text-sm font-semibold">Filament</span>
-                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filament">
+                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filament" aria-describedby="filament-beschreibung">
                       {FILAMENTE.map((f) => {
                         const on = form.filament === f;
                         return (
@@ -306,7 +313,9 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                         );
                       })}
                     </div>
-                    <span className="mt-1.5 block text-xs text-fg-muted">Unsicher? Dann „Auf Anfrage“ wählen, wir beraten Sie gern.</span>
+                    <p id="filament-beschreibung" aria-live="polite" className="mt-2 min-h-[3rem] text-sm font-normal leading-relaxed text-fg/80">
+                      {FILAMENT_BESCHREIBUNG[form.filament] || 'Wählen Sie ein Material, um den typischen Einsatzzweck zu sehen.'}
+                    </p>
                   </div>
                   <Field label="Farbe" optional>
                     <input value={form.farbe} onChange={set('farbe')} placeholder="z. B. Schwarz, Weiß oder RAL-Ton" className={inputCls} />
