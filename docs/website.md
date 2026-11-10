@@ -103,3 +103,11 @@ Auf ausdrücklichen Nutzerwunsch gelten wieder die ursprünglichen Logo-Farben: 
 Validierung: Frontend- und API-Typechecks, 21 bestehende Tests sowie Build einschließlich SEO-HTML-Prüfungen bestanden. Produktionsstatus separat am Deployment nachweisen. 21st-CLI ist in dieser Umgebung nicht installiert; bestehende Website-Komponenten und Tokens wiederverwendet.
 
 Grundlagen: [Google KI-Funktionen](https://developers.google.com/search/docs/appearance/ai-features), [JavaScript-SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), [crawlbare Links](https://developers.google.com/search/docs/crawling-indexing/links-crawlable), [OpenAI Publisher-FAQ](https://help.openai.com/de-de/articles/12627856-publisher-und-entwickler-faq). GEO wird hier als bessere Zugänglichkeit, eindeutige Fakten und hilfreiche Inhalte umgesetzt; keine spezielle Datei garantiert Aufnahme in KI-Antworten.
+
+### Absenden ohne zusätzliche Checkbox (10.11.2026)
+
+Auf Nutzerwunsch entfällt im öffentlichen Anfrageformular die Pflicht-Checkbox zur Datenverarbeitung samt Validierung. Ein sachlicher Hinweis zur Bearbeitung der Anfrage und ein regulärer Link zur Datenschutzerklärung bleiben sichtbar. Die bestehende Datenschutzerklärung benennt hierfür bereits Art. 6 Abs. 1 lit. b DSGVO; keine neue Marketing-Einwilligung. Die gesonderte Auswahl optionaler Website-Dienste bleibt bestehen.
+
+Turnstile wird weiterhin erst nach gültigem Sendeversuch geladen. Der Widget-Container befindet sich jetzt direkt über den Versandbuttons. `appearance: interaction-only` zeigt das Widget nur, wenn eine Interaktion erforderlich ist; dann wird der Bereich in Sicht gebracht. Der Button unterscheidet „Wird geprüft …“ von „Wird gesendet …“, beide Versandwege sind während der Übertragung gesperrt. Serverprüfung, Schlüssel und Anfrage-Fingerprints unverändert.
+
+Cloud-Browser bleibt auf Nutzerwunsch geschlossen. Typechecks, bestehende Tests, Build und statisches Formular-Markup prüfen; keine neue echte Testanfrage oder visuelle Browserprüfung für diesen Change.

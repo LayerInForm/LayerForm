@@ -65,11 +65,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     deadline: '',
     message: isIT ? '' : [initialProduct, initialPersonalization].filter(Boolean).join('\n'),
   });
-  const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sentVia, setSentVia] = useState<'whatsapp' | 'email' | 'mailto' | null>(null);
   const inquiry = useRef({ signature: '', id: '' });
   const [sending, setSending] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [sendError, setSendError] = useState('');
   const [hp, setHp] = useState(''); // Spamschutz (verstecktes Feld)
 
@@ -111,7 +111,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     if (form.message.trim().length < 10) e.message = 'Beschreiben Sie Ihr Projekt bitte in ein paar Worten.';
     if (via === 'email' && !form.email.trim()) e.email = 'Bitte geben Sie Ihre E-Mail-Adresse an, damit wir Ihnen antworten können.';
     else if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Diese E-Mail-Adresse sieht nicht vollständig aus.';
-    if (!consent) e.consent = 'Bitte bestätigen Sie den Hinweis zum Datenschutz.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -124,7 +123,13 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
   const transmit = async () => {
     const signature = JSON.stringify({ form, type, topics });
     if (inquiry.current.signature !== signature) inquiry.current = { signature, id: crypto.randomUUID() };
-    const turnstileToken = await spam.verify();
+    setChecking(true);
+    let turnstileToken: string;
+    try {
+      turnstileToken = await spam.verify();
+    } finally {
+      setChecking(false);
+    }
     const response = await fetch('/api/kontakt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -187,7 +192,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
 
           {/* Formular */}
           <div className="rounded-panel border border-white/[.07] bg-surface p-6 md:p-10">
-            {spam.challenge}
             <AnimatePresence mode="wait" initial={false}>
               {sentVia ? (
                 <motion.div
@@ -226,6 +230,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                 <motion.form
                   key="form"
                   noValidate
+                  aria-busy={sending}
                   onSubmit={(e) => e.preventDefault()}
                   initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -370,26 +375,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                     </div>
                   </fieldset>
 
-                  <div>
-                    <label className="flex items-start gap-3 text-[15px] leading-relaxed text-fg/80">
-                      <input
-                        type="checkbox"
-                        aria-invalid={Boolean(errors.consent)}
-                        checked={consent}
-                        onChange={(e) => setConsent(e.target.checked)}
-                        className="mt-1 h-5 w-5 shrink-0 accent-[#00E5FF]"
-                      />
-                      <span>
-                        Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden.{' '}
-                        {onPrivacy && (
-                          <button type="button" onClick={onPrivacy} className="font-semibold text-cyan underline">
-                            Datenschutzerklärung
-                          </button>
-                        )}
-                      </span>
-                    </label>
-                    {errors.consent && <span className="mt-1.5 block text-sm text-red-300">{errors.consent}</span>}
-                  </div>
+                  <p className="text-sm leading-relaxed text-fg-muted">
+                    Wir verwenden Ihre Angaben zur Bearbeitung Ihrer Anfrage. Weitere Informationen finden Sie in unserer{' '}
+                    <a href="/datenschutz" onClick={onPrivacy ? (event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onPrivacy(); } } : undefined} className="font-semibold text-cyan underline">Datenschutzerklärung</a>.
+                  </p>
 
                   <input
                     type="text"
@@ -405,7 +394,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                   <div className="border-t border-white/10 pt-6">
                     {Object.keys(errors).length > 0 && (
                       <div role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-sm text-red-200">
-                        Bitte prüfen Sie die markierten Pflichtfelder und den Datenschutzhinweis.
+                        Bitte prüfen Sie die markierten Pflichtfelder.
                       </div>
                     )}
                     {sendError && (
@@ -415,11 +404,13 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
                       </div>
                     )}
                     <p className="mb-3 text-sm font-semibold">Anfrage senden über</p>
+                    {spam.challenge}
+                    <p role="status" className="sr-only">{checking ? 'Sicherheitsprüfung läuft.' : sending ? 'Ihre Anfrage wird übertragen.' : ''}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => send('email')} disabled={sending} className="btn-primary w-full disabled:opacity-60">
-                        <EnvelopeSimple size={20} aria-hidden="true" /> {sending ? 'Wird gesendet …' : 'Anfrage senden'}
+                        <EnvelopeSimple size={20} aria-hidden="true" /> {checking ? 'Wird geprüft …' : sending ? 'Wird gesendet …' : 'Anfrage senden'}
                       </button>
-                      <button type="button" onClick={() => send('whatsapp')} className="btn-ghost w-full">
+                      <button type="button" onClick={() => send('whatsapp')} disabled={sending} className="btn-ghost w-full disabled:opacity-60">
                         <WhatsappLogo size={20} aria-hidden="true" /> WhatsApp
                       </button>
                     </div>
