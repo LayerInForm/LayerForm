@@ -12,7 +12,8 @@ export interface GoogleReview {
 
 // Gesamtbewertung und Anzahl: bei neuen Rezensionen hier anpassen
 export const RATING = 5;
-export const REVIEW_COUNT = 12;
+// Öffentliches Google-Unternehmensprofil, geprüft am 10.11.2026.
+export const REVIEW_COUNT = 15;
 export const GOOGLE_URL = 'https://www.google.com/maps/search/?api=1&query=LayerForm+3D+Druck+Service+Bargteheide';
 
 /** Bewertung im deutschen Format, z. B. "5,0" */
