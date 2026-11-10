@@ -78,3 +78,7 @@ ASA-Auswahl und neue Deal-Namensbildung korrigiert; bestehende Retry-Fingerprint
 ## 10.11.2026 – Versandbereich im Anfrageformular
 
 Pflicht-Checkbox durch Datenschutzhinweis mit Link ersetzt. Turnstile nur bei Bedarf sichtbar, direkt über den Versandbuttons; getrennte Prüf-/Sendestatus und gesperrte parallele Versandwege. Fachdetails und Prüfgrenzen in website.md. Produktionsstatus am Deployment separat prüfen.
+
+## 10.11.2026 – Filament-Kurzbeschreibungen
+
+„Auf Anfrage“ aus dem Anfrageformular entfernt, keine Vorbelegung mehr. Die fünf Materialien zeigen nach Auswahl eine kurze Anwendungshilfe. Details in website.md; Prüfungen und Produktionsstatus am Change nachweisen.

@@ -111,3 +111,7 @@ Auf Nutzerwunsch entfällt im öffentlichen Anfrageformular die Pflicht-Checkbox
 Turnstile wird weiterhin erst nach gültigem Sendeversuch geladen. Der Widget-Container befindet sich jetzt direkt über den Versandbuttons. `appearance: interaction-only` zeigt das Widget nur, wenn eine Interaktion erforderlich ist; dann wird der Bereich in Sicht gebracht. Der Button unterscheidet „Wird geprüft …“ von „Wird gesendet …“, beide Versandwege sind während der Übertragung gesperrt. Serverprüfung, Schlüssel und Anfrage-Fingerprints unverändert.
 
 Cloud-Browser bleibt auf Nutzerwunsch geschlossen. Typechecks, bestehende Tests, Build und statisches Formular-Markup prüfen; keine neue echte Testanfrage oder visuelle Browserprüfung für diesen Change.
+
+### Materialauswahl mit Kurzbeschreibung (10.11.2026)
+
+Im Anfrageformular stehen ausschließlich PLA, PETG, ASA, ABS und TPU zur Auswahl. „Auf Anfrage“ und die bisherige Vorbelegung entfallen. Unter der Auswahl erscheint abhängig vom gewählten Material eine kurze Beschreibung mit typischen Anwendungen in heller, normal gewichteter Schrift. Ein Live-Bereich macht den Textwechsel für assistive Technik verfügbar. Ohne Materialauswahl bleibt das Absenden möglich; der bestehende Backend-Wert `offen` bleibt erhalten. Keine Formular-, Spamschutz- oder CRM-Schnittstelle geändert.
