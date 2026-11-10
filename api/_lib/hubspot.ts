@@ -86,6 +86,16 @@ export interface Lead {
 
 const LINK = /https?:\/\/[^\s<>"')\]]+/gi;
 
+// Ausschließlich feste Leistungsnamen verwenden, keine Namen oder freien Kundentexte.
+// Erst beim CRM-Schreiben ableiten: Der gespeicherte Retry-Fingerprint bleibt gleich.
+function dealTitel(l: Lead): string {
+  const thema = l.titel.split(' – ')[0];
+  const themen = ['Automatisierung', 'IT-Service', 'Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges', '3D-Druck'];
+  if (l.source === 'kontakt' && themen.includes(thema)) return thema;
+  const namen = { '3d_druck': '3D-Druck', cad: 'CAD-Konstruktion', werbeartikel: 'Werbeartikel', beratung: 'Beratung' };
+  return Array.from(new Set(l.leistungen.map(wert => namen[wert]))).join(' · ') || 'Projekt';
+}
+
 export async function legeLeadAn(l: Lead) {
   // Server-normalized content binds the ID; a genuinely new inquiry gets a new UUID.
   return deliverOnce(l.source + ':' + l.requestId, hash(JSON.stringify(l)), async (beforeWrite) => {
@@ -115,7 +125,7 @@ export async function legeLeadAn(l: Lead) {
     const links = Array.from(new Set(l.volltext.match(LINK) || [])).filter((u) => !/layer-form\.de|vercel-storage\.com/i.test(u));
 
     const props: Record<string, string> = {
-      dealname: l.titel.slice(0, 120),
+      dealname: dealTitel(l),
       pipeline: PIPELINE,
       dealstage: STAGE_NEU,
       hubspot_owner_id: OWNER_ID,
