@@ -16,7 +16,7 @@ interface InquiryFormProps {
 const WHATSAPP_NUMBER = '4917685922649';
 const EMAIL = 'auftrag@layer-form.de';
 
-const FILAMENTE = ['PLA', 'PETG', 'ABS', 'TPU', 'Auf Anfrage'];
+const FILAMENTE = ['PLA', 'PETG', 'ASA', 'ABS', 'TPU', 'Auf Anfrage'];
 const TOPICS = ['Automatisierung', 'IT-Service', 'Ersatzteil', 'Prototyp', 'Giveaways', 'Deko & Geschenke', 'Serienproduktion', 'CAD-Konstruktion', 'Sonstiges'];
 
 type CustomerType = 'privat' | 'unternehmen';

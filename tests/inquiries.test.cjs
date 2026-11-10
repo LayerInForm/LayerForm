@@ -209,3 +209,20 @@ test('fresh challenge tokens do not change the persisted inquiry fingerprint', a
   assert.equal((await f.invoke('kontakt', { turnstileToken: 'second' })).data.duplicate, true);
   assert.equal(f.counts.dealsCreated, 1);
 });
+
+test('deal titles contain only service names while full customer information and retry identity stay intact', async () => {
+  for (const [route, input, expected] of [
+    ['kontakt', { topics: ['Ersatzteil'], name: 'Alex Beispiel', nachname: 'Beispiel' }, 'Ersatzteil'],
+    ['kontakt', { topics: [], name: 'Alex Beispiel', nachname: 'Beispiel' }, '3D-Druck'],
+    ['kontakt', { topics: ['Unbekannt mit Kundennamen'], company: 'Kundenfirma', type: 'unternehmen' }, '3D-Druck'],
+    ['anfrage', { name: 'Alex Beispiel', material: 'PETG' }, '3D-Druck'],
+  ]) {
+    const f = fixture();
+    assert.equal((await f.invoke(route, input)).code, 200);
+    const deal = f.calls.find(c => c.url.endsWith('/deals')).body;
+    assert.equal(deal.properties.dealname, expected);
+    assert.equal(deal.associations[0].to.id, 'contact-1');
+    assert.equal((await f.invoke(route, input)).data.duplicate, true);
+    assert.equal(f.counts.dealsCreated, 1);
+  }
+});

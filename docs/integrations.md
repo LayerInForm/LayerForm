@@ -197,3 +197,12 @@ Werte: PLA→`pla`, PETG→`petg`, ASA→`asa`, ABS→`abs`, TPU→`tpu`; fehlen
 **Validierung aktualisiert:** Preview `dpl_BQavULDQeJZa7J4s17NpFZEe7PVA` für Code-Commit `eebf6665a387ed41fd5540560f470f2efc3901f2`: `npm run lint`, `npm run check:api`, `npm test` (21 bestanden, 0 fehlgeschlagen), `npm run build` erfolgreich. Live-Widget-/Browserprüfung und Aktivierung bleiben mangels Turnstile-Schlüsseln offen. Kein produktiver Merge.
 
 **Aktivierung 09.11.2026:** Nutzer hat das Cloudflare-Widget erstellt und beide Schlüssel in Vercel hinterlegt. Production-Metadaten bestätigt: `TURNSTILE_SECRET_KEY` Sensitive und `VITE_TURNSTILE_SITE_KEY` vorhanden (keine Werte gelesen). Preview-Schlüssel fehlen weiterhin; Preview-Formulare benötigen eine getrennte Test-/Widget-Konfiguration. Nach automatisierten Prüfungen wird PR #6 produktiv übernommen. Ein erfolgreicher Build ersetzt keine Browser-/CRM-End-to-End-Prüfung; diese bleibt offen.
+
+
+## Formular-Qualitätsprüfung (10.11.2026)
+
+- ASA als Auswahl im Kontaktformular ergänzt; serverseitige Materialzuordnung war bereits vorhanden.
+- Neue Deal-Titel werden erst beim CRM-Schreiben aus festen Leistungsnamen abgeleitet. Kein „Anfrage“, kein Personen- oder Firmenname im Titel. Der normalisierte Lead-Payload einschließlich bisherigem Titel bleibt für bestehende Retry-Fingerprints unverändert. Bestehende CRM-Deals werden nicht umbenannt.
+- Turnstile protokolliert bei Ablehnung/Ausfall nur feste Diagnosekategorien, HTTP-Status und bekannte Provider-Fehlercodes. Keine Tokens, Secrets, Anfragetexte oder Kontaktdaten in Logs. Spamschutz bleibt bei Fehlern geschlossen.
+- LIVE-PRÜFUNG: Eine eindeutig markierte Testanfrage scheiterte an der serverseitigen Sicherheitsprüfung; kein passender Test-Deal gefunden. Ein vollständiger Erfolg bis HubSpot ist damit noch NICHT bestätigt. Production-Variablen sind laut Metadaten vorhanden, Werte wurden nicht ausgelesen. Konkrete Fehlerursache nach Diagnose-Deployment prüfen.
+- Lokal bei 390 Pixel breitem Frame: Navigation bedienbar, Materialtabelle innerhalb ihres Bereichs scrollbar, Dokument ohne seitlichen Überlauf. Anfrageformular mit ASA-Auswahl ebenfalls ohne Dokumentüberlauf. Keine echte Smartphone-/Safari-Geräteprüfung.

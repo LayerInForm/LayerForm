@@ -70,3 +70,7 @@
 - Materialvergleich und kontextbezogene CAD-/Druck-Verweise ergänzt; Bewertungszahl mit öffentlichem Google-Profil abgeglichen (15 Rezensionen, 5,0).
 - IndexNow-Verifikationsdatei vorbereitet, um geänderte öffentliche Seiten zusätzlich an unterstützende Suchmaschinen zu melden. Keine neue CRM-Automation und keine Tracking-Änderung.
 - Technische und fachliche Details, Grenzen sowie Prüfstatus in [website.md](website.md). Produktionsdeployment separat prüfen.
+
+## 10.11.2026 – Formularprüfung
+
+ASA-Auswahl und neue Deal-Namensbildung korrigiert; bestehende Retry-Fingerprints erhalten. Schmale Layouts lokal mit denselben Website-Komponenten geprüft. Live-Test durch serverseitige Turnstile-Prüfung blockiert, daher End-to-End-Erfolg OFFEN. Begrenzte Diagnose-Logs ohne personenbezogene Inhalte oder Schlüssel ergänzt; Produktionsprüfung folgt. Details in integrations.md.
