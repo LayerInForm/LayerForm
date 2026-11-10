@@ -76,3 +76,20 @@ Die helle gelb-lila Variante aus PR #9 wurde vom Nutzer verworfen. Darstellung a
 ## Aktuelle Farbentscheidung: Logo-Palette (09.11.2026)
 
 Auf ausdrücklichen Nutzerwunsch gelten wieder die ursprünglichen Logo-Farben: Marineblau #040B1D, Cyan #00E5FF, helle Schrift. Betroffene Farbdateien exakt aus dem bereits geprüften Stand nach PR #7 (a8116ce2a4e3a9590d7484a48aa60c0a7beb7341) wiederhergestellt. Frühere Schwarz/Blau/Limette- und Gelb/Lila-Experimente sind verworfen. Design-Feinschliff aus PR #7 sowie Formular-, Material- und Spamschutzfunktionen bleiben erhalten.
+
+## SEO und Sichtbarkeit in KI-Suchen (10.11.2026)
+
+**CODE-VERIFIZIERT:** Öffentliche Inhalte werden beim Build mit React serverseitig zu statischen HTML-Dateien vorgerendert. `scripts/prerender.tsx` und `scripts/generate-pages.mjs` verwenden dieselben Komponenten und Inhalte wie der Browser. Keine gesonderte Crawler-Version. Die React-App übernimmt anschließend die Interaktionen; Formulare benötigen JavaScript und bieten einen Hinweis mit direkten Kontaktwegen ohne JavaScript.
+
+- Neue Leistungsseiten: `/3d-druck`, `/cad-konstruktion`, `/automatisierung`. Standort Bargteheide, deutschlandweiter Versand bei Druckteilen, konkrete Anforderungen, Projektbilder aus vorhandenen Assets, sichtbare Antworten auf häufige Fragen und direkte Anfragewege. Keine erfundenen Preise, Lieferzeiten, Kundenreferenzen oder Ranking-Versprechen.
+- Zehn öffentliche Ansichten einschließlich Kontakt, Anfrage und bestehender Rechtstexte haben eigene HTML-Dateien, Titel, Beschreibung, Canonical, Open-Graph-Angaben und JSON-LD. Vorhandene Rechtstext-Inhalte bleiben erhalten.
+- Navigation und Footer verlinken die Seiten über echte URLs. Client-Navigation aktualisiert Metadaten; Browser-Zurück und Direktaufrufe werden berücksichtigt. Vercel `cleanUrls` bedient die erzeugten HTML-Dateien unter den kurzen URLs. Interne Pfade, APIs und deren Schutzheader bleiben erhalten.
+- Sitemap enthält Startseite, drei Leistungen und Kontakt. Keine erfundenen Änderungsdaten. `robots.txt` erlaubt öffentliche Seiten bereits allgemein; dies schließt Suchcrawler wie OAI-SearchBot ein. Kein zusätzlicher Training-Zugriff gegenüber dem bisherigen Stand eingerichtet.
+- Strukturierte Daten: Organization, WebPage, auf Leistungsseiten zusätzlich Service und BreadcrumbList. Nur sichtbare bzw. bereits öffentlich bestätigte Unternehmensangaben; keine fiktive Straßenadresse, AggregateRating oder versprochene FAQ-Rich-Results.
+- Initiale Inhalts-Reveals verbergen den statischen Text nicht. Bestehende Gestaltung in Marineblau/Cyan bleibt bestehen.
+
+**Prüfungen:** `npm run lint`, `npm run check:api`, bestehende 21 Tests und `npm run build`. Der Build prüft zusätzlich die tatsächlichen HTML-Ausgaben: eindeutige Titel, genau eine H1, Canonicals, JSON-LD, interne Links, referenzierte Assets und Sitemap. Browser- und produktive URL-Prüfung separat dokumentieren; ein erfolgreicher Build allein bestätigt keinen Live-Status.
+
+**OFFEN / Erfolgsmessung:** Kein Zugriff auf Google Search Console oder Bing Webmaster Tools, keine bestätigte Indexierung und keine belastbare vorher/nachher-Auswertung. Sitemap dort einreichen und Seiten nach Veröffentlichung prüfen. Suchbegriffe, Klicks, Impressionen und tatsächlich eingegangene qualifizierte Anfragen getrennt auswerten. Keine neue CRM-Aufgabe und kein zusätzliches Tracking angelegt. Bestehende Consent-Regeln bleiben erhalten.
+
+Grundlagen: [Google KI-Funktionen](https://developers.google.com/search/docs/appearance/ai-features), [JavaScript-SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), [crawlbare Links](https://developers.google.com/search/docs/crawling-indexing/links-crawlable), [OpenAI Publisher-FAQ](https://help.openai.com/de-de/articles/12627856-publisher-und-entwickler-faq). GEO wird hier als bessere Zugänglichkeit, eindeutige Fakten und hilfreiche Inhalte umgesetzt; keine spezielle Datei garantiert Aufnahme in KI-Antworten.

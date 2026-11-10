@@ -83,9 +83,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
     <header className={`fixed inset-x-0 top-0 z-nav border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${solid ? 'border-white/10 bg-bg/95 shadow-[0_8px_30px_rgba(0,0,0,.12)]' : 'border-transparent bg-bg/75'}`}>
       <div className="mx-auto max-w-7xl">
         <nav className="flex h-[4.5rem] items-center justify-between px-5 md:px-8" aria-label="Hauptnavigation">
-          <button onClick={() => { setOpen(false); setView('home'); }} aria-label="LayerForm, zur Startseite">
+          <a href="/" onClick={() => setOpen(false)} aria-label="LayerForm, zur Startseite">
             <BrandLogo />
-          </button>
+          </a>
 
           <div className="hidden items-center gap-1 md:flex">
             {NAV_ITEMS.map((item) =>
@@ -100,9 +100,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                   {item.label} <ArrowUpRight size={14} weight="bold" aria-hidden="true" />
                 </a>
               ) : (
-                <button
+                <a
+                  href={item.anchor ? `/#${item.anchor}` : "/preisrechner"}
                   key={item.label}
-                  onClick={() => go(item)}
+                  onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); go(item); } }}
                   aria-current={active === item.anchor || (item.view && item.view === currentView) ? 'true' : undefined}
                   className={`relative rounded-full px-4 py-2 text-[15px] font-medium transition-colors hover:text-fg ${
                     active === item.anchor || (item.view && item.view === currentView) ? 'text-fg' : 'text-fg-muted'
@@ -116,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                     />
                   )}
                   <span className="relative">{item.label}</span>
-                </button>
+                </a>
               )
             )}
             <button onClick={() => setView('inquiry')} className="btn-primary ml-2 !min-h-11 !px-5 !py-2.5">
@@ -159,13 +160,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                       {item.label} <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
                     </a>
                   ) : (
-                    <button
+                    <a
+                      href={item.anchor ? `/#${item.anchor}` : "/preisrechner"}
                       key={item.label}
-                      onClick={() => go(item)}
+                      onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); go(item); } }}
                       className="block w-full rounded-2xl px-4 py-3.5 text-left text-lg font-medium text-fg active:bg-white/10"
                     >
                       {item.label}
-                    </button>
+                    </a>
                   )
                 )}
                 <button onClick={() => { setOpen(false); setView('inquiry'); }} className="btn-primary mt-2 w-full">

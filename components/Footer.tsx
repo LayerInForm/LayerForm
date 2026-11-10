@@ -2,6 +2,7 @@ import React from 'react';
 import type { View } from '../App';
 import { BrandLogo } from './Navbar';
 import { ETSY_URL } from './links';
+import { SERVICE_PAGES } from '../src/seo';
 import { SOCIALS } from './social';
 
 interface FooterProps {
@@ -49,10 +50,11 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => (
           <a href={ETSY_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-fg">
             Etsy-Shop
           </a>
+          {SERVICE_PAGES.map(page => <a key={page.path} href={page.path} className="transition-colors hover:text-fg">{page.name}</a>)}
           {LINKS.map((l) => (
-            <button key={l.view} onClick={() => setView(l.view)} className="transition-colors hover:text-fg">
+            <a href={l.view === 'inquiry' ? '/anfrage' : '/' + l.view} key={l.view} className="transition-colors hover:text-fg">
               {l.label}
-            </button>
+            </a>
           ))}
           <button type="button" onClick={() => window.dispatchEvent(new Event('layerform:open-consent'))} className="transition-colors hover:text-fg">Cookie-Einstellungen</button>
         </nav>

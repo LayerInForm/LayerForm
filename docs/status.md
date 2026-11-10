@@ -59,3 +59,8 @@
 | 2026-11-09 | Gelb-lila Variante nach Nutzerablehnung zurückgenommen; Darstellung wieder auf Stand vor PR #9 (Schwarz/Blau/Limette). | Darstellungsdateien, `website.md` | Wiederherstellung; Deployment anschließend prüfen |
 
 | 2026-11-09 | Nutzer fordert ursprüngliche Logo-Palette zurück: Marineblau, Cyan, helle Schrift. Farbdateien aus geprüftem Stand nach PR #7 wiederhergestellt. | Theme/CSS und Farb-Komponenten, `website.md` | Wiederhergestellt; Produktionsdeployment anschließend prüfen |
+
+## 10.11.2026 – SEO und KI-Suche
+
+- **CODE-VERIFIZIERT / lokal geprüft:** Statisches Prerendering, drei eigene Leistungsseiten, crawlbare Links, individuelle Metadaten, Organization-/Service-Daten und generierte Sitemap. Details und offene Erfolgsmessung in [website.md](website.md).
+- Kein Zugriff auf Search-Console-Leistungsdaten; Indexierung und mehr qualifizierte Anfragen sind noch nicht nachgewiesen. Produktionsstatus separat am Deployment prüfen.

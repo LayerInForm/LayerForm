@@ -1,4 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { ServicePage, ServiceLinks } from './components/ServicePage';
+import { SERVICE_PAGES, PAGE_META, SITE_URL, structuredData } from './src/seo';
 import { Analytics } from '@vercel/analytics/react';
 import { PREISRECHNER_AKTIV } from './src/features';
 import { motion, useScroll, useSpring } from 'motion/react';
@@ -19,7 +21,7 @@ const PriceCalculator = lazy(() => import('./components/calculator/PriceCalculat
 // Interne Umgebung liegt unter layer-form.de/intern (public/intern.html, nicht verlinkt)
 const InternRedirect = lazy(() => import('./components/internal/InternRedirect'));
 
-export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'widerruf' | 'rechner' | 'kalkulation';
+export type View = 'home' | 'inquiry' | 'contact' | 'impressum' | 'agb' | 'datenschutz' | 'widerruf' | 'rechner' | 'kalkulation' | '3d-druck' | 'cad-konstruktion' | 'automatisierung';
 
 // Direkt aufrufbar: layer-form.de/#preisrechner und layer-form.de/#kalk (intern)
 // #intern, #kalk und #kalkulation leiten zu layer-form.de/intern weiter
@@ -29,6 +31,7 @@ const HASH_VIEW: Record<string, View> = {
 };
 // Seitenaufrufe für Vercel Web Analytics (ohne Cookies). Die Ansichten heißen dort wie eigene Seiten.
 const VIEW_PATH: Partial<Record<View, string>> = {
+  '3d-druck': '/3d-druck', 'cad-konstruktion': '/cad-konstruktion', automatisierung: '/automatisierung',
   home: '/', rechner: '/preisrechner', inquiry: '/anfrage', contact: '/kontakt',
   impressum: '/impressum', agb: '/agb', datenschutz: '/datenschutz', widerruf: '/widerruf',
 };
@@ -39,10 +42,17 @@ interface OrderSummary {
   personalization?: string;
 }
 
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>(() => HASH_VIEW[window.location.hash] ?? 'home');
-  const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
+export const viewForPath = (path: string): View => (Object.entries(VIEW_PATH).find(([, value]) => value === path.replace(/\/$/, '') || (path === '/' && value === '/'))?.[0] as View) ?? 'home';
+const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
+  const [currentView, updateView] = useState<View>(() => typeof window === 'undefined' ? viewForPath(initialPath) : HASH_VIEW[window.location.hash] ?? viewForPath(window.location.pathname));
+  const setCurrentView = (view: View) => {
+    const path = VIEW_PATH[view] ?? '/';
+    history.pushState(null, '', path + (VIEW_HASH[view] ?? ''));
+    updateView(view);
+  };
+  const [lastOrder, setLastOrder] = useState<OrderSummary | null>(() => typeof window !== 'undefined' && window.location.pathname === '/anfrage' ? { personalization: new URLSearchParams(window.location.search).get('thema') ?? '' } : null);
   const [analyticsAllowed, setAnalyticsAllowed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
     try {
       const saved = JSON.parse(localStorage.getItem('layerform:privacy:v3') || 'null');
       return saved?.version === 3 && saved.analytics === true &&
@@ -69,13 +79,27 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    const hash = VIEW_HASH[currentView] ?? '';
-    if (window.location.hash !== hash) history.replaceState(null, '', window.location.pathname + hash);
+    const path = VIEW_PATH[currentView];
+    const meta = path && PAGE_META[path];
+    if (meta) {
+      document.title = meta.title;
+      document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description);
+      document.querySelector('link[rel="canonical"]')?.setAttribute('href', SITE_URL + path);
+      for (const [name, value] of Object.entries({ title: meta.title, description: meta.description, url: SITE_URL + path })) document.querySelector(`meta[property="og:${name}"]`)?.setAttribute('content', value);
+      const schema = document.getElementById('page-schema');
+      if (schema) schema.textContent = JSON.stringify(structuredData(path));
+    }
   }, [currentView]);
+
+  useEffect(() => {
+    const onBack = () => { setLastOrder(window.location.pathname === '/anfrage' ? { personalization: new URLSearchParams(window.location.search).get('thema') ?? '' } : null); updateView(HASH_VIEW[window.location.hash] ?? viewForPath(window.location.pathname)); };
+    window.addEventListener('popstate', onBack);
+    return () => window.removeEventListener('popstate', onBack);
+  }, []);
 
   // Adresse mit #… bei bereits geöffneter Seite eingeben
   useEffect(() => {
-    const onHash = () => { const v = HASH_VIEW[window.location.hash]; if (v) setCurrentView(v); };
+    const onHash = () => { const v = HASH_VIEW[window.location.hash]; if (v) updateView(v); };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -83,6 +107,7 @@ const App: React.FC = () => {
   const handleInquiryWithTopic = (topic?: string) => {
     setLastOrder({ personalization: topic ?? '' });
     setCurrentView('inquiry');
+    if (topic) history.replaceState(null, '', '/anfrage?thema=' + encodeURIComponent(topic));
   };
 
   const openInquiry = () => {
@@ -119,6 +144,7 @@ const App: React.FC = () => {
         {currentView === 'home' && (
           <>
             <Hero onInquiryClick={openInquiry} onCalculatorClick={PREISRECHNER_AKTIV ? () => setCurrentView('rechner') : undefined} />
+            <ServiceLinks />
             <Projects onInquiry={handleInquiryWithTopic} />
             <CorporateServices onInquiryClick={openInquiry} />
             <CadShowcase onInquiry={handleInquiryWithTopic} />
@@ -127,6 +153,8 @@ const App: React.FC = () => {
             <ConsultationHub onInquiryClick={openInquiry} />
           </>
         )}
+
+        {SERVICE_PAGES.filter(page => page.path === VIEW_PATH[currentView]).map(page => <ServicePage key={page.path} page={page} onInquiry={handleInquiryWithTopic} />)}
 
         {currentView === 'inquiry' && (
           <div className="pt-28">
@@ -149,7 +177,8 @@ const App: React.FC = () => {
         )}
 
         {currentView === 'contact' && (
-          <div className="pt-24">
+          <div className="pt-28">
+            <h1 className="mx-auto max-w-7xl px-5 text-4xl font-semibold md:px-8">Kontakt zu LayerForm</h1>
             <ConsultationHub onInquiryClick={openInquiry} />
           </div>
         )}

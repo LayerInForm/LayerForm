@@ -16,7 +16,7 @@ const item = {
 
 export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick }) => {
   const reduce = useReducedMotion();
-  const from = reduce ? false : 'hidden';
+  const from = false;
 
   return (
     <section className="relative overflow-hidden border-b border-white/[.07]">
@@ -29,11 +29,11 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
         </motion.div>
         <div className="grid items-end gap-9 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:gap-16">
           <motion.h1 variants={item} initial={from} animate="show" custom={1} className="max-w-[13ch] text-[clamp(3.25rem,8.4vw,7.5rem)] font-semibold leading-[.98] tracking-[-.055em]">
-            Ideen werden <span className="text-cyan">greifbar.</span>
+            3D-Druck &amp; <span className="text-cyan">CAD.</span>
           </motion.h1>
           <motion.div variants={item} initial={from} animate="show" custom={2} className="pb-2">
             <p className="max-w-[38ch] text-lg leading-relaxed text-fg-muted md:text-xl">
-              Von der ersten Skizze bis zum fertigen Bauteil. Wir konstruieren, drucken und automatisieren – für Unternehmen und Privatkunden.
+              Ersatzteile, Prototypen und Kleinserien aus Bargteheide. Von der Skizze bis zum fertigen Bauteil – für Unternehmen und Privatkunden, mit Versand in ganz Deutschland.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <button onClick={onInquiryClick} className="btn-primary">Projekt starten <span aria-hidden="true">↗</span></button>
@@ -47,7 +47,7 @@ export const Hero: React.FC<HeroProps> = ({ onInquiryClick, onCalculatorClick })
         </div>
 
         <div className="mt-14 grid gap-4 md:mt-16 md:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] md:gap-5">
-          <motion.div initial={reduce ? false : { opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: EASE_OUT }} className="group relative min-h-[300px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[400px] md:min-h-[480px]">
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: EASE_OUT }} className="group relative min-h-[300px] overflow-hidden rounded-[1.75rem] bg-surface sm:min-h-[400px] md:min-h-[480px]">
             <img src="/projects/designlampe.webp" alt="3D-gedruckte Designleuchte mit Wellenstruktur" width={1200} height={900} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#040B1D]/90 via-transparent to-transparent" aria-hidden="true" />
             <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-6 sm:p-9">
