@@ -39,7 +39,8 @@ export function useSpamProtection() {
         cancel.current = fail;
         timer = window.setTimeout(fail, 90000);
         widget = api.render(container.current!, {
-          sitekey, action: 'website_inquiry', theme: 'auto', size: 'compact',
+          sitekey, action: 'website_inquiry', theme: 'auto', size: 'compact', appearance: 'interaction-only',
+          'before-interactive-callback': () => container.current?.scrollIntoView({ block: 'nearest' }),
           callback: (token: string) => resolve(token),
           'error-callback': fail, 'expired-callback': fail, 'timeout-callback': fail,
           retry: 'never', 'response-field': false,

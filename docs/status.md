@@ -74,3 +74,7 @@
 ## 10.11.2026 – Formularprüfung
 
 ASA-Auswahl und neue Deal-Namensbildung korrigiert; bestehende Retry-Fingerprints erhalten. Schmale Layouts lokal mit denselben Website-Komponenten geprüft. Live-Test durch serverseitige Turnstile-Prüfung blockiert, daher End-to-End-Erfolg OFFEN. Begrenzte Diagnose-Logs ohne personenbezogene Inhalte oder Schlüssel ergänzt; Produktionsprüfung folgt. Details in integrations.md.
+
+## 10.11.2026 – Versandbereich im Anfrageformular
+
+Pflicht-Checkbox durch Datenschutzhinweis mit Link ersetzt. Turnstile nur bei Bedarf sichtbar, direkt über den Versandbuttons; getrennte Prüf-/Sendestatus und gesperrte parallele Versandwege. Fachdetails und Prüfgrenzen in website.md. Produktionsstatus am Deployment separat prüfen.
