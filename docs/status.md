@@ -88,3 +88,7 @@ Pflicht-Checkbox durch Datenschutzhinweis mit Link ersetzt. Turnstile nur bei Be
 Search Console live geprüft: Startseite, 3D-Druck und Automatisierung indexiert; CAD und Kontakt gefunden, aktuell nicht indexiert. Direkte HTTP-Prüfung bestätigt erreichbare öffentliche URLs, passende Canonicals und funktionierende Sitemap. OpenSEO-Crawl: Kontaktseite ohne eingehende Links und mit wenig Hauptinhalt.
 
 Kontaktverlinkung, eigenständiger Kontaktinhalt, konkretere CAD-Beratung und konsistente Unternehmens-/Website-Daten ergänzt. Automatisierte Prüfung: Typechecks, 22 Tests und Build/HTML-Prüfungen erfolgreich; finaler Linkzusatz im erneut erfolgreichen Build enthalten. Öffentliche Rechtstext-Inhalte, Formulare und CRM bleiben unverändert. Details und Grenzen in [website.md](website.md). Indexierung beider noch fehlenden Seiten, KI-Zitate und Geschäftserfolg weiterhin offen; Produktivübernahme von PR #17 (`a20c7e6`) und Vercel READY (`dpl_5UKX3NpMs4JvexiGP58njaQFZXpq`) samt HTTP-Nachprüfung der fünf Sitemap-Seiten bestätigt. IndexNow: fünf geänderte URLs angenommen, kein Indexierungsnachweis.
+
+## 15.11.2026 – Anfrageformular mit einem Absenden-Button
+
+WhatsApp-/E-Mail-Auswahl im öffentlichen Anfrageformular durch einen Submit-Button „Absenden“ ersetzt. Browser-Submit und Button verwenden denselben vorhandenen HubSpot-Pfad. Validierung, Spamschutz, Wiederholungs-ID und API-Payload bleiben erhalten. Details in [website.md](website.md); Deployment am konkreten Commit prüfen.
