@@ -56,6 +56,7 @@ export function ServicePage({ page, onInquiry }: { page: typeof SERVICE_PAGES[nu
     </section>}
     <section className="mt-16 border-t border-white/10 pt-12"><h2 className="text-3xl font-semibold">Häufige Fragen zu {page.name}</h2><div className="mt-6 max-w-3xl divide-y divide-white/10">{page.faqs.map(([question, answer]) => <details key={question} className="py-5"><summary className="cursor-pointer text-lg font-semibold">{question}</summary><p className="mt-3 leading-relaxed text-fg-muted">{answer}</p></details>)}</div></section>
     <section className="mt-14 rounded-panel bg-surface p-7 md:p-10"><h2 className="text-2xl font-semibold">Besprechen wir Ihr Vorhaben.</h2><p className="mt-3 max-w-2xl leading-relaxed text-fg-muted">Sie sprechen direkt mit LayerForm in Bargteheide. Beschreiben Sie, was Sie brauchen – wir klären Machbarkeit, Umfang und die nächsten Schritte.</p><div className="mt-6 flex flex-wrap gap-4"><button onClick={() => onInquiry(page.topic)} className="btn-primary">Projekt anfragen</button><a href={WHATSAPP_LINK} className="btn-ghost">WhatsApp</a><a href={'mailto:' + CONTACT_EMAIL} className="btn-ghost">{CONTACT_EMAIL}</a><a href="tel:+4917685922649" className="btn-ghost">{CONTACT_PHONE}</a></div></section>
+    <p className="mt-6 text-sm text-fg-muted"><a href="/kontakt" className="underline underline-offset-4 hover:text-cyan">Kontakt, Standort und Angaben für Ihre Anfrage</a></p>
     <ServiceLinks />
   </article>;
 }

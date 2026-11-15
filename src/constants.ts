@@ -8,3 +8,11 @@ export const INSTAGRAM_LINK = "https://www.instagram.com/ridel.projects/";
 export const TIKTOK_LINK = "https://www.tiktok.com/@ridel.projects";
 export const GOOGLE_MAPS_LINK = "https://www.google.com/maps/place/LayerForm/@53.738933,10.2676088,17z/data=!3m1!4b1!4m6!3m5!1s0x47b219728a0cd3eb:0xfcd3d0c5ba4a1644!8m2!3d53.738933!4d10.2676088!16s%2Fg%2F11yxzg_x9q?entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D";
 export const LOCATION_ADDRESS = "Bargteheide, Schleswig-Holstein";
+// Bereits im Impressum veröffentlichte Anbieteranschrift; Abholung nur nach Absprache.
+export const BUSINESS_ADDRESS = {
+  streetAddress: 'Ludwig-Bechstein-Weg 25a',
+  postalCode: '22941',
+  addressLocality: 'Bargteheide',
+  addressRegion: 'Schleswig-Holstein',
+  addressCountry: 'DE',
+} as const;

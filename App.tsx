@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { ServicePage, ServiceLinks } from './components/ServicePage';
+import { ContactPage } from './components/ContactPage';
 import { SERVICE_PAGES, PAGE_META, SITE_URL, structuredData } from './src/seo';
 import { Analytics } from '@vercel/analytics/react';
 import { PREISRECHNER_AKTIV } from './src/features';
@@ -177,10 +178,7 @@ const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
         )}
 
         {currentView === 'contact' && (
-          <div className="pt-28">
-            <h1 className="mx-auto max-w-7xl px-5 text-4xl font-semibold md:px-8">Kontakt zu LayerForm</h1>
-            <ConsultationHub onInquiryClick={openInquiry} />
-          </div>
+          <ContactPage onInquiry={openInquiry} />
         )}
 
         {currentView === 'impressum' && <div className="legal pt-28"><Impressum /></div>}

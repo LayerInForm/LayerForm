@@ -82,3 +82,9 @@ Pflicht-Checkbox durch Datenschutzhinweis mit Link ersetzt. Turnstile nur bei Be
 ## 10.11.2026 – Filament-Kurzbeschreibungen
 
 „Auf Anfrage“ aus dem Anfrageformular entfernt, keine Vorbelegung mehr. Die fünf Materialien zeigen nach Auswahl eine kurze Anwendungshilfe. Details in website.md; Prüfungen und Produktionsstatus am Change nachweisen.
+
+## 15.11.2026 – SEO-/GEO-Fortsetzung
+
+Search Console live geprüft: Startseite, 3D-Druck und Automatisierung indexiert; CAD und Kontakt gefunden, aktuell nicht indexiert. Direkte HTTP-Prüfung bestätigt erreichbare öffentliche URLs, passende Canonicals und funktionierende Sitemap. OpenSEO-Crawl: Kontaktseite ohne eingehende Links und mit wenig Hauptinhalt.
+
+Kontaktverlinkung, eigenständiger Kontaktinhalt, konkretere CAD-Beratung und konsistente Unternehmens-/Website-Daten ergänzt. Automatisierte Prüfung: Typechecks, 22 Tests und Build/HTML-Prüfungen erfolgreich; finaler Linkzusatz im erneut erfolgreichen Build enthalten. Öffentliche Rechtstext-Inhalte, Formulare und CRM bleiben unverändert. Details und Grenzen in [website.md](website.md). Indexierung beider noch fehlenden Seiten, KI-Zitate und Geschäftserfolg weiterhin offen; Deployment separat live bestätigen.

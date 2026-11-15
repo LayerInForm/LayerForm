@@ -29,6 +29,7 @@ export const ConsultationHub: React.FC<ConsultationHubProps> = ({ onInquiryClick
             Eine kurze Beschreibung, ein Foto, eine Skizze oder eine Datei reicht für eine erste Einschätzung.
           </p>
           <button onClick={onInquiryClick} className="btn-primary mt-10">Projekt anfragen</button>
+          <p className="mt-5 text-sm text-fg-muted"><a href="/kontakt" className="underline underline-offset-4 hover:text-cyan">Kontakt, Abholung und Projektvorbereitung</a></p>
 
           <a
             href={MAPS_URL}
