@@ -51,6 +51,7 @@ export const Footer: React.FC<FooterProps> = ({ setView }) => (
             Etsy-Shop
           </a>
           {SERVICE_PAGES.map(page => <a key={page.path} href={page.path} className="transition-colors hover:text-fg">{page.name}</a>)}
+          <a href="/kontakt" className="transition-colors hover:text-fg">Kontakt</a>
           {LINKS.map((l) => (
             <a href={l.view === 'inquiry' ? '/anfrage' : '/' + l.view} key={l.view} className="transition-colors hover:text-fg">
               {l.label}

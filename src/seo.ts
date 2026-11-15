@@ -1,3 +1,5 @@
+import { BUSINESS_ADDRESS, CONTACT_EMAIL, CONTACT_PHONE } from './constants';
+
 export const SITE_URL = 'https://www.layer-form.de';
 export const SERVICE_PAGES = [
   {
@@ -22,21 +24,24 @@ export const SERVICE_PAGES = [
   },
   {
     path: '/cad-konstruktion', name: 'CAD-Konstruktion',
-    title: 'CAD-Konstruktion für 3D-Druck & Ersatzteile | LayerForm Bargteheide',
+    title: 'CAD-Konstruktion in Bargteheide für 3D-Druck | LayerForm',
     description: 'Aus Skizze, Foto oder Muster zum 3D-Modell: CAD-Konstruktion und Anpassung für Ersatzteile, Gehäuse und Prototypen. Projekt mit LayerForm besprechen.',
     heading: 'Aus Ihrer Idee wird ein druckbares 3D-Modell.',
     intro: 'LayerForm konstruiert Bauteile in Fusion 360 und bereitet sie für den 3D-Druck vor. Ob Ersatzteil, individuelles Gehäuse oder Prototyp: Wir klären Funktion, Maße und Einbausituation, bevor aus Ihrer Idee ein Modell wird. Standort ist Bargteheide; die Abstimmung ist auch aus der Ferne möglich.',
     image: '/projects/cad-aussen.webp', alt: 'CAD-Modell eines individuell konstruierten Bauteils', topic: 'CAD-Konstruktion',
     sections: [
-      ['Eine Skizze ist ein guter Anfang', 'Sie brauchen noch keine fertige technische Zeichnung. Eine Skizze mit Maßen und Fotos der Einbausituation helfen uns, Ihre Anforderungen zu verstehen. Welche Angaben oder Muster zusätzlich nötig sind, klären wir vor dem Angebot.'],
-      ['Konstruktion und Anpassung', 'Wir entwickeln neue Bauteile oder prüfen, ob sich vorhandene Modelle anpassen lassen. Dazu gehören beispielsweise Befestigungspunkte, Aussparungen und Gehäuse. Wichtige Maße und die gewünschte Funktion stimmen wir gemeinsam ab.'],
-      ['Passform am Muster prüfen', 'CAD und Fertigung können bei LayerForm zusammenlaufen. Bei Bedarf wird ein erstes Muster gedruckt, damit Sie Passform und Handhabung prüfen können, bevor eine weitere Fertigung freigegeben wird.']
+      ['Von Foto, Skizze oder Muster zum CAD-Modell', 'Sie brauchen noch keine fertige technische Zeichnung. Für ein Ersatzteil helfen Fotos aus mehreren Richtungen, eine Skizze mit Maßen und die Einbausituation. Ein Foto allein liefert keine verlässlichen Abmessungen. Welche Maße oder Muster zusätzlich nötig sind, klären wir vor dem Angebot.'],
+      ['Befestigungen, Aussparungen und Gehäuse konstruieren', 'Bei einem Gehäuse sind beispielsweise die Außenmaße, Wandstärke, Schraubpositionen und Kabeldurchführungen wichtig. Bei einer Halterung kommt es auf die Anschlussmaße und Belastung an. Wir stimmen diese Anforderungen ab und prüfen, ob ein vorhandenes Modell angepasst oder ein neues Bauteil konstruiert werden soll.'],
+      ['Passungen und Funktion am gedruckten Muster prüfen', 'Konstruktion und Fertigung können bei LayerForm zusammenlaufen. Ein erstes Druckmuster hilft, Schraubsitze, Steckverbindungen oder den verfügbaren Bauraum zu prüfen. Die erreichbare Passform hängt auch von Material, Geometrie und Druckrichtung ab. Notwendige Anpassungen und die Freigabe weiterer Teile werden projektbezogen abgestimmt.'],
+      ['Modell, Muster oder fertige Teile: den Umfang festlegen', 'Teilen Sie uns mit, ob Sie eine CAD-Konstruktion, ein gedrucktes Muster oder zusätzlich eine Kleinserie benötigen. Dateiformate, Konstruktionsumfang, Material und mögliche Nacharbeit klären wir im Angebot. So ist vor Beginn nachvollziehbar, welche Ergebnisse und Leistungen zum Auftrag gehören.']
     ],
     checklist: ['Skizzen, Fotos oder ein vorhandenes Muster', 'Wichtige Maße und Einbausituation', 'Funktion, Belastung und gewünschtes Material', 'Gewünschtes Ergebnis: Modell, Muster oder fertige Teile'],
     faqs: [
       ['Kann ein defektes Teil als Vorlage dienen?', 'Ein vorhandenes Teil kann als Vorlage helfen. Für die Machbarkeitsprüfung benötigen wir Fotos, Maße und Informationen zur Funktion. Fehlende Bereiche oder wichtige Passungen müssen gesondert abgestimmt werden.'],
       ['Ist die Konstruktion beim Druckpreis enthalten?', 'Konstruktionsaufwand und Fertigung hängen vom jeweiligen Projekt ab. Im individuellen Angebot klären wir, welche Leistungen enthalten sind.'],
-      ['Kann ich das konstruierte Teil auch drucken lassen?', 'Ja. LayerForm bietet CAD-Konstruktion und 3D-Druck an. Material, Passformprüfung und Stückzahl stimmen wir vor der Fertigung ab.']
+      ['Kann ich das konstruierte Teil auch drucken lassen?', 'Ja. LayerForm bietet CAD-Konstruktion und 3D-Druck an. Material, Passformprüfung und Stückzahl stimmen wir vor der Fertigung ab.'],
+      ['Welche Maße sind für die Konstruktion wichtig?', 'Nennen Sie die Außenmaße, Befestigungspunkte und alle Stellen, an denen das Teil zu einem anderen Bauteil passen muss. Eine bemaßte Skizze und Fotos der Einbausituation sind hilfreich. Unbekannte Maße und nötige Passungen klären wir vor der Konstruktion.'],
+      ['Kann die Abstimmung ohne Besuch in Bargteheide erfolgen?', 'Ja, Skizzen, Maße und Fotos können zunächst digital übermittelt werden. Ob zusätzlich ein Originalteil oder Muster benötigt wird, hängt vom Projekt ab. Fertige Druckteile können innerhalb Deutschlands versendet werden.']
     ]
   },
   {
@@ -64,15 +69,18 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
   '/': { title: '3D-Druck & CAD in Bargteheide · deutschlandweit | LayerForm', description: '3D-Druck, CAD-Konstruktion und Kleinserien aus Bargteheide. Für Unternehmen und Privatkunden, mit Versand in Deutschland. Idee oder Datei senden und Angebot anfragen.' },
   ...Object.fromEntries(SERVICE_PAGES.map(page => [page.path, page])),
   '/anfrage': { title: 'Projekt anfragen: 3D-Druck, CAD & Automatisierung | LayerForm', description: 'Beschreiben Sie Ihr Vorhaben: 3D-Druck, CAD-Konstruktion oder Automatisierung. LayerForm prüft Ihre Angaben und bespricht mit Ihnen die nächsten Schritte.' },
-  '/kontakt': { title: 'Kontakt zu LayerForm in Bargteheide', description: 'LayerForm erreichen: Kontakt per E-Mail, Telefon oder WhatsApp. Besprechen Sie Ihr Projekt für 3D-Druck, CAD oder Automatisierung.' },
+  '/kontakt': { title: 'Kontakt & Abholung in Bargteheide | LayerForm', description: 'LayerForm in Bargteheide: Kontakt für 3D-Druck, CAD und Automatisierung. E-Mail, Telefon, WhatsApp, Abholung nach Absprache und Versand in Deutschland.' },
   ...Object.fromEntries(['Impressum', 'AGB', 'Datenschutz', 'Widerruf'].map(name => ['/' + name.toLowerCase(), { title: name + ' | LayerForm', description: name + ' von LayerForm.' }]))
 };
 
 export function structuredData(path: string) {
   const page = SERVICE_PAGES.find(item => item.path === path);
-  const organization = { '@type': 'Organization', '@id': SITE_URL + '/#organization', name: 'LayerForm', url: SITE_URL + '/', logo: SITE_URL + '/favicon-512x512.png', email: 'info@layer-form.de', telephone: '+49 176 85922649', areaServed: { '@type': 'Country', name: 'Deutschland' }, location: { '@type': 'Place', name: 'Bargteheide, Schleswig-Holstein' }, sameAs: ['https://www.instagram.com/ridel.projects/', 'https://www.tiktok.com/@ridel.projects'] };
+  const organization = { '@type': 'Organization', '@id': SITE_URL + '/#organization', name: 'LayerForm', url: SITE_URL + '/', logo: SITE_URL + '/favicon-512x512.png', email: CONTACT_EMAIL, telephone: CONTACT_PHONE, address: { '@type': 'PostalAddress', ...BUSINESS_ADDRESS }, areaServed: { '@type': 'Country', name: 'Deutschland' }, location: { '@type': 'Place', name: 'Bargteheide, Schleswig-Holstein' }, sameAs: ['https://www.instagram.com/ridel.projects/', 'https://www.tiktok.com/@ridel.projects'] };
+  const website = { '@type': 'WebSite', '@id': SITE_URL + '/#website', url: SITE_URL + '/', name: 'LayerForm', inLanguage: 'de-DE', publisher: { '@id': organization['@id'] } };
   return { '@context': 'https://schema.org', '@graph': [organization,
-    { '@type': 'WebPage', '@id': SITE_URL + path, url: SITE_URL + path, name: PAGE_META[path]?.title, description: PAGE_META[path]?.description, inLanguage: 'de-DE', about: { '@id': organization['@id'] } },
-    ...(page ? [{ '@type': 'Service', name: page.name, serviceType: page.name, description: page.intro, url: SITE_URL + path, provider: { '@id': organization['@id'] }, areaServed: { '@type': 'Country', name: 'Deutschland' } }, { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Startseite', item: SITE_URL + '/' }, { '@type': 'ListItem', position: 2, name: page.name, item: SITE_URL + path }] }] : [])
+    website,
+    { '@type': path === '/kontakt' ? ['WebPage', 'ContactPage'] : 'WebPage', '@id': SITE_URL + path, url: SITE_URL + path, name: PAGE_META[path]?.title, description: PAGE_META[path]?.description, inLanguage: 'de-DE', isPartOf: { '@id': website['@id'] }, about: { '@id': organization['@id'] } },
+    ...(page ? [{ '@type': 'Service', name: page.name, serviceType: page.name, description: page.intro, url: SITE_URL + path, provider: { '@id': organization['@id'] }, areaServed: { '@type': 'Country', name: 'Deutschland' } }] : []),
+    ...(page || path === '/kontakt' ? [{ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Startseite', item: SITE_URL + '/' }, { '@type': 'ListItem', position: 2, name: page?.name ?? 'Kontakt', item: SITE_URL + path }] }] : [])
   ] };
 }

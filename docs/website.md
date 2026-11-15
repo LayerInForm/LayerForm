@@ -115,3 +115,20 @@ Cloud-Browser bleibt auf Nutzerwunsch geschlossen. Typechecks, bestehende Tests,
 ### Materialauswahl mit Kurzbeschreibung (10.11.2026)
 
 Im Anfrageformular stehen ausschließlich PLA, PETG, ASA, ABS und TPU zur Auswahl. „Auf Anfrage“ und die bisherige Vorbelegung entfallen. Unter der Auswahl erscheint abhängig vom gewählten Material eine kurze Beschreibung mit typischen Anwendungen in heller, normal gewichteter Schrift. Ein Live-Bereich macht den Textwechsel für assistive Technik verfügbar. Ohne Materialauswahl bleibt das Absenden möglich; der bestehende Backend-Wert `offen` bleibt erhalten. Keine Formular-, Spamschutz- oder CRM-Schnittstelle geändert.
+
+### SEO-/GEO-Abschluss der begonnenen Maßnahmen (15.11.2026)
+
+**LIVE-VERIFIZIERT:** Die Search-Console-URL-Prüfung meldet Startseite, `/3d-druck` und `/automatisierung` als „Gesendet und indexiert“. `/cad-konstruktion` und `/kontakt` stehen auf „Gefunden – zurzeit nicht indexiert“; Google meldet dort noch keinen Crawl. Alle fünf URLs liefern bei direktem Abruf HTTP 200 mit passender bevorzugter URL (Canonical). Die Weiterleitung ohne www sowie robots.txt, Sitemap und HTTP 404 für einen unbekannten Pfad wurden ebenfalls geprüft. Das beweist keinen zukünftigen Crawl oder Rankinggewinn.
+
+**Befund:** Der OpenSEO-Crawl über 13 URLs fand die Kontaktseite nur über die Sitemap, ohne eingehende interne Links, und bewertete ihren Hauptinhalt als kurz. Eine fehlende Aufnahme durch Google wird dadurch nicht ursächlich bewiesen. Die übrigen Hinweise betreffen überwiegend Textlängen und absichtlich auf `/anfrage` zusammengeführte Themenparameter; das kurze Impressum wird nicht künstlich erweitert.
+
+**CODE-VERIFIZIERT / automatisiert geprüft:**
+- `/kontakt` bekommt eigenständige Projektvorbereitung, erreichbare Kontaktwege und die bereits im Impressum veröffentlichte Anbieteranschrift. Abholung ausdrücklich nur nach Absprache; Versand innerhalb Deutschlands. Kein Karten-Widget, keine neuen Öffnungszeiten oder Lieferzusagen.
+- Footer, Kontaktbereich und Leistungsseiten verlinken `/kontakt` als reguläre URL. Die Inhalte werden mit denselben Komponenten vorgerendert und im Browser dargestellt.
+- CAD-Inhalte erklären nötige Maße, Befestigungen, Passungen, Musterprüfung und Angebotsumfang. Vorhandene Referenzfotos bleiben erhalten; keine neuen Kundengeschichten oder erfundenen Referenzen.
+- Strukturierte Daten verknüpfen Organization, WebSite, WebPage/ContactPage, Service und Navigationspfade. Anbieteranschrift und Kontaktangaben kommen aus gemeinsamen Konstanten und stimmen auf `/kontakt` mit sichtbarem Text überein. Kein spezielles KI-Markup, Bewertungs-Markup oder Aufnahmeversprechen.
+- Buildprüfungen sichern die Kontaktverlinkung auf allen zehn vorgerenderten Seiten, sichtbare/schema-konforme Anschrift und nutzbare E-Mail-/Telefonlinks zusätzlich ab.
+
+Prüfungen: Frontend-/API-Typechecks, 22 bestehende Tests und Produktionsbuild einschließlich HTML-/SEO-Prüfungen. Der finale Stand einschließlich Kontaktlink wurde erneut erfolgreich gebaut. Keine neue Browser-/Mobilprüfung; bestehende Komponenten, Layout-Tokens und responsive Raster verwendet. 21st-CLI in dieser Umgebung nicht verfügbar. Produktionsdeployment und gezielte HTTP-Nachprüfung am finalen Commit separat bestätigen.
+
+**Offen nach Veröffentlichung:** Aufnahme von CAD und Kontakt durch Google. Search-Console-Daten bleiben die Quelle für den Indexstatus; eine Suchmaschinenmeldung ist keine Indexierungsbestätigung. KI-Zitate und mehr qualifizierte Anfragen wurden nicht gemessen. Keine neue CRM-Aufgabe, kein zusätzlicher Tracker und keine Änderung an Formular-, Consent- oder Versandlogik.

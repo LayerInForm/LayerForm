@@ -10,7 +10,12 @@ for (const [path, meta] of Object.entries(PAGE_META)) {
   const title = html.match(/<title>(.*?)<\/title>/s)?.[1];
   assert(title && !titles.has(title), `${path}: unique title`); titles.add(title);
   const graph = JSON.parse(html.match(/<script id="page-schema" type="application\/ld\+json">(.*?)<\/script>/s)[1]);
-  assert.equal(graph['@graph'].find(item => item['@type'] === 'WebPage').url, SITE_URL + path);
+  const webPage = graph['@graph'].find(item => [item['@type']].flat().includes('WebPage'));
+  assert.equal(webPage.url, SITE_URL + path);
+  assert.equal(webPage.isPartOf['@id'], SITE_URL + '/#website');
+  assert.equal(graph['@graph'].find(item => item['@type'] === 'WebSite').publisher['@id'], SITE_URL + '/#organization');
+  assert(html.includes('href="/kontakt"'), `${path}: contact page reachable without JavaScript`);
+  assert(!/<meta name="robots" content="[^"]*noindex/.test(html), `${path}: no accidental noindex`);
   assert(meta.description.length > 0);
   for (const match of html.matchAll(/(?:src|href)="(\/(?:assets|projects)\/[^"?#]+)"/g)) await access('dist' + match[1]);
   for (const service of SERVICE_PAGES) assert(html.includes(`href="${service.path}"`), `${path}: service link`);
@@ -22,6 +27,13 @@ for (const [path, meta] of Object.entries(PAGE_META)) {
     assert(html.includes('/anfrage?thema='), `${path}: inquiry link`);
   }
 }
+const contactHtml = await readFile('dist/kontakt.html', 'utf8');
+const contactGraph = JSON.parse(contactHtml.match(/<script id="page-schema" type="application\/ld\+json">(.*?)<\/script>/s)[1])['@graph'];
+assert(contactGraph.some(item => [item['@type']].flat().includes('ContactPage')));
+const address = contactGraph.find(item => item['@type'] === 'Organization').address;
+for (const field of ['streetAddress', 'postalCode', 'addressLocality', 'addressRegion']) assert(contactHtml.includes(address[field]), `contact: visible ${field} matches schema`);
+for (const link of ['mailto:info@layer-form.de', 'tel:+4917685922649', '/impressum', '/datenschutz']) assert(contactHtml.includes(`href="${link}"`), `contact: actionable ${link}`);
+assert(contactHtml.includes('Bitte vereinbaren Sie eine Abholung vorab.'), 'contact: appointment requirement visible');
 for (const privatePath of ['/intern', '/api/', '/kalk']) assert(!sitemap.includes(privatePath));
 assert.equal((sitemap.match(/<loc>/g) || []).length, 5);
 console.log('SEO checks passed: 10 rendered pages, titles, H1s, canonicals, JSON-LD, internal links, assets and sitemap.');
