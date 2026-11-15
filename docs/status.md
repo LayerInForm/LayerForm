@@ -92,3 +92,7 @@ Kontaktverlinkung, eigenständiger Kontaktinhalt, konkretere CAD-Beratung und ko
 ## 15.11.2026 – Anfrageformular mit einem Absenden-Button
 
 WhatsApp-/E-Mail-Auswahl im öffentlichen Anfrageformular durch einen Submit-Button „Absenden“ ersetzt. Browser-Submit und Button verwenden denselben vorhandenen HubSpot-Pfad. Validierung, Spamschutz, Wiederholungs-ID und API-Payload bleiben erhalten. Details in [website.md](website.md); Deployment am konkreten Commit prüfen.
+
+## 16.11.2026 – Bestätigungsmail gekürzt
+
+Kundenbestätigung bei Kontaktformular und Rechner auf zwei Sätze zum Eingang begrenzt; einheitlicher Betreff. Auslöser, Empfänger, Wiederholungsschutz und CRM-Verarbeitung bleiben unverändert. API-Typecheck, alle 22 bestehenden Tests, TypeScript-Prüfung und Produktionsbuild einschließlich SEO-Prüfung erfolgreich. Details in integrations.md.
