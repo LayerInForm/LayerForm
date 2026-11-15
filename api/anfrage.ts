@@ -12,7 +12,6 @@ import { hubspotAktiv, legeLeadAn, materialWert } from './_lib/hubspot.js';
  *                       (die Domain muss bei Resend bestätigt sein)
  *   ANFRAGE_BESTAETIGUNG "aus" schaltet die automatische Eingangsbestätigung an den Kunden ab
  */
-const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const clip = (s: unknown, n = 300) => String(s ?? '').trim().slice(0, n);
 
 interface FileRef { name: string; url: string; size: number }
@@ -53,7 +52,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (text.length + files.reduce((n, f) => n + f.url.length + f.name.length, 0) > 50000) return res.status(413).json({ error: 'Zu viele Angaben. Bitte teilen Sie die Anfrage auf.' });
 
-  const row = (k: string, v: string) => '<tr><td>' + k + '</td><td>' + v + '</td></tr>';
   // 1. Direkt in HubSpot (mit allen Dateien)
   if (!hubspotAktiv()) return res.status(503).json({ error: 'Übertragung ist noch nicht eingerichtet' });
   let duplicate = false;
@@ -78,35 +76,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const resend = new Resend(key);
     // Eingangsbestätigung an den Kunden (Fehler hier blockieren die Anfrage nicht)
     if (process.env.ANFRAGE_BESTAETIGUNG !== 'aus') {
-      const teile = plates.flatMap((p) => p.items).map((i) => `${Number(i.qty) || 1} × ${clip(i.name, 200)}`);
-      const ctext = [
-        `Hallo ${name},`, '',
-        'vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen.', '',
-        'Ihre Angaben:',
-        `Material: ${material}`, `Qualität: ${quality}`, `Infill: ${infill} %`,
-        `Teile: ${teile.join(', ') || '–'}`,
-        `Richtpreis: ${estimate} (unverbindlich)`, '',
-        'Wir prüfen Ihre Dateien und schicken Ihnen den finalen Preis inklusive Versand per E-Mail.',
-        'Bei Fragen antworten Sie einfach auf diese Nachricht oder schreiben uns per WhatsApp: +49 176 85922649', '',
-        'Viele Grüße',
-        'LayerForm',
-        'www.layer-form.de',
-      ].join('\n');
-      const chtml = `
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px;line-height:1.5">
-        <p>Hallo ${esc(name)},</p>
-        <p>vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen.</p>
-        <table style="margin:12px 0">${row('Material', esc(material))}${row('Qualität', esc(quality))}${row('Infill', `${esc(infill)} %`)}${row('Teile', teile.map(esc).join('<br>') || '–')}${row('Richtpreis', `${esc(estimate)} <span style="color:#667">(unverbindlich)</span>`)}</table>
-        <p>Wir prüfen Ihre Dateien und schicken Ihnen den finalen Preis inklusive Versand per E-Mail.</p>
-        <p>Bei Fragen antworten Sie einfach auf diese Nachricht oder schreiben uns per WhatsApp: <a href="https://wa.me/4917685922649">+49 176 85922649</a></p>
-        <p>Viele Grüße<br>LayerForm<br><a href="https://www.layer-form.de">www.layer-form.de</a></p>
-      </div>`;
+      const ctext = 'Vielen Dank für Ihre Anfrage. Hiermit bestätigen wir den Eingang Ihrer Anfrage.';
+      const chtml = '<p>Vielen Dank für Ihre Anfrage. Hiermit bestätigen wir den Eingang Ihrer Anfrage.</p>';
       try {
         const confirmation = await resend.emails.send({
           from: process.env.ANFRAGE_ABSENDER || 'LayerForm <rechner@layer-form.de>',
           to: email,
           replyTo: process.env.ANFRAGE_EMPFAENGER || 'auftrag@layer-form.de',
-          subject: 'Ihre Anfrage bei LayerForm',
+          subject: 'Bestätigung Ihrer Anfrage',
           text: ctext,
           html: chtml,
         });

@@ -85,16 +85,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const resend = key ? new Resend(key) : null;
   // 3. Eingangsbestätigung an den Kunden (nur bei E-Mail; Fehler blockieren nichts)
   if (!result.duplicate && resend && process.env.ANFRAGE_BESTAETIGUNG !== 'aus') {
-    const ctext = [
-      `Hallo ${clip(b.vorname, 80) || name.split(' ')[0]},`, '',
-      'vielen Dank für Ihre Anfrage bei LayerForm. Sie ist bei uns angekommen, wir melden uns in der Regel innerhalb eines Werktags mit Preis und Lieferzeit.', '',
-      'Fotos, Skizzen oder Dateien (STL, STEP, 3MF) können Sie einfach als Antwort auf diese E-Mail schicken.', '',
-      'Ihre Anfrage:', text || message, '',
-      'Viele Grüße', 'Benjamin Ridel', 'LayerForm · www.layer-form.de · WhatsApp +49 176 85922649',
-    ].join('\n');
+    const ctext = 'Vielen Dank für Ihre Anfrage. Hiermit bestätigen wir den Eingang Ihrer Anfrage.';
     try {
       const confirmation = await resend.emails.send({
-        from, to: email, replyTo: to, subject: `Re: ${subject}`, text: ctext,
+        from, to: email, replyTo: to, subject: 'Bestätigung Ihrer Anfrage', text: ctext,
         html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px;line-height:1.5;white-space:pre-wrap">${esc(ctext)}</div>`,
       });
       if (confirmation.error) throw new Error(confirmation.error.message);

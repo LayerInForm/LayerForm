@@ -206,3 +206,7 @@ Werte: PLA→`pla`, PETG→`petg`, ASA→`asa`, ABS→`abs`, TPU→`tpu`; fehlen
 - Turnstile protokolliert bei Ablehnung/Ausfall nur feste Diagnosekategorien, HTTP-Status und bekannte Provider-Fehlercodes. Keine Tokens, Secrets, Anfragetexte oder Kontaktdaten in Logs. Spamschutz bleibt bei Fehlern geschlossen.
 - LIVE-PRÜFUNG: Eine eindeutig markierte Testanfrage scheiterte an der serverseitigen Sicherheitsprüfung; kein passender Test-Deal gefunden. Ein vollständiger Erfolg bis HubSpot ist damit noch NICHT bestätigt. Production-Variablen sind laut Metadaten vorhanden, Werte wurden nicht ausgelesen. Konkrete Fehlerursache nach Diagnose-Deployment prüfen.
 - Lokal bei 390 Pixel breitem Frame: Navigation bedienbar, Materialtabelle innerhalb ihres Bereichs scrollbar, Dokument ohne seitlichen Überlauf. Anfrageformular mit ASA-Auswahl ebenfalls ohne Dokumentüberlauf. Keine echte Smartphone-/Safari-Geräteprüfung.
+
+## Kurze Eingangsbestätigung (16.11.2026)
+
+Auf Nutzerwunsch enthält die Kundenbestätigung beider Website-Endpunkte ausschließlich: „Vielen Dank für Ihre Anfrage. Hiermit bestätigen wir den Eingang Ihrer Anfrage.“ Betreff: „Bestätigung Ihrer Anfrage“. Keine Anfragekopie, Preise, Termine, Kontaktlinks oder Signatur im Nachrichtentext. Empfänger bleibt die im Formular angegebene E-Mail-Adresse. Auslösung weiterhin erst nach erfolgreicher HubSpot-Anlage und nur bei neuen, nicht wiederholten Anfragen; Zustellfehler ändern den gespeicherten CRM-Eingang nicht. Keine historischen Bestätigungen erneut senden.
