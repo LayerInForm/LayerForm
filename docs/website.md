@@ -132,3 +132,11 @@ Im Anfrageformular stehen ausschließlich PLA, PETG, ASA, ABS und TPU zur Auswah
 Prüfungen: Frontend-/API-Typechecks, 22 bestehende Tests und Produktionsbuild einschließlich HTML-/SEO-Prüfungen. Der finale Stand einschließlich Kontaktlink wurde erneut erfolgreich gebaut. Keine neue Browser-/Mobilprüfung; bestehende Komponenten, Layout-Tokens und responsive Raster verwendet. 21st-CLI in dieser Umgebung nicht verfügbar. LIVE-VERIFIZIERT: PR #17 wurde als `a20c7e6` übernommen; Vercel-Produktion `dpl_5UKX3NpMs4JvexiGP58njaQFZXpq` ist READY und auf www.layer-form.de aktiv. HTTP-Nachprüfung aller fünf Sitemap-URLs bestätigt neue Kontaktlinks und Website-Schema; Kontaktinhalt/ContactPage sowie konkrete CAD-Texte gesondert bestätigt. IndexNow hat fünf geänderte URLs angenommen; dies bestätigt weder Indexierung noch Google-Verarbeitung.
 
 **Offen nach Veröffentlichung:** Aufnahme von CAD und Kontakt durch Google. Search-Console-Daten bleiben die Quelle für den Indexstatus; eine Suchmaschinenmeldung ist keine Indexierungsbestätigung. KI-Zitate und mehr qualifizierte Anfragen wurden nicht gemessen. Keine neue CRM-Aufgabe, kein zusätzlicher Tracker und keine Änderung an Formular-, Consent- oder Versandlogik.
+
+### Ein einziger Absendeweg im Anfrageformular (15.11.2026)
+
+Auf Nutzerwunsch gibt es im öffentlichen Anfrageformular nur noch den Submit-Button „Absenden“. Die bisherigen WhatsApp-/E-Mail-Optionen und der alternative Mailto-Versand im Fehlerzustand entfallen. Enter im Formular nutzt dieselbe Validierung und Übertragung. Während Prüfung/Übertragung ist der Button gesperrt; bei Fehlern bleiben Angaben und Wiederholungs-ID erhalten. Die Erfolgsansicht bestätigt ausschließlich den tatsächlich erfolgreichen API-Eingang.
+
+Der vorhandene `/api/kontakt`-Payload einschließlich `via: 'email'` bleibt technisch unverändert, damit bestehende Retry-Fingerprints und HubSpot-Zuordnungen erhalten bleiben. E-Mail bleibt Pflichtfeld für die Rückmeldung. Separate allgemeine Kontaktlinks außerhalb des Formulars sind unverändert. Keine Änderung an Bestätigungsmail, Cloudflare, Redis oder CRM-Schreiblogik.
+
+Prüfung: Frontend-/API-Typechecks, 22 bestehende Tests, Produktionsbuild und gezielte Kontrolle des vorgerenderten Formulars. Kein zusätzlicher echter Kunden-/Testdatensatz und keine neue Browserprüfung für diese kleine Änderung.
