@@ -104,3 +104,16 @@ Kundenbestätigung bei Kontaktformular und Rechner auf zwei Sätze zum Eingang b
 - CODE-VERIFIZIERT: Einwilligungsabhängige Erfolgsmessung des Anfrageformulars ohne neue Trackinganbieter oder Formularinhalte; 32 Tests, Typechecks und Build erfolgreich. Veröffentlichung/Live-Test gesondert nachhalten.
 - LIVE-VERIFIZIERT: DHL-Produktivkatalog HTTP 200, 19 Produkte. Manueller, gegen Wiederholungen gesicherter Produktiv-Warenkorbpfad ergänzt und isoliert getestet. Kein Label gekauft; konkreter DHL-Auftrag/Checkout und Internetmarke-Zugang bleiben offen.
 - Search-Console-Abfrage am 23.11.: CAD und Kontakt als „URL is unknown to Google“ gemeldet. Kein Indexierungs- oder Rankinggewinn behauptet. Suchdaten und Conversion-Daten bleiben getrennte, begrenzte Messquellen.
+
+
+### Live-Abschlussprüfung am 23.11.2026
+
+PR #20 als `e0951e334f723c4a3f3246967c02cdf43f84306a` übernommen; Vercel-Produktion `dpl_CodhhccaJYA1vKqPFjSY1pomd8mF` READY mit www.layer-form.de als Alias.
+
+LIVE-VERIFIZIERT: Eigene, deutlich als technisch markierte Testanfrage über die veröffentlichte 3D-Druck-Seite und den tatsächlichen Absendeweg um 10:22 Uhr erfolgreich. Browser zeigt „Anfrage eingegangen“, genau ein passender neuer Deal in „Neue Anfrage“ zurückgelesen und anschließend im Titel als TEST gekennzeichnet. Empfang der Bestätigung im eigenen Posteingang und tatsächlicher Text-/HTML-Inhalt geprüft: ausschließlich die beiden gewünschten Eingangssätze. Keine fremden Kunden kontaktiert; keine bestehenden Auftragsphasen verändert. Der Testdatensatz bleibt als solcher erkennbar.
+
+Statistikprüfung: Vor optionaler Zustimmung kein Analyseskript im DOM; nach Zustimmung und Neuladen Vercel-Analyseskript vorhanden. Website-Bundle, Kontaktseite, Sitemap und Analyseskript öffentlich mit HTTP 200 bestätigt. Die virtuelle Erfolgsmessung ist produktiv implementiert; ihr Eingang im Vercel-Dashboard wurde nicht separat zurückgelesen. Sie ist einwilligungsabhängig und zählt die eigene Testanfrage gegebenenfalls mit. Die abgefragten Fehler-/Fatal-Logs der Veröffentlichung zeigten in den letzten zehn Minuten keine Einträge; keine weitergehende Vollständigkeitsbehauptung.
+
+DHL-Modul um 10:19 Uhr erfolgreich mit `lfDhlProduktivKonfigurationPruefen` geprüft: Helfer und Produktivschlüssel vorhanden, kein konkreter Auftrag ausgewählt. Produktiv-POST, Checkout, Bezahlung und Internetmarke-Aktivierung bleiben offen.
+
+Wöchentliche lesende Fehlerkontrolle ab 30.11.2026, montags 09:00 Uhr Europe/Berlin eingerichtet, nur bei neuen nachgewiesenen Problemen benachrichtigen. Keine automatischen Test-Deals, Kundenmails oder kostenpflichtigen Vorgänge.
