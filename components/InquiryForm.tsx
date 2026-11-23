@@ -10,6 +10,7 @@ interface InquiryFormProps {
   initialPersonalization?: string;
   onBack?: () => void;
   onPrivacy?: () => void;
+  onSubmitted?: () => void;
 }
 
 const FILAMENTE = ['PLA', 'PETG', 'ASA', 'ABS', 'TPU'];
@@ -40,7 +41,7 @@ const Field: React.FC<{ label: string; optional?: boolean; error?: string; child
   </label>
 );
 
-export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization, onBack, onPrivacy }) => {
+export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initialPersonalization, onBack, onPrivacy, onSubmitted }) => {
   const reduce = useReducedMotion();
   const spam = useSpamProtection();
 
@@ -147,6 +148,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ initialProduct, initia
     try {
       await transmit();
       setSent(true);
+      onSubmitted?.();
     } catch (error) {
       setSendError(error instanceof Error ? error.message : 'Anfrage konnte nicht übertragen werden.');
     } finally {

@@ -3,6 +3,7 @@ import { ServicePage, ServiceLinks } from './components/ServicePage';
 import { ContactPage } from './components/ContactPage';
 import { SERVICE_PAGES, PAGE_META, SITE_URL, structuredData } from './src/seo';
 import { Analytics } from '@vercel/analytics/react';
+import { inquirySuccessPath } from './src/analytics';
 import { PREISRECHNER_AKTIV } from './src/features';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Navbar } from './components/Navbar';
@@ -45,8 +46,11 @@ interface OrderSummary {
 
 export const viewForPath = (path: string): View => (Object.entries(VIEW_PATH).find(([, value]) => value === path.replace(/\/$/, '') || (path === '/' && value === '/'))?.[0] as View) ?? 'home';
 const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
+  const [entryPath] = useState(() => typeof window === 'undefined' ? initialPath : window.location.pathname);
+  const [inquiryCompleted, setInquiryCompleted] = useState(false);
   const [currentView, updateView] = useState<View>(() => typeof window === 'undefined' ? viewForPath(initialPath) : HASH_VIEW[window.location.hash] ?? viewForPath(window.location.pathname));
   const setCurrentView = (view: View) => {
+    setInquiryCompleted(false);
     const path = VIEW_PATH[view] ?? '/';
     history.pushState(null, '', path + (VIEW_HASH[view] ?? ''));
     updateView(view);
@@ -93,7 +97,7 @@ const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
   }, [currentView]);
 
   useEffect(() => {
-    const onBack = () => { setLastOrder(window.location.pathname === '/anfrage' ? { personalization: new URLSearchParams(window.location.search).get('thema') ?? '' } : null); updateView(HASH_VIEW[window.location.hash] ?? viewForPath(window.location.pathname)); };
+    const onBack = () => { setInquiryCompleted(false); setLastOrder(window.location.pathname === '/anfrage' ? { personalization: new URLSearchParams(window.location.search).get('thema') ?? '' } : null); updateView(HASH_VIEW[window.location.hash] ?? viewForPath(window.location.pathname)); };
     window.addEventListener('popstate', onBack);
     return () => window.removeEventListener('popstate', onBack);
   }, []);
@@ -119,7 +123,10 @@ const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
       {/* Besucherstatistik ohne Cookies; die interne Weiterleitung wird nicht gezählt */}
-      {analyticsAllowed && VIEW_PATH[currentView] && <Analytics route={VIEW_PATH[currentView]} path={VIEW_PATH[currentView]} />}
+      {analyticsAllowed && VIEW_PATH[currentView] && <Analytics
+        route={currentView === 'inquiry' && inquiryCompleted ? '/anfrage-erfolgreich/[einstieg]' : VIEW_PATH[currentView]}
+        path={currentView === 'inquiry' && inquiryCompleted ? inquirySuccessPath(entryPath) : VIEW_PATH[currentView]}
+      />}
       <a
         href="#main"
         className="sr-only z-nav rounded-full bg-cyan px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
@@ -165,6 +172,7 @@ const App: React.FC<{ initialPath?: string }> = ({ initialPath = '/' }) => {
               initialPersonalization={lastOrder?.personalization}
               onBack={() => setCurrentView('home')}
               onPrivacy={() => setCurrentView('datenschutz')}
+              onSubmitted={() => setInquiryCompleted(true)}
             />
           </div>
         )}

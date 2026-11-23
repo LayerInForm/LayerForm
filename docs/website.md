@@ -140,3 +140,13 @@ Auf Nutzerwunsch gibt es im öffentlichen Anfrageformular nur noch den Submit-Bu
 Der vorhandene `/api/kontakt`-Payload einschließlich `via: 'email'` bleibt technisch unverändert, damit bestehende Retry-Fingerprints und HubSpot-Zuordnungen erhalten bleiben. E-Mail bleibt Pflichtfeld für die Rückmeldung. Separate allgemeine Kontaktlinks außerhalb des Formulars sind unverändert. Keine Änderung an Bestätigungsmail, Cloudflare, Redis oder CRM-Schreiblogik.
 
 Prüfung: Frontend-/API-Typechecks, 22 bestehende Tests, Produktionsbuild und gezielte Kontrolle des vorgerenderten Formulars. Kein zusätzlicher echter Kunden-/Testdatensatz und keine neue Browserprüfung für diese kleine Änderung.
+
+### Anfrage-Erfolgsmessung (23.11.2026)
+
+CODE-VERIFIZIERT: Nach erfolgreicher Antwort von `/api/kontakt` meldet das öffentliche Formular seinen Abschluss an die App. Nur bei vorhandener Statistik-Einwilligung wird ein virtueller Vercel-Seitenaufruf unter `/anfrage-erfolgreich/<einstieg>` gemessen. Die Einstiegsseite stammt aus einer festen Positivliste; Parameter, Fragmente, interne Pfade, Namen, Formularinhalte und Anfrage-IDs gelangen nicht in diesen Statistikpfad. Kein zusätzlicher Tracker, kein separates kostenpflichtiges Custom-Event-Produkt und keine neue Browser-Speicherung. Das sichtbare Formular und die aktuelle URL bleiben unverändert. Fehlgeschlagene Übertragungen lösen keinen Erfolg aus.
+
+Auswertung im bestehenden Vercel-Web-Analytics-Dashboard: Seiten mit `/anfrage-erfolgreich/` betrachten und nach Einstiegsseite sowie vorhandenen Herkunftsdaten auswerten. Dies sind einwilligungsabhängige Seitenaufrufe, keine garantiert vollständige Zahl eindeutiger HubSpot-Deals. Erneutes Aktivieren der Statistik kann einen weiteren Aufruf erzeugen. Search Console zeigt Suchbegriffe/Seiten aggregiert; eine personenbezogene Zuordnung von Suchbegriffen zu Deals wird nicht vorgenommen.
+
+Prüfung: 32 automatisierte Tests (einschließlich API-Deduplizierung, Fehlerpfaden, Datenschutz der Statistikpfade und DHL-Testdoubles), API-/Frontend-Typechecks und Produktionsbuild mit zehn vorgerenderten Seiten erfolgreich. Veröffentlichung und Browser-/CRM-Test werden getrennt bestätigt.
+
+Eine wöchentliche, ausschließlich lesende technische Kontrolle ist ab 30.11.2026 montags um 09:00 Uhr Europe/Berlin eingerichtet. Sie prüft Erreichbarkeit, Produktionsstatus, verfügbare Runtime-Fehler und wesentliche neue Search-Console-Probleme. Benachrichtigung nur bei neuen belegten Problemen; keine regelmäßigen Test-Deals oder Kundenmails. Diese Kontrolle ersetzt keinen vollständigen positiven Formular-/CRM-Test.

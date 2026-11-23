@@ -96,3 +96,11 @@ WhatsApp-/E-Mail-Auswahl im öffentlichen Anfrageformular durch einen Submit-But
 ## 16.11.2026 – Bestätigungsmail gekürzt
 
 Kundenbestätigung bei Kontaktformular und Rechner auf zwei Sätze zum Eingang begrenzt; einheitlicher Betreff. Auslöser, Empfänger, Wiederholungsschutz und CRM-Verarbeitung bleiben unverändert. API-Typecheck, alle 22 bestehenden Tests, TypeScript-Prüfung und Produktionsbuild einschließlich SEO-Prüfung erfolgreich. Details in integrations.md.
+
+## 23.11.2026 – Automatik und Anfrage-Messung
+
+- Bewertungsautomatik zuvor repariert; Neustart nur für künftige Abschlüsse ab 09:33 Uhr, keine historischen Bewertungsbitten. Details in integrations.md.
+- LIVE-VERIFIZIERT: Angebotsprüfung liest echte Phasenhistorie, drei offene Angebote ohne Fehler erkannt. Automatisches „Verloren“ und neue Nachfassaufgaben entfernt; keine bestehenden CRM-Vorgänge verändert.
+- CODE-VERIFIZIERT: Einwilligungsabhängige Erfolgsmessung des Anfrageformulars ohne neue Trackinganbieter oder Formularinhalte; 32 Tests, Typechecks und Build erfolgreich. Veröffentlichung/Live-Test gesondert nachhalten.
+- LIVE-VERIFIZIERT: DHL-Produktivkatalog HTTP 200, 19 Produkte. Manueller, gegen Wiederholungen gesicherter Produktiv-Warenkorbpfad ergänzt und isoliert getestet. Kein Label gekauft; konkreter DHL-Auftrag/Checkout und Internetmarke-Zugang bleiben offen.
+- Search-Console-Abfrage am 23.11.: CAD und Kontakt als „URL is unknown to Google“ gemeldet. Kein Indexierungs- oder Rankinggewinn behauptet. Suchdaten und Conversion-Daten bleiben getrennte, begrenzte Messquellen.
