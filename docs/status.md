@@ -117,3 +117,8 @@ Statistikprüfung: Vor optionaler Zustimmung kein Analyseskript im DOM; nach Zus
 DHL-Modul um 10:19 Uhr erfolgreich mit `lfDhlProduktivKonfigurationPruefen` geprüft: Helfer und Produktivschlüssel vorhanden, kein konkreter Auftrag ausgewählt. Produktiv-POST, Checkout, Bezahlung und Internetmarke-Aktivierung bleiben offen.
 
 Wöchentliche lesende Fehlerkontrolle ab 30.11.2026, montags 09:00 Uhr Europe/Berlin eingerichtet, nur bei neuen nachgewiesenen Problemen benachrichtigen. Keine automatischen Test-Deals, Kundenmails oder kostenpflichtigen Vorgänge.
+
+
+### 23.11.2026 – Deutsche Post Internetmarke implementiert, Aktivierung offen
+
+CODE-VERIFIZIERT / LIVE INSTALLIERT: Separates Internetmarke-REST-Modul mit manueller Auftragsprüfung, einmaliger auftragsspezifischer Kauffreigabe, Kaufjournal/Wiederholungsschutz und Label-Link-Übergabe an HubSpot ergänzt. Elf neue isolierte Modultests; insgesamt 43 Tests bestanden. Lokale Konfigurationsprüfung im bestehenden Apps Script um 10:39 Uhr bestätigt fehlenden vollständigen Internetmarke-Zugang; keine Anmeldung, Bestellung, Zahlung, Mail oder CRM-Änderung ausgeführt. Kein neuer Trigger. Produkt-/Tarif- und Druckformatprüfung derzeit bewusst manuell vor Freigabe, kein automatischer Products-API-Abruf. Anleitung, Quellen und offene Live-Prüfung in `docs/versand.md`. Die Anbindung ist vorbereitet/installiert, noch nicht produktiv frankierfähig.
