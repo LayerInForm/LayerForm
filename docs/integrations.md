@@ -210,3 +210,18 @@ Werte: PLA→`pla`, PETG→`petg`, ASA→`asa`, ABS→`abs`, TPU→`tpu`; fehlen
 ## Kurze Eingangsbestätigung (16.11.2026)
 
 Auf Nutzerwunsch enthält die Kundenbestätigung beider Website-Endpunkte ausschließlich: „Vielen Dank für Ihre Anfrage. Hiermit bestätigen wir den Eingang Ihrer Anfrage.“ Betreff: „Bestätigung Ihrer Anfrage“. Keine Anfragekopie, Preise, Termine, Kontaktlinks oder Signatur im Nachrichtentext. Empfänger bleibt die im Formular angegebene E-Mail-Adresse. Auslösung weiterhin erst nach erfolgreicher HubSpot-Anlage und nur bei neuen, nicht wiederholten Anfragen; Zustellfehler ändern den gespeicherten CRM-Eingang nicht. Keine historischen Bestätigungen erneut senden.
+
+
+## Bewertungsautomatik repariert (23.11.2026, live in Google Apps Script)
+
+**Nutzerentscheidung:** Nur künftig abgeschlossene Aufträge berücksichtigen; die fünf vor der Reparatur fälligen Bewertungsbitten nicht nachholen. Neustartgrenze: **23.11.2026, 09:33:20 Uhr Europe/Berlin** (`2026-11-23T08:33:20.114Z`). Der frühere Script-Property-Wert `bewertung_start` bleibt erhalten; die Auswahl verwendet die spätere dieser beiden Grenzen.
+
+**Live-Ursache:** `versandPruefen` lief alle zehn Minuten, aber `bewertungenAnfragen_` scheiterte an HTTP 400 bei der Deal-Suche. Die verwendete Eigenschaft `hs_v2_date_entered_6212936903` existiert in diesem Portal nicht (Property-Abfrage bestätigt). Die Warnung wurde bisher abgefangen, weshalb der Lauf dennoch als abgeschlossen erschien.
+
+**Produktive Korrektur in `Code.gs`:** Nach Pipeline und gewonnener Versand-/Abholphase suchen, Ergebnisse vollständig paginieren, den Zeitpunkt aus `propertiesWithHistory=dealstage` lesen und erst nach fünf Tagen berücksichtigen. Aktuelle Phase und Historie müssen übereinstimmen; fehlende oder ungültige Historie führt zu keiner Bewertungsmail. Vor dem Senden wird die Phase erneut gelesen. Kein Ersatz durch ein vermutetes Abschluss-/Änderungsdatum.
+
+**Wiederholungsschutz:** Weiterhin einmal je verknüpftem Kontakt über `lf_bewertung_angefragt`. Zusätzlich Script-Lock und kontaktbezogenes Script-Property-Journal (`lf_bewertung_send_v2_<Kontakt-ID>`): vor dem Senden `pending`, danach `sent`. Unklarer Mailstatus wird nicht automatisch erneut gesendet. Nach erfolgreichem Mailversand und fehlgeschlagenem CRM-Update wird der CRM-Merker später nachgetragen, ohne eine weitere Mail zu senden. Bewertungsfehler werden nach den übrigen Versandprüfungen als Ausführungsfehler weitergereicht.
+
+**Verifikation:** `bewertungenLogikTestOhneVersand` prüft zehn Historien-/Fristenfälle einschließlich wieder geöffneter Deals, fehlender/ungültiger Historie, exakter Fünftagesgrenze und Ausschluss alter Abschlüsse. `bewertungenReparaturAbschlusscheck` am 23.11.2026 um 09:36 Uhr erfolgreich: zwölf abgeschlossene Deals geprüft, null fällige neue Aufträge, null gesendete Mails, null Bewertungsfehler. Gmail-Suche am selben Tag ergab keine versendete Mail mit dem Bewertungsbetreff. Ein tatsächlicher neuer Kundenversand nach Ablauf der fünf Tage wurde hierdurch noch nicht getestet.
+
+**Live-Projekt / Prüfprotokoll:** https://script.google.com/home/projects/1fRq-Bg7wtsi2PO4w0b2IfY1XHei8647ugzyk-uQo1exaZvLRRaB7uPwJ/edit . Bestehender Zeittrigger bleibt bestehen; kein manueller Aufruf des gesamten Versand-/Nachfassablaufs. Die separat beobachtete HTTP-400-Warnung bei `angeboteNachfassen_` ist nicht Teil dieser Reparatur und bleibt offen.
