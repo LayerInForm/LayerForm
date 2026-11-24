@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#101b28">
+  <title>LayerForm · Fahrt erfassen</title>
+  <style>
+    :root{font:16px/1.5 system-ui,-apple-system,sans-serif;color:#172332;background:#f2f5f8;color-scheme:light}
+    *{box-sizing:border-box}body{margin:0}main{max-width:500px;margin:auto;padding:30px 20px 40px}header{display:flex;align-items:center;gap:11px;margin-bottom:28px}.mark{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#101b28;color:#63def5;font-weight:800}.brand{font-weight:750;letter-spacing:-.03em}header small{display:block;color:#617184;font-size:.875rem}h1{font-size:2rem;line-height:1.15;letter-spacing:-.04em;margin:0 0 10px}p{margin:0 0 24px;color:#526277}.card{background:white;border:1px solid #dee5ec;border-radius:20px;padding:22px;box-shadow:0 8px 28px #152b4210}label,legend{font-weight:650;font-size:.925rem}label{display:block;margin:20px 0 7px}.first{margin-top:0}input{width:100%;font:inherit;min-height:50px;padding:11px 12px;border:1px solid #bac7d4;border-radius:10px;color:inherit;background:#fff}input:focus-visible,button:focus-visible{outline:3px solid #30b4d0;outline-offset:3px}input:read-only{background:#f0f5f8;color:#3d5364}fieldset{border:0;padding:0;margin:22px 0}legend{padding:0;margin-bottom:10px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}.choice{border:1px solid #cbd5df;border-radius:12px;background:white;color:inherit;font:inherit;min-height:50px;padding:10px;cursor:pointer}.choice[aria-pressed=true]{border-color:#136f86;background:#e8f8fc;box-shadow:inset 0 0 0 1px #136f86;color:#07566b;font-weight:700}.hint{display:block;font-size:.875rem;color:#617184;margin-top:7px}.submit,.again{width:100%;min-height:54px;border:0;border-radius:12px;background:#101b28;color:#fff;font:inherit;font-weight:650;cursor:pointer;margin-top:24px}.submit:disabled{opacity:.6;cursor:wait}.error{color:#a42532;margin:14px 0 0}.success{padding:16px 0;text-align:center}.tick{width:56px;height:56px;display:grid;place-items:center;margin:0 auto 20px;border-radius:50%;background:#e7f7ef;color:#176b46;font-size:1.6rem}.success h2{margin:0 0 8px;letter-spacing:-.03em}.success p{margin-bottom:6px}.footer{margin-top:22px;font-size:.875rem;color:#617184;text-align:center}[hidden]{display:none!important}@media(max-width:360px){main{padding:22px 12px}.card{padding:18px}}
+  </style>
+</head>
+<body>
+<main>
+  <header><span class="mark" aria-hidden="true">LF</span><div><span class="brand">LayerForm</span><small>Deine Dienstfahrten</small></div></header>
+  <h1>Fahrt erfassen</h1><p>Eintragen, speichern, weiter.</p>
+  <section class="card">
+    <form id="trip">
+      <label class="first" for="date">Datum</label><input id="date" name="date" type="date" value="<?= today ?>" max="<?= today ?>" required>
+      <fieldset><legend>Anlass</legend><div class="choices">
+        <button class="choice" type="button" data-reason="Poststelle" aria-pressed="true">Poststelle</button><button class="choice" type="button" data-reason="Kunde" aria-pressed="false">Kunde</button><button class="choice" type="button" data-reason="Einkauf" aria-pressed="false">Einkauf</button><button class="choice" type="button" data-reason="sonstige" aria-pressed="false">Sonstige</button>
+      </div></fieldset>
+      <label for="target">Ziel</label><input id="target" name="target" value="Bargteheide" maxlength="120" readonly required>
+      <div id="customerField" hidden><label for="customer">Kunde / Auftrag <span class="hint">Optional</span></label><input id="customer" name="customer" maxlength="120" autocomplete="off"></div>
+      <label for="km">Gefahrene Kilometer</label><input id="km" name="km" value="5" inputmode="decimal" maxlength="8" readonly required><span class="hint" id="kmHint">5 km insgesamt für Hin- und Rückweg.</span>
+      <button class="submit" id="save" type="submit">Fahrt speichern</button><p class="error" id="error" role="alert" hidden></p>
+    </form>
+    <div class="success" id="success" hidden aria-live="polite"><div class="tick" aria-hidden="true">✓</div><h2>Fahrt gespeichert</h2><p id="summary"></p><button class="again" id="again" type="button">Weitere Fahrt erfassen</button></div>
+  </section>
+  <div class="footer">Nur für dich · Direkt in deinem Fahrtenbuch</div>
+</main>
+<script>
+  const $=id=>document.getElementById(id);
+  let reason='Poststelle',requestId=null,requestPayload=null;
+  const newId=()=>crypto.randomUUID();
+  function berlinToday(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+  function setReason(value){reason=value;const post=value==='Poststelle';document.querySelectorAll('[data-reason]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.reason===value)));$('target').readOnly=post;$('km').readOnly=post;$('target').value=post?'Bargteheide':'';$('km').value=post?'5':'';$('customerField').hidden=value!=='Kunde';$('kmHint').textContent=post?'5 km insgesamt für Hin- und Rückweg.':'Bitte Hin- und Rückweg zusammen angeben.';}
+  document.querySelectorAll('[data-reason]').forEach(b=>b.addEventListener('click',()=>setReason(b.dataset.reason)));
+  $('trip').addEventListener('submit',event=>{event.preventDefault();$('error').hidden=true;const payload={date:$('date').value,reason,target:$('target').value,km:$('km').value,customer:$('customer').value};const signature=JSON.stringify(payload);if(requestPayload&&requestPayload!==signature){$('error').textContent='Die letzte Speicherung ist noch unklar. Bitte zuerst das Fahrtenbuch prüfen, bevor du diese Fahrt änderst.';$('error').hidden=false;return;}requestId=requestId||newId();requestPayload=signature;$('save').disabled=true;$('save').textContent='Wird gespeichert …';document.querySelectorAll('input,.choice').forEach(el=>el.disabled=true);google.script.run.withSuccessHandler(result=>{if(result&&result.validationError){requestId=null;requestPayload=null;document.querySelectorAll('input,.choice').forEach(el=>el.disabled=false);failed({message:result.validationError});return;}if(!result||!result.saved){failed();return;}$('summary').textContent=result.target+' · '+result.km+' km · '+result.date.split('-').reverse().join('.');$('trip').hidden=true;$('success').hidden=false;$('again').focus();}).withFailureHandler(err=>failed(err)).lfFahrtSpeichern({...payload,requestId});});
+  function failed(err){$('save').disabled=false;$('save').textContent='Erneut speichern';$('error').textContent=err&&err.message?err.message:'Speichern konnte nicht bestätigt werden. Bitte erneut versuchen.';$('error').hidden=false;/* Bei unklarem Ergebnis identische Anfrage wiederholen; keine neue ID erzeugen. */}
+  $('again').addEventListener('click',()=>{requestId=null;requestPayload=null;$('trip').reset();document.querySelectorAll('input,.choice').forEach(el=>el.disabled=false);$('date').value=berlinToday();$('date').max=berlinToday();setReason('Poststelle');$('save').disabled=false;$('save').textContent='Fahrt speichern';$('error').hidden=true;$('trip').hidden=false;$('success').hidden=true;$('date').focus();});
+</script>
+</body>
+</html>

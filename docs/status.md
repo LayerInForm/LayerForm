@@ -122,3 +122,8 @@ Wöchentliche lesende Fehlerkontrolle ab 30.11.2026, montags 09:00 Uhr Europe/Be
 ### 23.11.2026 – Deutsche Post Internetmarke implementiert, Aktivierung offen
 
 CODE-VERIFIZIERT / LIVE INSTALLIERT: Separates Internetmarke-REST-Modul mit manueller Auftragsprüfung, einmaliger auftragsspezifischer Kauffreigabe, Kaufjournal/Wiederholungsschutz und Label-Link-Übergabe an HubSpot ergänzt. Elf neue isolierte Modultests; insgesamt 43 Tests bestanden. Lokale Konfigurationsprüfung im bestehenden Apps Script um 10:39 Uhr bestätigt fehlenden vollständigen Internetmarke-Zugang; keine Anmeldung, Bestellung, Zahlung, Mail oder CRM-Änderung ausgeführt. Kein neuer Trigger. Produkt-/Tarif- und Druckformatprüfung derzeit bewusst manuell vor Freigabe, kein automatischer Products-API-Abruf. Anleitung, Quellen und offene Live-Prüfung in `docs/versand.md`. Die Anbindung ist vorbereitet/installiert, noch nicht produktiv frankierfähig.
+
+
+### 24.11.2026 – Private mobile Erfassung von Dienstfahrten
+
+LIVE-VERIFIZIERT: Handyformular im bestehenden Apps Script als private Web-App bereitgestellt und mit bestehendem Fahrtenbuch verbunden. Heute vorbelegt, vier Anlassarten, Poststelle mit Bargteheide/5 km, sonst Ziel/Kilometer und optional Kunde. Keine Notizeingabe. Authentifizierung und serverseitige Ablehnung ungültiger Kilometer im veröffentlichten Formular geprüft. Keine fiktive Fahrt hinzugefügt; positiver Live-Schreibtest bei nächster echter Fahrt offen. Bestehende OAuth-Bereiche explizit übernommen, ohne zusätzlichen Drive-Zugriff. CODE-VERIFIZIERT: fünf neue Modultests, insgesamt 48 Tests bestanden. Betrieb und Grenzen unter `docs/prozesse.md`.
